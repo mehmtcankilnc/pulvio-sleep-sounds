@@ -6,14 +6,38 @@
     "orientation": "portrait",
     "scheme": "pulvio",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pulvio.app"
+      "bundleIdentifier": "com.pulvio.app",
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"]
+      }
     },
     "android": {
       "package": "com.pulvio.app"
     },
-    "plugins": ["expo-router", "expo-dev-client"]
+    "plugins": [
+      "expo-router",
+      "expo-dev-client",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.25",
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "17f2818e-8d7a-4c46-a09d-fafd7f037729"
+      }
+    }
   }
 }

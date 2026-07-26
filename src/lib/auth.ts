@@ -21,9 +21,13 @@ export async function signOut() {
   return { error };
 }
 
+// Android'de Custom Tabs, OAuth dönüşünü openAuthSessionAsync'in kendi promise'i
+// üzerinden değil, uygulamanın normal deep-link akışı üzerinden yapabiliyor
+// (openAuthSessionAsync bu durumda "dismiss" döner, halbuki yönlendirme aslında
+// başarılı olmuştur). Bu yüzden asıl oturum kurma işi burada değil, gelen
+// pulvio:// linkini dinleyen exchangeCodeFromUrl'de (useAuthListener) yapılıyor.
 async function signInWithOAuth(provider: "google" | "apple") {
   const redirectUri = AuthSession.makeRedirectUri({ scheme: "pulvio" });
-  console.log("TEMP DEBUG redirectUri:", redirectUri); // test bitince kaldırılacak
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
@@ -33,20 +37,11 @@ async function signInWithOAuth(provider: "google" | "apple") {
     return { error: error ?? new Error(`${provider} için OAuth URL'i alınamadı`) };
   }
 
-  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
-  if (result.type !== "success") {
-    // Kullanıcı tarayıcıyı kapattı/iptal etti — hata olarak sayma.
-    return { error: null };
-  }
-
-  const { queryParams } = Linking.parse(result.url);
-  const code = queryParams?.code;
-  if (typeof code !== "string") {
-    return { error: new Error("OAuth yönlendirmesinde 'code' parametresi bulunamadı") };
-  }
-
-  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-  return { error: exchangeError };
+  await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
+  // Sonucu (success/dismiss) kasıtlı olarak yok sayıyoruz — gerçek tamamlanma
+  // deep-link dinleyicisinden gelecek. Kullanıcı gerçekten iptal ettiyse login
+  // ekranında kalır, ekstra bir hata göstermemize gerek yok.
+  return { error: null };
 }
 
 export function signInWithGoogle() {
@@ -55,4 +50,15 @@ export function signInWithGoogle() {
 
 export function signInWithApple() {
   return signInWithOAuth("apple");
+}
+
+// pulvio:// ile dönen OAuth linkini işler, 'code' varsa session'a çevirir.
+// useAuthListener hem canlı deep-link event'lerinde hem de soğuk başlangıçta
+// (Linking.getInitialURL) bunu çağırır.
+export async function exchangeCodeFromUrl(url: string) {
+  const { queryParams } = Linking.parse(url);
+  const code = queryParams?.code;
+  if (typeof code !== "string") return;
+
+  await supabase.auth.exchangeCodeForSession(code);
 }

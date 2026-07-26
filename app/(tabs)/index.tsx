@@ -1,8 +1,12 @@
 import { SectionList, View, Text, ActivityIndicator, Pressable } from "react-native";
+import { useRouter } from "expo-router";
 import { useTracks } from "../../src/hooks/useTracks";
+import { usePlayerActions } from "../../src/hooks/usePlayerActions";
 
 export default function HomeScreen() {
   const { sections, loading, error, refetch } = useTracks();
+  const { loadAndPlay } = usePlayerActions();
+  const router = useRouter();
 
   if (loading) {
     return (
@@ -40,10 +44,16 @@ export default function HomeScreen() {
         <Text className="text-lg font-bold px-4 pt-4 pb-2 bg-white">{section.title}</Text>
       )}
       renderItem={({ item }) => (
-        <View className="px-4 py-3 border-b border-gray-100">
+        <Pressable
+          className="px-4 py-3 border-b border-gray-100"
+          onPress={() => {
+            loadAndPlay(item);
+            router.navigate("/player");
+          }}
+        >
           <Text className="text-base">{item.title}</Text>
           {item.isPremiumOnly && <Text className="text-xs text-amber-600">Premium</Text>}
-        </View>
+        </Pressable>
       )}
     />
   );
