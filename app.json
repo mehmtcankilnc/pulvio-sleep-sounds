@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Pulvio",
+    "slug": "pulvio",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "pulvio",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pulvio.app"
+    },
+    "android": {
+      "package": "com.pulvio.app"
+    },
+    "plugins": ["expo-router", "expo-dev-client"]
+  }
+}
