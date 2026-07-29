@@ -21,6 +21,20 @@ export async function signOut() {
   return { error };
 }
 
+// Sunucu tarafında hesabı ve ilişkili tüm verileri (subscriptions,
+// listening_sessions, cooldowns) siler (bkz. supabase/functions/delete-account),
+// ardından yerel oturumu temizler — useAuthListener bunu otomatik yakalayıp
+// route guard'ı tetikler.
+export async function deleteAccount() {
+  const { error: invokeError } = await supabase.functions.invoke("delete-account", {
+    method: "POST",
+  });
+  if (invokeError) return { error: invokeError };
+
+  await supabase.auth.signOut();
+  return { error: null };
+}
+
 // Android'de Custom Tabs, OAuth dönüşünü openAuthSessionAsync'in kendi promise'i
 // üzerinden değil, uygulamanın normal deep-link akışı üzerinden yapabiliyor
 // (openAuthSessionAsync bu durumda "dismiss" döner, halbuki yönlendirme aslında

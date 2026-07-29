@@ -1,15 +1,37 @@
+import { useState } from "react";
 import { View, Text, Pressable, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { signOut } from "../../src/lib/auth";
+import { signOut, deleteAccount } from "../../src/lib/auth";
 import { useUserStore } from "../../src/store/useUserStore";
 
 export default function SettingsScreen() {
   const router = useRouter();
   const subscriptionStatus = useUserStore((state) => state.subscriptionStatus);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   async function handleSignOut() {
     const { error } = await signOut();
     if (error) Alert.alert("Çıkış başarısız", error.message);
+  }
+
+  function handleDeleteAccount() {
+    Alert.alert(
+      "Hesabı Sil",
+      "Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz kalıcı olarak silinecek.",
+      [
+        { text: "Vazgeç", style: "cancel" },
+        {
+          text: "Hesabı Sil",
+          style: "destructive",
+          onPress: async () => {
+            setIsDeleting(true);
+            const { error } = await deleteAccount();
+            setIsDeleting(false);
+            if (error) Alert.alert("Hesap silinemedi", error.message);
+          },
+        },
+      ]
+    );
   }
 
   return (
@@ -27,8 +49,19 @@ export default function SettingsScreen() {
         </Pressable>
       )}
 
-      <Pressable className="border border-gray-300 rounded-lg px-6 py-3" onPress={handleSignOut}>
+      <Pressable
+        className="border border-gray-300 rounded-lg px-6 py-3 mb-4"
+        onPress={handleSignOut}
+      >
         <Text>Çıkış Yap</Text>
+      </Pressable>
+
+      <Pressable
+        className="px-6 py-3"
+        onPress={handleDeleteAccount}
+        disabled={isDeleting}
+      >
+        <Text className="text-red-600">{isDeleting ? "Siliniyor..." : "Hesabı Sil"}</Text>
       </Pressable>
     </View>
   );
