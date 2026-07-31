@@ -24,7 +24,9 @@ export function useRevenueCatSync() {
     if (session) {
       Purchases.logIn(session.user.id).catch(() => {});
     } else {
-      Purchases.logOut().catch(() => {});
+      Purchases.isAnonymous().then((isAnonymous) => {
+        if (!isAnonymous) Purchases.logOut().catch(() => {});
+      });
     }
   }, [session]);
 

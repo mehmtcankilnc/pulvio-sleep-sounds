@@ -1,0 +1,13 @@
+{
+  "tabTitle": "Réglages",
+  "placeholder": "Écran des réglages (provisoire)",
+  "premiumActive": "Premium actif ✓",
+  "signOut": "Se déconnecter",
+  "signOutFailedTitle": "Échec de la déconnexion",
+  "deleteAccount": "Supprimer le compte",
+  "deleting": "Suppression...",
+  "deleteConfirmTitle": "Supprimer le compte",
+  "deleteConfirmMessage": "Cette action est irréversible. Ton compte et toutes tes données seront définitivement supprimés.",
+  "deleteFailedTitle": "Impossible de supprimer le compte",
+  "language": "Langue"
+}

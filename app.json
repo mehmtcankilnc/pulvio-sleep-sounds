@@ -11,7 +11,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.pulvio.app",
       "infoPlist": {
-        "UIBackgroundModes": ["audio"]
+        "UIBackgroundModes": [
+          "audio"
+        ]
       }
     },
     "android": {
@@ -29,7 +31,8 @@
             "targetSdkVersion": 36
           }
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "extra": {
       "router": {

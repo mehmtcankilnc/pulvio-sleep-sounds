@@ -1,0 +1,9 @@
+{
+  "title": "Pulvio Premium",
+  "subtitle": "Unbegrenztes Hören, keine Sperrzeit, komplette Sound-Bibliothek",
+  "loadError": "Abo-Optionen konnten nicht geladen werden",
+  "empty": "Derzeit ist kein Abo verfügbar",
+  "purchaseFailed": "Kauf konnte nicht abgeschlossen werden",
+  "purchaseReceivedTitle": "Zahlung erhalten",
+  "purchaseReceivedMessage": "Deine Zahlung wurde erhalten, Premium wird in wenigen Minuten aktiv."
+}

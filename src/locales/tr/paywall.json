@@ -1,0 +1,9 @@
+{
+  "title": "Pulvio Premium",
+  "subtitle": "Sınırsız dinleme, cooldown yok, tüm sesler açık",
+  "loadError": "Abonelik seçenekleri yüklenemedi",
+  "empty": "Şu an satın alınabilir bir abonelik yok",
+  "purchaseFailed": "Satın alma tamamlanamadı",
+  "purchaseReceivedTitle": "İşlem alındı",
+  "purchaseReceivedMessage": "Ödemen alındı, birkaç dakika içinde premium aktif olacak."
+}

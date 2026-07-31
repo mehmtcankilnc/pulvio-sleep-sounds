@@ -1,9 +1,11 @@
 import { SectionList, View, Text, ActivityIndicator, Pressable } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useTracks } from "../../src/hooks/useTracks";
 import { usePlayerActions } from "../../src/hooks/usePlayerActions";
 
 export default function HomeScreen() {
+  const { t } = useTranslation("discover");
   const { sections, loading, error, refetch } = useTracks();
   const { loadAndPlay } = usePlayerActions();
   const router = useRouter();
@@ -19,9 +21,9 @@ export default function HomeScreen() {
   if (error) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-6">
-        <Text className="text-center mb-4">Sesler yüklenemedi: {error}</Text>
+        <Text className="text-center mb-4">{t("loadError", { error })}</Text>
         <Pressable className="border border-gray-300 rounded-lg px-6 py-3" onPress={refetch}>
-          <Text>Tekrar dene</Text>
+          <Text>{t("common:retry")}</Text>
         </Pressable>
       </View>
     );
@@ -30,7 +32,7 @@ export default function HomeScreen() {
   if (sections.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-lg">Henüz ses eklenmedi</Text>
+        <Text className="text-lg">{t("empty")}</Text>
       </View>
     );
   }
@@ -52,7 +54,7 @@ export default function HomeScreen() {
           }}
         >
           <Text className="text-base">{item.title}</Text>
-          {item.isPremiumOnly && <Text className="text-xs text-amber-600">Premium</Text>}
+          {item.isPremiumOnly && <Text className="text-xs text-amber-600">{t("premiumBadge")}</Text>}
         </Pressable>
       )}
     />

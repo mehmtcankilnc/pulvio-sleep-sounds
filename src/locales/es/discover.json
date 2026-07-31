@@ -1,0 +1,6 @@
+{
+  "tabTitle": "Descubrir",
+  "loadError": "No se pudieron cargar los sonidos: {{error}}",
+  "empty": "Aún no se han añadido sonidos",
+  "premiumBadge": "Premium"
+}

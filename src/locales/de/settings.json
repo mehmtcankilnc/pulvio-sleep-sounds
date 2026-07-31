@@ -1,0 +1,13 @@
+{
+  "tabTitle": "Einstellungen",
+  "placeholder": "Einstellungen (Platzhalter)",
+  "premiumActive": "Premium aktiv ✓",
+  "signOut": "Abmelden",
+  "signOutFailedTitle": "Abmeldung fehlgeschlagen",
+  "deleteAccount": "Konto löschen",
+  "deleting": "Wird gelöscht...",
+  "deleteConfirmTitle": "Konto löschen",
+  "deleteConfirmMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Dein Konto und alle deine Daten werden dauerhaft gelöscht.",
+  "deleteFailedTitle": "Konto konnte nicht gelöscht werden",
+  "language": "Sprache"
+}

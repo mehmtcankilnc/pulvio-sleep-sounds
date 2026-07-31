@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import type { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
 import { getCurrentOffering, purchasePackage } from "../src/lib/revenuecat";
 import { fetchUserStatus } from "../src/lib/playback";
 import { useUserStore } from "../src/store/useUserStore";
 
 export default function PaywallScreen() {
+  const { t } = useTranslation("paywall");
   const router = useRouter();
   const setSubscriptionStatus = useUserStore((state) => state.setSubscriptionStatus);
   const setCooldownEndsAt = useUserStore((state) => state.setCooldownEndsAt);
@@ -18,7 +20,7 @@ export default function PaywallScreen() {
   useEffect(() => {
     getCurrentOffering()
       .then(setOffering)
-      .catch(() => setError("Abonelik seçenekleri yüklenemedi"))
+      .catch(() => setError(t("loadError")))
       .finally(() => setLoading(false));
   }, []);
 
@@ -40,11 +42,11 @@ export default function PaywallScreen() {
         }
       }
 
-      Alert.alert("İşlem alındı", "Ödemen alındı, birkaç dakika içinde premium aktif olacak.", [
-        { text: "Tamam", onPress: () => router.back() },
+      Alert.alert(t("purchaseReceivedTitle"), t("purchaseReceivedMessage"), [
+        { text: t("common:ok"), onPress: () => router.back() },
       ]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Satın alma tamamlanamadı");
+      setError(err instanceof Error ? err.message : t("purchaseFailed"));
     } finally {
       setPurchasing(false);
     }
@@ -61,17 +63,15 @@ export default function PaywallScreen() {
   if (!offering || offering.availablePackages.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-6">
-        <Text className="text-center">Şu an satın alınabilir bir abonelik yok</Text>
+        <Text className="text-center">{t("empty")}</Text>
       </View>
     );
   }
 
   return (
     <View className="flex-1 justify-center px-6 bg-white">
-      <Text className="text-2xl font-bold text-center mb-2">Pulvio Premium</Text>
-      <Text className="text-gray-500 text-center mb-8">
-        Sınırsız dinleme, cooldown yok, tüm sesler açık
-      </Text>
+      <Text className="text-2xl font-bold text-center mb-2">{t("title")}</Text>
+      <Text className="text-gray-500 text-center mb-8">{t("subtitle")}</Text>
 
       {error && <Text className="text-red-600 text-center mb-4">{error}</Text>}
 

@@ -1,0 +1,13 @@
+{
+  "tabTitle": "Ayarlar",
+  "placeholder": "Ayarlar ekranı (placeholder)",
+  "premiumActive": "Premium Aktif ✓",
+  "signOut": "Çıkış Yap",
+  "signOutFailedTitle": "Çıkış başarısız",
+  "deleteAccount": "Hesabı Sil",
+  "deleting": "Siliniyor...",
+  "deleteConfirmTitle": "Hesabı Sil",
+  "deleteConfirmMessage": "Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz kalıcı olarak silinecek.",
+  "deleteFailedTitle": "Hesap silinemedi",
+  "language": "Dil"
+}

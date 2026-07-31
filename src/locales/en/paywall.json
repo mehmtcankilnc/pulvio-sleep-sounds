@@ -1,0 +1,9 @@
+{
+  "title": "Pulvio Premium",
+  "subtitle": "Unlimited listening, no cooldown, full sound library",
+  "loadError": "Couldn't load subscription options",
+  "empty": "No subscription available for purchase right now",
+  "purchaseFailed": "Purchase couldn't be completed",
+  "purchaseReceivedTitle": "Payment received",
+  "purchaseReceivedMessage": "Your payment was received, premium will be active within a few minutes."
+}

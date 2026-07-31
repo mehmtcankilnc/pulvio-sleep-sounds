@@ -1,0 +1,13 @@
+{
+  "tabTitle": "Ajustes",
+  "placeholder": "Pantalla de ajustes (provisional)",
+  "premiumActive": "Premium activo ✓",
+  "signOut": "Cerrar sesión",
+  "signOutFailedTitle": "Error al cerrar sesión",
+  "deleteAccount": "Eliminar cuenta",
+  "deleting": "Eliminando...",
+  "deleteConfirmTitle": "Eliminar cuenta",
+  "deleteConfirmMessage": "Esta acción no se puede deshacer. Tu cuenta y todos tus datos se eliminarán de forma permanente.",
+  "deleteFailedTitle": "No se pudo eliminar la cuenta",
+  "language": "Idioma"
+}

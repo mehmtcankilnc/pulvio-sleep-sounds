@@ -1,5 +1,6 @@
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { usePlayerStore } from "../../src/store/usePlayerStore";
 import { useUserStore } from "../../src/store/useUserStore";
 import { usePlayerActions } from "../../src/hooks/usePlayerActions";
@@ -13,6 +14,7 @@ function formatTime(seconds: number) {
 }
 
 export default function PlayerScreen() {
+  const { t } = useTranslation("player");
   const router = useRouter();
   const currentTrack = usePlayerStore((state) => state.currentTrack);
   const isPlaying = usePlayerStore((state) => state.isPlaying);
@@ -28,14 +30,14 @@ export default function PlayerScreen() {
   if (cooldownEndsAt) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-6">
-        <Text className="text-lg font-bold text-center mb-2">Ücretsiz dinleme hakkın bitti</Text>
-        <Text className="text-gray-500 text-center mb-4">Kalan süre</Text>
+        <Text className="text-lg font-bold text-center mb-2">{t("limitTitle")}</Text>
+        <Text className="text-gray-500 text-center mb-4">{t("limitRemaining")}</Text>
         <Text className="text-3xl font-bold mb-8">{countdownLabel ?? "…"}</Text>
         <Pressable
           className="bg-black rounded-lg px-6 py-3"
           onPress={() => router.push("/paywall")}
         >
-          <Text className="text-white font-semibold">Premium'a Geç, Sınırsız Dinle</Text>
+          <Text className="text-white font-semibold">{t("limitCta")}</Text>
         </Pressable>
       </View>
     );
@@ -44,15 +46,13 @@ export default function PlayerScreen() {
   if (denyReason === "premium_only") {
     return (
       <View className="flex-1 items-center justify-center bg-white px-6">
-        <Text className="text-lg font-bold text-center mb-2">Bu ses premium üyelere özel</Text>
-        <Text className="text-gray-500 text-center mb-8">
-          Bu sesi dinlemek için Premium'a geçmen gerekiyor
-        </Text>
+        <Text className="text-lg font-bold text-center mb-2">{t("premiumOnlyTitle")}</Text>
+        <Text className="text-gray-500 text-center mb-8">{t("premiumOnlySubtitle")}</Text>
         <Pressable
           className="bg-black rounded-lg px-6 py-3"
           onPress={() => router.push("/paywall")}
         >
-          <Text className="text-white font-semibold">Premium'a Geç</Text>
+          <Text className="text-white font-semibold">{t("common:goPremium")}</Text>
         </Pressable>
       </View>
     );
@@ -61,7 +61,7 @@ export default function PlayerScreen() {
   if (!currentTrack) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-6">
-        <Text className="text-lg">Henüz bir ses seçilmedi</Text>
+        <Text className="text-lg">{t("noTrack")}</Text>
         {error && <Text className="text-red-600 text-center mt-4">{error}</Text>}
       </View>
     );

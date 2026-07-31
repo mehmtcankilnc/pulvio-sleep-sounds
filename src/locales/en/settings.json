@@ -1,0 +1,13 @@
+{
+  "tabTitle": "Settings",
+  "placeholder": "Settings screen (placeholder)",
+  "premiumActive": "Premium Active ✓",
+  "signOut": "Sign Out",
+  "signOutFailedTitle": "Sign out failed",
+  "deleteAccount": "Delete Account",
+  "deleting": "Deleting...",
+  "deleteConfirmTitle": "Delete Account",
+  "deleteConfirmMessage": "This action cannot be undone. Your account and all your data will be permanently deleted.",
+  "deleteFailedTitle": "Couldn't delete account",
+  "language": "Language"
+}
