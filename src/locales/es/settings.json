@@ -9,5 +9,12 @@
   "deleteConfirmTitle": "Eliminar cuenta",
   "deleteConfirmMessage": "Esta acción no se puede deshacer. Tu cuenta y todos tus datos se eliminarán de forma permanente.",
   "deleteFailedTitle": "No se pudo eliminar la cuenta",
-  "language": "Idioma"
+  "language": "Idioma",
+  "bedtimeTitle": "Recordatorio para dormir",
+  "bedtimeOn": "Activado",
+  "bedtimeOff": "Desactivado",
+  "bedtimePermissionDeniedTitle": "Permiso de notificaciones denegado",
+  "bedtimePermissionDeniedMessage": "Para activar el recordatorio, permite las notificaciones de Pulvio en los ajustes de tu dispositivo.",
+  "bedtimeNotifTitle": "Es hora de dormir",
+  "bedtimeNotifBody": "Abre Pulvio y déjate llevar hacia un sueño tranquilo"
 }

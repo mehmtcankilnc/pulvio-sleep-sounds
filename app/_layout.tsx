@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useAuthListener } from "../src/hooks/useAuthListener";
 import { useSubscriptionStatus } from "../src/hooks/useSubscriptionStatus";
 import { useRevenueCatSync } from "../src/hooks/useRevenueCatSync";
+import { usePushNotifications } from "../src/hooks/usePushNotifications";
 import { useUserStore } from "../src/store/useUserStore";
 import { PlayerEngineProvider } from "../src/lib/player/PlayerEngineProvider";
 import { initI18n } from "../src/lib/i18n";
@@ -15,6 +16,7 @@ export default function RootLayout() {
   useAuthListener();
   useSubscriptionStatus();
   useRevenueCatSync();
+  usePushNotifications();
   const session = useUserStore((state) => state.session);
   const setLanguage = useUserStore((state) => state.setLanguage);
   const [i18nReady, setI18nReady] = useState(false);

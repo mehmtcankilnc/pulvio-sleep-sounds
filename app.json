@@ -17,7 +17,8 @@
       }
     },
     "android": {
-      "package": "com.pulvio.app"
+      "package": "com.pulvio.app",
+      "googleServicesFile": "./google-services.json"
     },
     "plugins": [
       "expo-router",
@@ -32,7 +33,13 @@
           }
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "color": "#000000"
+        }
+      ]
     ],
     "extra": {
       "router": {

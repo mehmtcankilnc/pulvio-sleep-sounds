@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, Pressable, Alert } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -6,6 +6,11 @@ import { signOut, deleteAccount } from "../../src/lib/auth";
 import { useUserStore } from "../../src/store/useUserStore";
 import { fetchUserStatus } from "../../src/lib/playback";
 import { changeAppLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from "../../src/lib/i18n";
+import {
+  getBedtimeReminderPreference,
+  setBedtimeReminder,
+  type BedtimeReminderPreference,
+} from "../../src/lib/bedtimeReminder";
 
 const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   tr: "Türkçe",
@@ -16,6 +21,10 @@ const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   pt: "Português",
 };
 
+function formatTime(hour: number, minute: number) {
+  return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+}
+
 export default function SettingsScreen() {
   const { t } = useTranslation("settings");
   const router = useRouter();
@@ -25,11 +34,34 @@ export default function SettingsScreen() {
   const language = useUserStore((state) => state.language);
   const setLanguage = useUserStore((state) => state.setLanguage);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [bedtime, setBedtime] = useState<BedtimeReminderPreference>({
+    enabled: false,
+    hour: 22,
+    minute: 0,
+  });
+
+  useEffect(() => {
+    getBedtimeReminderPreference().then(setBedtime);
+  }, []);
 
   async function handleSelectLanguage(next: SupportedLanguage) {
     if (next === language) return;
     await changeAppLanguage(next);
     setLanguage(next);
+  }
+
+  async function handleToggleBedtime() {
+    const next = { ...bedtime, enabled: !bedtime.enabled };
+    const granted = await setBedtimeReminder(next);
+    setBedtime(granted ? next : { ...next, enabled: false });
+    if (!granted) Alert.alert(t("bedtimePermissionDeniedTitle"), t("bedtimePermissionDeniedMessage"));
+  }
+
+  async function handleAdjustBedtime(deltaMinutes: number) {
+    const totalMinutes = (bedtime.hour * 60 + bedtime.minute + deltaMinutes + 24 * 60) % (24 * 60);
+    const next = { ...bedtime, hour: Math.floor(totalMinutes / 60), minute: totalMinutes % 60 };
+    setBedtime(next);
+    if (bedtime.enabled) await setBedtimeReminder(next);
   }
 
   // RevenueCat'in cihaz-lokal customerInfo listener'ı iptal/expire gibi
@@ -97,6 +129,36 @@ export default function SettingsScreen() {
             </Text>
           </Pressable>
         ))}
+      </View>
+
+      <Text className="text-sm text-gray-500 mb-2">{t("bedtimeTitle")}</Text>
+      <View className="flex-row items-center mb-6">
+        <Pressable
+          className={`border rounded-lg px-4 py-2 mr-3 ${
+            bedtime.enabled ? "bg-black border-black" : "border-gray-300"
+          }`}
+          onPress={handleToggleBedtime}
+        >
+          <Text className={bedtime.enabled ? "text-white" : "text-black"}>
+            {bedtime.enabled ? t("bedtimeOn") : t("bedtimeOff")}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          className="border border-gray-300 rounded-lg w-9 h-9 items-center justify-center"
+          onPress={() => handleAdjustBedtime(-30)}
+        >
+          <Text>-</Text>
+        </Pressable>
+        <Text className="text-base font-semibold mx-3">
+          {formatTime(bedtime.hour, bedtime.minute)}
+        </Text>
+        <Pressable
+          className="border border-gray-300 rounded-lg w-9 h-9 items-center justify-center"
+          onPress={() => handleAdjustBedtime(30)}
+        >
+          <Text>+</Text>
+        </Pressable>
       </View>
 
       <Pressable

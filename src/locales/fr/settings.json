@@ -9,5 +9,12 @@
   "deleteConfirmTitle": "Supprimer le compte",
   "deleteConfirmMessage": "Cette action est irréversible. Ton compte et toutes tes données seront définitivement supprimés.",
   "deleteFailedTitle": "Impossible de supprimer le compte",
-  "language": "Langue"
+  "language": "Langue",
+  "bedtimeTitle": "Rappel d'heure du coucher",
+  "bedtimeOn": "Activé",
+  "bedtimeOff": "Désactivé",
+  "bedtimePermissionDeniedTitle": "Autorisation de notification refusée",
+  "bedtimePermissionDeniedMessage": "Pour activer le rappel, autorise les notifications pour Pulvio dans les réglages de ton appareil.",
+  "bedtimeNotifTitle": "C'est l'heure du coucher",
+  "bedtimeNotifBody": "Ouvre Pulvio et laisse-toi glisser vers un sommeil paisible"
 }

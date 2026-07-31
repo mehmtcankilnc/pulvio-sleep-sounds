@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "403634759013",
+    "project_id": "pulvio-26f9e",
+    "storage_bucket": "pulvio-26f9e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:403634759013:android:f44bbf9e5d19a97b00ad8c",
+        "android_client_info": {
+          "package_name": "com.pulvio.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2o7bsLBO0ZduX9XdF2nKI54g6EGyesCk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

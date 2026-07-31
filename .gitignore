@@ -15,6 +15,7 @@ android/
 *.p12
 *.key
 *.mobileprovision
+*firebase-adminsdk*.json
 
 .DS_Store
 npm-debug.*

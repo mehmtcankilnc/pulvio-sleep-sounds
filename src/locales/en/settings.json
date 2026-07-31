@@ -9,5 +9,12 @@
   "deleteConfirmTitle": "Delete Account",
   "deleteConfirmMessage": "This action cannot be undone. Your account and all your data will be permanently deleted.",
   "deleteFailedTitle": "Couldn't delete account",
-  "language": "Language"
+  "language": "Language",
+  "bedtimeTitle": "Bedtime reminder",
+  "bedtimeOn": "On",
+  "bedtimeOff": "Off",
+  "bedtimePermissionDeniedTitle": "Notification permission denied",
+  "bedtimePermissionDeniedMessage": "To turn on the reminder, allow notifications for Pulvio in your device settings.",
+  "bedtimeNotifTitle": "It's bedtime",
+  "bedtimeNotifBody": "Open Pulvio and drift off to a peaceful sleep"
 }

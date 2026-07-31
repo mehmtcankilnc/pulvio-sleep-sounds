@@ -9,5 +9,12 @@
   "deleteConfirmTitle": "Excluir conta",
   "deleteConfirmMessage": "Esta ação não pode ser desfeita. Sua conta e todos os seus dados serão excluídos permanentemente.",
   "deleteFailedTitle": "Não foi possível excluir a conta",
-  "language": "Idioma"
+  "language": "Idioma",
+  "bedtimeTitle": "Lembrete de hora de dormir",
+  "bedtimeOn": "Ativado",
+  "bedtimeOff": "Desativado",
+  "bedtimePermissionDeniedTitle": "Permissão de notificação negada",
+  "bedtimePermissionDeniedMessage": "Para ativar o lembrete, permita notificações do Pulvio nas configurações do seu aparelho.",
+  "bedtimeNotifTitle": "Chegou a hora de dormir",
+  "bedtimeNotifBody": "Abra o Pulvio e deixe-se levar para um sono tranquilo"
 }

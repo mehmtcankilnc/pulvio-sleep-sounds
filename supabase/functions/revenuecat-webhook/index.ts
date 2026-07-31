@@ -22,6 +22,7 @@ type RevenueCatEvent = {
   type: string;
   app_user_id: string;
   expiration_at_ms: number | null;
+  period_type: string | null;
 };
 
 type RevenueCatWebhookPayload = {
@@ -34,15 +35,27 @@ type RevenueCatWebhookPayload = {
 // ile kontrol ediyor — bu yüzden BILLING_ISSUE'da status'u DEĞİŞTİRMİYORUZ:
 // RevenueCat/Google Play kendi grace period'unu expires_at üzerinden yönetiyor,
 // biz sadece expires_at'i güncel tutuyoruz. Erişim grace period boyunca devam eder.
+// period_type ("TRIAL" | "NORMAL" | "INTRO") Faz 7'de send-trial-reminders'ın
+// trial kullanıcılarını normal yenilemeden ayırt etmesi için ekli — trial'dan
+// normale geçildiğinde (RENEWAL/PRODUCT_CHANGE) trial_reminder_sent sıfırlanır,
+// aksi halde aynı kullanıcı gerçek abone olduktan sonra bile "trial bitiyor"
+// hatırlatması tetiklemeye devam edebilirdi.
 function resolveUpdate(event: RevenueCatEvent): Record<string, unknown> | null {
   const expiresAt = event.expiration_at_ms ? new Date(event.expiration_at_ms).toISOString() : null;
+  const periodType = event.period_type ? event.period_type.toLowerCase() : null;
 
   switch (event.type) {
     case "INITIAL_PURCHASE":
     case "RENEWAL":
     case "UNCANCELLATION":
     case "PRODUCT_CHANGE":
-      return { plan: "premium", status: "active", expires_at: expiresAt };
+      return {
+        plan: "premium",
+        status: "active",
+        expires_at: expiresAt,
+        period_type: periodType,
+        trial_reminder_sent: false,
+      };
 
     case "CANCELLATION":
       // Otomatik yenileme kapatıldı ama dönem sonuna kadar erişim devam eder;

@@ -9,5 +9,12 @@
   "deleteConfirmTitle": "Hesabı Sil",
   "deleteConfirmMessage": "Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz kalıcı olarak silinecek.",
   "deleteFailedTitle": "Hesap silinemedi",
-  "language": "Dil"
+  "language": "Dil",
+  "bedtimeTitle": "Uyku vakti hatırlatıcısı",
+  "bedtimeOn": "Açık",
+  "bedtimeOff": "Kapalı",
+  "bedtimePermissionDeniedTitle": "Bildirim izni verilmedi",
+  "bedtimePermissionDeniedMessage": "Hatırlatıcıyı açmak için cihaz ayarlarından Pulvio'ya bildirim izni vermen gerekiyor.",
+  "bedtimeNotifTitle": "Uyku vaktin geldi",
+  "bedtimeNotifBody": "Pulvio'yu aç, huzurlu bir uykuya dal"
 }
