@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import type { BottomTabBarProps } from "expo-router/js-tabs";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { usePlayerActions } from "../hooks/usePlayerActions";
 import { useThemeColors } from "../hooks/useThemeColors";
@@ -189,7 +189,7 @@ export function Dock({ state, descriptors, navigation }: BottomTabBarProps) {
         <View
           style={{ position: "absolute", left: 0, right: 0, bottom: 0, flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingVertical: 6, paddingHorizontal: 10 }}
         >
-          {state.routes.map((route, index) => {
+          {state.routes.map((route: (typeof state.routes)[number], index: number) => {
             const { options } = descriptors[route.key];
             const focused = state.index === index;
             const Icon = TAB_ICONS[route.name];

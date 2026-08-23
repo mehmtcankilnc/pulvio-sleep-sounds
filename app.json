@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "scheme": "pulvio",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pulvio.app",
@@ -48,7 +47,8 @@
           "enableBackgroundPlayback": true
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-status-bar"
     ],
     "extra": {
       "router": {

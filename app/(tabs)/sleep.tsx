@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { useTranslation } from "react-i18next";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useBottomTabBarHeight } from "expo-router/js-tabs";
 import Svg, { Circle, Path } from "react-native-svg";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { GlowBackground } from "../../src/components/GlowBackground";

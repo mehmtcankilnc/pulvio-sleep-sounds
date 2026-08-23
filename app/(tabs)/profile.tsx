@@ -3,7 +3,7 @@ import type { JSX } from "react";
 import { View, Text, Pressable, Alert, ScrollView } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useBottomTabBarHeight } from "expo-router/js-tabs";
 import { signOut, deleteAccount } from "../../src/lib/auth";
 import { useUserStore } from "../../src/store/useUserStore";
 import { fetchUserStatus } from "../../src/lib/playback";

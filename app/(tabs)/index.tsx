@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { View, Text, ScrollView, ActivityIndicator, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useBottomTabBarHeight } from "expo-router/js-tabs";
 import { useTracks } from "../../src/hooks/useTracks";
 import { useContinueListening } from "../../src/hooks/useContinueListening";
 import { usePlayerActions } from "../../src/hooks/usePlayerActions";
