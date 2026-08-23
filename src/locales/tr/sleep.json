@@ -1,0 +1,20 @@
+{
+  "tabTitle": "Uyku",
+  "eyebrow": "Bu gece",
+  "title": "Yavaşça sakinleş",
+  "scheduleOverline": "UYKU PROGRAMI",
+  "bedtimeInHint": "Uyku vaktine {{time}}",
+  "bedtimeLabel": "Uyku vakti",
+  "adjustCta": "Ayarla",
+  "wakeUpLabel": "Uyanış",
+  "routineTitle": "Bu geceki rutin",
+  "playSceneRowTitle": "Cabin Night'ı çal",
+  "playSceneRowSubtitle": "Uyku vaktinde başlar",
+  "sleepTimerRowTitle": "Uyku zamanlayıcısı",
+  "sleepTimerRowSubtitle": "{{minutes}} dakika sonra söner",
+  "minutesShort": "{{count}} dk",
+  "fadeOutRowTitle": "Yumuşak sönümleme",
+  "fadeOutRowSubtitle": "Uykuya dalarken ses seviyesi düşer",
+  "wakeRowTitle": "Sessiz uyanış",
+  "wakeRowSubtitle": "Saat {{time}}'te yumuşak sabah sesleri"
+}

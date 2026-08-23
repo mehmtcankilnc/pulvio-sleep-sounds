@@ -1,0 +1,13 @@
+{
+  "tabTitle": "Explorar",
+  "greetingEyebrow": "Boa noite",
+  "greetingTitle": "Pronto para dormir?",
+  "continueListeningTitle": "Continuar ouvindo",
+  "tonightPickTitle": "Sugestão para esta noite",
+  "tonightPickOverline": "SUGESTÃO DE HOJE",
+  "playNowCta": "Reproduzir agora",
+  "browseSoundsTitle": "Explorar sons",
+  "seeAllCta": "Ver tudo",
+  "soundsCount": "{{count}} sons",
+  "browseAllCta": "Explorar todos os sons"
+}

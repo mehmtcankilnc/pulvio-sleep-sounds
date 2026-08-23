@@ -1,9 +1,18 @@
 {
-  "tabTitle": "Reproductor",
+  "screenTitle": "Reproduciendo ahora",
+  "nowPlayingOverline": "REPRODUCIENDO AHORA",
+  "timerFadeHint": "El sonido baja poco a poco al dormirte",
+  "timerAccessibilityLabel": "Temporizador de sueño: {{option}}",
+  "addLayerCta": "Añadir una capa",
+  "likeAccessibilityLabel": "Guardar en favoritos",
   "limitTitle": "Se acabó tu tiempo de escucha gratis",
   "limitRemaining": "Tiempo restante",
   "limitCta": "Hazte Premium, escucha sin límites",
   "premiumOnlyTitle": "Este sonido es solo para miembros Premium",
   "premiumOnlySubtitle": "Necesitas ser Premium para escuchar este sonido",
-  "noTrack": "Aún no se ha seleccionado ningún sonido"
+  "noTrack": "Aún no se ha seleccionado ningún sonido",
+  "nowPlayingAccessibilityLabel": "Reproduciendo ahora: {{title}}",
+  "playAccessibilityLabel": "Reproducir",
+  "pauseAccessibilityLabel": "Pausar",
+  "dismissAccessibilityLabel": "Cerrar"
 }

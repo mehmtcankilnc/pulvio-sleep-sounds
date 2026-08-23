@@ -39,7 +39,8 @@
         {
           "color": "#000000"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "router": {

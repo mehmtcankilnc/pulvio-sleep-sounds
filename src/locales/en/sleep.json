@@ -1,0 +1,20 @@
+{
+  "tabTitle": "Sleep",
+  "eyebrow": "Tonight",
+  "title": "Wind down gently",
+  "scheduleOverline": "SLEEP SCHEDULE",
+  "bedtimeInHint": "Bedtime in {{time}}",
+  "bedtimeLabel": "Bedtime",
+  "adjustCta": "Adjust",
+  "wakeUpLabel": "Wake up",
+  "routineTitle": "Tonight's routine",
+  "playSceneRowTitle": "Play Cabin Night",
+  "playSceneRowSubtitle": "Starts at bedtime",
+  "sleepTimerRowTitle": "Sleep timer",
+  "sleepTimerRowSubtitle": "Fades out after {{minutes}} min",
+  "minutesShort": "{{count}} min",
+  "fadeOutRowTitle": "Gentle fade-out",
+  "fadeOutRowSubtitle": "Volume lowers as you drift",
+  "wakeRowTitle": "Quiet wake-up",
+  "wakeRowSubtitle": "Soft morning sounds at {{time}}"
+}

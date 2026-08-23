@@ -1,9 +1,18 @@
 {
-  "tabTitle": "Player",
+  "screenTitle": "Tocando agora",
+  "nowPlayingOverline": "TOCANDO AGORA",
+  "timerFadeHint": "O som diminui aos poucos enquanto você dorme",
+  "timerAccessibilityLabel": "Temporizador de sono: {{option}}",
+  "addLayerCta": "Adicionar camada",
+  "likeAccessibilityLabel": "Salvar nos favoritos",
   "limitTitle": "Seu tempo de escuta grátis acabou",
   "limitRemaining": "Tempo restante",
   "limitCta": "Assine o Premium, ouça sem limites",
   "premiumOnlyTitle": "Este som é exclusivo para membros Premium",
   "premiumOnlySubtitle": "Você precisa assinar o Premium para ouvir este som",
-  "noTrack": "Nenhum som selecionado ainda"
+  "noTrack": "Nenhum som selecionado ainda",
+  "nowPlayingAccessibilityLabel": "Tocando agora: {{title}}",
+  "playAccessibilityLabel": "Reproduzir",
+  "pauseAccessibilityLabel": "Pausar",
+  "dismissAccessibilityLabel": "Fechar"
 }

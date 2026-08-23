@@ -1,9 +1,18 @@
 {
-  "tabTitle": "Player",
+  "screenTitle": "Şimdi Çalıyor",
+  "nowPlayingOverline": "ŞİMDİ ÇALIYOR",
+  "timerFadeHint": "Uykuya dalarken sesi yavaşça kısılır",
+  "timerAccessibilityLabel": "Uyku zamanlayıcısı: {{option}}",
+  "addLayerCta": "Katman ekle",
+  "likeAccessibilityLabel": "Favorilere ekle",
   "limitTitle": "Ücretsiz dinleme hakkın bitti",
   "limitRemaining": "Kalan süre",
   "limitCta": "Premium'a Geç, Sınırsız Dinle",
   "premiumOnlyTitle": "Bu ses premium üyelere özel",
   "premiumOnlySubtitle": "Bu sesi dinlemek için Premium'a geçmen gerekiyor",
-  "noTrack": "Henüz bir ses seçilmedi"
+  "noTrack": "Henüz bir ses seçilmedi",
+  "nowPlayingAccessibilityLabel": "Şimdi çalıyor: {{title}}",
+  "playAccessibilityLabel": "Oynat",
+  "pauseAccessibilityLabel": "Duraklat",
+  "dismissAccessibilityLabel": "Kapat"
 }

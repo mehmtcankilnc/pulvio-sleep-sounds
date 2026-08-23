@@ -1,9 +1,24 @@
 {
-  "title": "Pulvio Premium",
-  "subtitle": "Escuta ilimitada, sem pausa forçada, biblioteca completa de sons",
+  "eyebrow": "Sua primeira semana é por nossa conta",
+  "title": "Durma melhor esta noite, grátis por 7 dias",
+  "benefitMixes": "Quiet Mind e mixes personalizados ilimitados",
+  "benefitLibrary": "A biblioteca completa — mais de 500 sons e ASMR",
+  "benefitFadeOut": "Esmaecimento suave e lembretes de hora de dormir",
+  "benefitNewSounds": "Novos sons toda semana",
+  "trialTodayTitle": "Hoje",
+  "trialTodaySubtitle": "Desbloqueie tudo, de graça",
+  "trialDay5Title": "Dia 5",
+  "trialDay5Subtitle": "Avisamos você antes do fim do período de teste",
+  "trialDay7Title": "Dia 7",
+  "trialDay7Subtitle": "A assinatura começa — cancele quando quiser",
+  "saveBadge": "MELHOR OFERTA",
+  "selectedPlanHint": "Selecionado",
+  "startTrialCta": "Começar minha semana grátis",
+  "noChargeHint": "Sem cobrança hoje · cancele quando quiser na App Store",
+  "continueFreeCta": "Continuar com a versão gratuita",
   "loadError": "Não foi possível carregar as opções de assinatura",
   "empty": "Nenhuma assinatura disponível no momento",
   "purchaseFailed": "Não foi possível concluir a compra",
   "purchaseReceivedTitle": "Pagamento recebido",
-  "purchaseReceivedMessage": "Seu pagamento foi recebido, o Premium será ativado em poucos minutos."
+  "purchaseReceivedMessage": "Seu pagamento foi recebido, o premium será ativado em alguns minutos."
 }

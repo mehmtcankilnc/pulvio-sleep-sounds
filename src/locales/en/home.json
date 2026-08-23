@@ -1,0 +1,13 @@
+{
+  "tabTitle": "Explore",
+  "greetingEyebrow": "Good evening",
+  "greetingTitle": "Ready to drift off?",
+  "continueListeningTitle": "Continue listening",
+  "tonightPickTitle": "Tonight's pick",
+  "tonightPickOverline": "TONIGHT'S PICK",
+  "playNowCta": "Play now",
+  "browseSoundsTitle": "Browse sounds",
+  "seeAllCta": "See all",
+  "soundsCount": "{{count}} sounds",
+  "browseAllCta": "Browse all sounds"
+}

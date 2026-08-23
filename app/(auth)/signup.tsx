@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, Alert } from "react-native";
+import { View, Text, Alert } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { signUpWithEmail } from "../../src/lib/auth";
+import { useThemeColors } from "../../src/hooks/useThemeColors";
+import { TextField } from "../../src/components/ui/TextField";
+import { Button } from "../../src/components/ui/Button";
 
 export default function SignupScreen() {
   const { t } = useTranslation("auth");
+  const colors = useThemeColors();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,37 +29,38 @@ export default function SignupScreen() {
   }
 
   return (
-    <View className="flex-1 justify-center px-6 bg-white">
-      <Text className="text-2xl font-bold mb-6">{t("signup.title")}</Text>
+    <View className="flex-1 justify-center px-6" style={{ backgroundColor: colors.bg }}>
+      <Text className="text-2xl font-bold mb-6" style={{ color: colors.text }}>
+        {t("signup.title")}
+      </Text>
 
-      <TextInput
-        className="border border-gray-300 rounded-lg px-4 py-3 mb-3"
+      <TextField
         placeholder={t("login.emailPlaceholder", { ns: "auth" })}
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
       />
-      <TextInput
-        className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
+      <TextField
+        style={{ marginBottom: 16 }}
         placeholder={t("login.passwordPlaceholder", { ns: "auth" })}
         secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
 
-      <Pressable
-        className="bg-black rounded-lg py-3 items-center mb-3"
-        onPress={handleSignup}
-        disabled={loading}
-      >
-        <Text className="text-white font-semibold">
-          {loading ? t("signup.submitting") : t("signup.submit")}
-        </Text>
-      </Pressable>
+      <View className="mb-3">
+        <Button
+          label={loading ? t("signup.submitting") : t("signup.submit")}
+          onPress={handleSignup}
+          loading={loading}
+        />
+      </View>
 
       <Link href="/(auth)">
-        <Text className="text-center text-blue-600">{t("signup.loginLink")}</Text>
+        <Text className="text-center" style={{ color: colors.accent }}>
+          {t("signup.loginLink")}
+        </Text>
       </Link>
     </View>
   );

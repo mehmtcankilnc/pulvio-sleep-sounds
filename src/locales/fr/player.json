@@ -1,9 +1,18 @@
 {
-  "tabTitle": "Lecteur",
+  "screenTitle": "En cours de lecture",
+  "nowPlayingOverline": "EN COURS DE LECTURE",
+  "timerFadeHint": "Le son baisse doucement en t'endormant",
+  "timerAccessibilityLabel": "Minuteur de sommeil : {{option}}",
+  "addLayerCta": "Ajouter une couche",
+  "likeAccessibilityLabel": "Ajouter aux favoris",
   "limitTitle": "Ton temps d'écoute gratuit est terminé",
   "limitRemaining": "Temps restant",
   "limitCta": "Passer à Premium, écoute illimitée",
   "premiumOnlyTitle": "Ce son est réservé aux membres Premium",
   "premiumOnlySubtitle": "Tu dois passer à Premium pour écouter ce son",
-  "noTrack": "Aucun son sélectionné pour le moment"
+  "noTrack": "Aucun son sélectionné pour le moment",
+  "nowPlayingAccessibilityLabel": "En cours de lecture : {{title}}",
+  "playAccessibilityLabel": "Lecture",
+  "pauseAccessibilityLabel": "Pause",
+  "dismissAccessibilityLabel": "Fermer"
 }

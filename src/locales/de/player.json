@@ -1,9 +1,18 @@
 {
-  "tabTitle": "Player",
+  "screenTitle": "Läuft gerade",
+  "nowPlayingOverline": "LÄUFT GERADE",
+  "timerFadeHint": "Wird beim Einschlafen langsam leiser",
+  "timerAccessibilityLabel": "Schlaftimer: {{option}}",
+  "addLayerCta": "Ebene hinzufügen",
+  "likeAccessibilityLabel": "Zu Favoriten hinzufügen",
   "limitTitle": "Deine kostenlose Hörzeit ist aufgebraucht",
   "limitRemaining": "Verbleibende Zeit",
   "limitCta": "Premium holen, unbegrenzt hören",
   "premiumOnlyTitle": "Dieser Sound ist nur für Premium-Mitglieder",
   "premiumOnlySubtitle": "Du brauchst Premium, um diesen Sound zu hören",
-  "noTrack": "Noch kein Sound ausgewählt"
+  "noTrack": "Noch kein Sound ausgewählt",
+  "nowPlayingAccessibilityLabel": "Läuft gerade: {{title}}",
+  "playAccessibilityLabel": "Abspielen",
+  "pauseAccessibilityLabel": "Pausieren",
+  "dismissAccessibilityLabel": "Schließen"
 }

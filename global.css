@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Drift type system (DESIGN.md §4): Plus Jakarta Sans for UI, Lora Italic
+   for warm human moments. NativeWind's font-weight utilities only set RN's
+   `fontWeight`, which custom-loaded fonts largely ignore on iOS, so we
+   point them at the matching family instead of relying on synthetic bold. */
+@layer base {
+  * {
+    font-family: "PlusJakartaSans_400Regular";
+  }
+}
+@layer utilities {
+  .font-medium {
+    font-family: "PlusJakartaSans_500Medium";
+  }
+  .font-semibold {
+    font-family: "PlusJakartaSans_600SemiBold";
+  }
+  .font-bold {
+    font-family: "PlusJakartaSans_700Bold";
+  }
+  .font-extrabold {
+    font-family: "PlusJakartaSans_800ExtraBold";
+  }
+  .font-lora-italic {
+    font-family: "Lora_400Regular_Italic";
+  }
+  .font-lora-italic-medium {
+    font-family: "Lora_500Medium_Italic";
+  }
+}
