@@ -38,9 +38,10 @@ export function useListeningHeartbeat() {
       try {
         const result = await sendHeartbeat(sessionId, secondsElapsed);
         if (!result.allowed) {
-          const player = getPlayer();
-          player.pause();
-          player.replace(null);
+          // Android's native module rejects replace(null) despite the TS
+          // type allowing it — pausing is enough, the next loadAndPlay()
+          // overwrites the source with a real one anyway.
+          getPlayer().pause();
           clearLockScreenTrack();
           setCurrentTrack(null);
           setSessionId(null);

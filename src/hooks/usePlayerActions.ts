@@ -71,9 +71,10 @@ export function usePlayerActions() {
     setCurrentTrack(null);
     setSessionId(null);
     setDenyReason(null);
-    const player = getPlayer();
-    player.pause();
-    player.replace(null);
+    // Android's native module rejects replace(null) despite the TS type
+    // allowing it — pausing is enough, the next loadAndPlay() overwrites
+    // the source with a real one anyway.
+    getPlayer().pause();
     clearLockScreenTrack();
   }
 
