@@ -4,6 +4,7 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import Svg, { Circle, Path } from "react-native-svg";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { GlowBackground } from "../../src/components/GlowBackground";
+import { ScreenHeader } from "../../src/components/ScreenHeader";
 import { Toggle } from "../../src/components/ui/Toggle";
 import { ChevronRightIcon, CloudRainIcon, MoonIcon, TimerIcon, WindIcon } from "../../src/components/icons";
 import type { IconProps } from "../../src/components/icons";
@@ -64,16 +65,9 @@ export default function SleepScreen() {
     <GlowBackground variant="pageWash" style={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: tabBarHeight + 24, gap: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
       >
-        <View style={{ gap: 3 }}>
-          <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
-            {t("eyebrow")}
-          </Text>
-          <Text className="font-bold" style={{ fontSize: 22, letterSpacing: -0.2, color: colors.text }}>
-            {t("title")}
-          </Text>
-        </View>
+        <ScreenHeader eyebrow={t("eyebrow")} title={t("title")} />
 
         <GlowBackground variant="heroCard" style={{ borderRadius: 24, borderWidth: 1, borderColor: colors.stroke, padding: 16, paddingBottom: 14, gap: 6 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>

@@ -88,7 +88,7 @@ export default function PaywallScreen() {
     <GlowBackground
       variant="nightScene"
       washes={[{ origin: { x: 50, y: -10 }, color: colors.glow, extent: 48 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24, justifyContent: "space-between" }}
+      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 28, paddingBottom: 24, justifyContent: "space-between" }}
     >
       <ScrollView contentContainerStyle={{ gap: 14 }} showsVerticalScrollIndicator={false}>
         <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>

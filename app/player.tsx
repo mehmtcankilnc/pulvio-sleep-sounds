@@ -1,20 +1,74 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { View, Text, Pressable, AccessibilityInfo } from "react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, Easing } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { usePlayerStore } from "../src/store/usePlayerStore";
 import { useUserStore } from "../src/store/useUserStore";
+import { useSleepTimerStore } from "../src/store/useSleepTimerStore";
 import { usePlayerActions } from "../src/hooks/usePlayerActions";
+import { useFavorites } from "../src/hooks/useFavorites";
 import { useCooldownCountdown } from "../src/hooks/useCooldownCountdown";
 import { useThemeColors } from "../src/hooks/useThemeColors";
 import { categoryIcon } from "../src/lib/categoryIcon";
+import { TIMER_OPTIONS, armSleepTimer } from "../src/lib/player/sleepTimer";
 import { GlowBackground, MoonRingOuter, MoonRingInner } from "../src/components/GlowBackground";
 import { StarField } from "../src/components/StarField";
 import { Button } from "../src/components/ui/Button";
+import { SelectChip } from "../src/components/ui/SelectChip";
 import { ChevronDownIcon, HeartIcon, PauseIcon, PlayIcon, PlusIcon, SkipBackIcon, SkipFwdIcon } from "../src/components/icons";
 
-const TIMER_OPTIONS = ["15m", "30m", "45m", "∞"] as const;
+const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
+
+// Isolated so toggling `liked` only reconciles this tiny subtree — living in
+// PlayerScreen's own state meant every tap forced React to re-render the
+// whole screen (GlowBackground, MoonRing, StarField — all SVG-gradient-heavy)
+// at the exact moment the scale animation started, reading as a stutter.
+// Remounted per track (see `key` at the call site) so its fetched/animated
+// state never leaks between tracks.
+function LikeButton({ trackId }: { trackId: string }) {
+  const { t } = useTranslation("player");
+  const colors = useThemeColors();
+  const { favoriteIds, loading, toggleFavorite } = useFavorites();
+  const liked = favoriteIds.has(trackId);
+  const fillOpacity = useSharedValue(0);
+  // Only the initial fetch result should snap the heart in instantly —
+  // every toggle after that goes through handleToggleLike's animated path.
+  const hydrated = useRef(false);
+
+  useEffect(() => {
+    if (!loading && !hydrated.current) {
+      fillOpacity.value = liked ? 1 : 0;
+      hydrated.current = true;
+    }
+  }, [loading, liked, fillOpacity]);
+
+  function handleToggleLike() {
+    const next = !liked;
+    fillOpacity.value = withTiming(next ? 1 : 0, { duration: 150, easing: EASE_OUT });
+    toggleFavorite(trackId);
+    if (next) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+
+  const filledAnimatedStyle = useAnimatedStyle(() => ({ opacity: fillOpacity.value }));
+
+  return (
+    <Pressable
+      onPress={handleToggleLike}
+      style={{ width: 44, height: 44, borderRadius: 999, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.stroke, alignItems: "center", justifyContent: "center" }}
+      accessibilityRole="button"
+      accessibilityLabel={t("likeAccessibilityLabel")}
+    >
+      <View>
+        <HeartIcon size={19} color={colors.muted} strokeWidth={1.7} filled={false} />
+        <Animated.View style={[{ position: "absolute", top: 0, left: 0 }, filledAnimatedStyle]}>
+          <HeartIcon size={19} color={colors.accent} strokeWidth={1.7} filled />
+        </Animated.View>
+      </View>
+    </Pressable>
+  );
+}
 
 export default function PlayerScreen() {
   const { t } = useTranslation("player");
@@ -28,8 +82,7 @@ export default function PlayerScreen() {
   const cooldownEndsAt = useUserStore((state) => state.cooldownEndsAt);
   const countdownLabel = useCooldownCountdown();
   const { togglePlayPause } = usePlayerActions();
-  const [selectedTimer, setSelectedTimer] = useState<(typeof TIMER_OPTIONS)[number]>("45m");
-  const [liked, setLiked] = useState(false);
+  const selectedTimer = useSleepTimerStore((state) => state.option);
 
   const breathe = useSharedValue(1);
   useEffect(() => {
@@ -89,7 +142,7 @@ export default function PlayerScreen() {
   const CategoryIcon = categoryIcon(currentTrack.category, currentTrack.subcategory);
 
   return (
-    <GlowBackground variant="nightScene" style={{ flex: 1, paddingHorizontal: 24, paddingTop: 26, paddingBottom: 30, justifyContent: "space-between" }}>
+    <GlowBackground variant="nightScene" style={{ flex: 1, paddingHorizontal: 24, paddingTop: 34, paddingBottom: 30, justifyContent: "space-between" }}>
       <StarField />
 
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
@@ -102,14 +155,7 @@ export default function PlayerScreen() {
           <ChevronDownIcon size={20} color={colors.muted} strokeWidth={1.7} />
         </Pressable>
         <Text style={{ fontSize: 10.5, fontWeight: "700", letterSpacing: 1.7, color: colors.muted }}>{t("nowPlayingOverline")}</Text>
-        <Pressable
-          onPress={() => setLiked((v) => !v)}
-          style={{ width: 44, height: 44, borderRadius: 999, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.stroke, alignItems: "center", justifyContent: "center" }}
-          accessibilityRole="button"
-          accessibilityLabel={t("likeAccessibilityLabel")}
-        >
-          <HeartIcon size={19} color={liked ? colors.accent : colors.muted} strokeWidth={1.7} />
-        </Pressable>
+        <LikeButton key={currentTrack.id} trackId={currentTrack.id} />
       </View>
 
       <View style={{ alignItems: "center", gap: 26 }}>
@@ -133,31 +179,15 @@ export default function PlayerScreen() {
 
       <View style={{ alignItems: "center", gap: 9 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 9 }}>
-          {TIMER_OPTIONS.map((option) => {
-            const active = option === selectedTimer;
-            return (
-              <Pressable
-                key={option}
-                onPress={() => setSelectedTimer(option)}
-                style={{
-                  height: 44,
-                  paddingHorizontal: 18,
-                  borderRadius: 999,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: active ? colors.button : "transparent",
-                  borderWidth: active ? 0 : 1,
-                  borderColor: colors.stroke,
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={t("timerAccessibilityLabel", { option })}
-              >
-                <Text style={{ fontSize: 13.5, fontWeight: active ? "700" : "600", color: active ? colors.buttonText : colors.muted }}>
-                  {option}
-                </Text>
-              </Pressable>
-            );
-          })}
+          {TIMER_OPTIONS.map((option) => (
+            <SelectChip
+              key={option}
+              label={option}
+              selected={option === selectedTimer}
+              onPress={() => armSleepTimer(option)}
+              accessibilityLabel={t("timerAccessibilityLabel", { option })}
+            />
+          ))}
         </View>
         <Text style={{ fontSize: 11.5, color: colors.faint }}>{t("timerFadeHint")}</Text>
       </View>

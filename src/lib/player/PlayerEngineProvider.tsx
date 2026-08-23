@@ -7,6 +7,7 @@ import {
   useTrackPlayerEvents,
 } from "react-native-track-player";
 import { setupPlayer } from "./setup";
+import { restoreSleepTimerOption } from "./sleepTimer";
 import { usePlayerStore } from "../../store/usePlayerStore";
 import { useListeningHeartbeat } from "../../hooks/useListeningHeartbeat";
 import { usePlayerActions } from "../../hooks/usePlayerActions";
@@ -27,6 +28,7 @@ export function PlayerEngineProvider() {
 
   useEffect(() => {
     setupPlayer();
+    restoreSleepTimerOption();
   }, []);
 
   // Track finished playing to the end on its own (no repeat mode configured) —

@@ -15,7 +15,7 @@ export default function OnboardingWelcomeScreen() {
     <GlowBackground
       variant="nightScene"
       washes={[{ origin: { x: 50, y: 32 }, color: colors.glow, extent: 54 }]}
-      style={{ flex: 1, paddingHorizontal: 24, paddingTop: 30, paddingBottom: 30, justifyContent: "space-between" }}
+      style={{ flex: 1, paddingHorizontal: 24, paddingTop: 38, paddingBottom: 30, justifyContent: "space-between" }}
     >
       <StarField width={390} height={260} />
 

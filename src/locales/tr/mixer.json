@@ -1,5 +1,6 @@
 {
   "tabTitle": "Mikser",
+  "eyebrow": "Kendi karışımın",
   "screenTitle": "Ses Mikseri",
   "layersPlaying": "{{count}} katman · şu an çalıyor",
   "addSoundCta": "Ses ekle",

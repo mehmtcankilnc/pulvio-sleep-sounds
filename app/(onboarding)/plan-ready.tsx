@@ -16,7 +16,7 @@ export default function PlanReadyScreen() {
     <GlowBackground
       variant="nightScene"
       washes={[{ origin: { x: 50, y: 16 }, color: colors.glow, extent: 50 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 30, paddingBottom: 26, justifyContent: "space-between" }}
+      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 38, paddingBottom: 26, justifyContent: "space-between" }}
     >
       <View style={{ gap: 20 }}>
         <View style={{ alignItems: "center", gap: 8, paddingTop: 20 }}>

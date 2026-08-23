@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { GlowBackground } from "../../src/components/GlowBackground";
+import { ScreenHeader } from "../../src/components/ScreenHeader";
+import { SelectChip } from "../../src/components/ui/SelectChip";
 import {
   CloudRainIcon,
   EqBarsIcon,
@@ -11,7 +13,6 @@ import {
   MusicIcon,
   PencilIcon,
   PlusIcon,
-  TimerIcon,
 } from "../../src/components/icons";
 import type { IconProps } from "../../src/components/icons";
 
@@ -42,19 +43,9 @@ export default function MixerScreen() {
     <GlowBackground variant="pageWash" style={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: tabBarHeight + 24, gap: 15 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 15 }}
       >
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <View style={{ width: 44 }} />
-          <Text className="font-bold" style={{ fontSize: 15, color: colors.text }}>
-            {t("screenTitle")}
-          </Text>
-          <View
-            style={{ width: 44, height: 44, borderRadius: 999, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.stroke, alignItems: "center", justifyContent: "center" }}
-          >
-            <TimerIcon size={19} color={colors.muted} strokeWidth={1.7} />
-          </View>
-        </View>
+        <ScreenHeader eyebrow={t("eyebrow")} title={t("screenTitle")} />
 
         <View style={{ gap: 4 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 9 }}>
@@ -133,30 +124,14 @@ export default function MixerScreen() {
             {t("yourScenesTitle")}
           </Text>
           <View style={{ flexDirection: "row", gap: 9, flexWrap: "wrap" }}>
-            {SCENES.map((scene) => {
-              const active = scene.id === activeScene;
-              return (
-                <Pressable
-                  key={scene.id}
-                  onPress={() => setActiveScene(scene.id)}
-                  style={{
-                    height: 44,
-                    paddingHorizontal: 18,
-                    borderRadius: 999,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: active ? colors.button : colors.card,
-                    borderWidth: active ? 0 : 1,
-                    borderColor: colors.stroke,
-                  }}
-                  accessibilityRole="button"
-                >
-                  <Text style={{ fontSize: 13, fontWeight: active ? "700" : "600", color: active ? colors.buttonText : colors.muted }}>
-                    {scene.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
+            {SCENES.map((scene) => (
+              <SelectChip
+                key={scene.id}
+                label={scene.name}
+                selected={scene.id === activeScene}
+                onPress={() => setActiveScene(scene.id)}
+              />
+            ))}
           </View>
         </View>
       </ScrollView>

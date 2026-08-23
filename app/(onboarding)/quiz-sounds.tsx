@@ -35,7 +35,7 @@ export default function QuizSoundsScreen() {
     <GlowBackground
       variant="pageWash"
       washes={[{ origin: { x: -10, y: 20 }, color: colors.glow, extent: 44 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 24, paddingBottom: 26, justifyContent: "space-between" }}
+      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}
     >
       <View style={{ gap: 22 }}>
         <OnboardingHeader step={2} totalSteps={3} onBack={() => router.back()} onSkip={() => router.push("/(onboarding)/bedtime")} skipLabel={t("skip")} />

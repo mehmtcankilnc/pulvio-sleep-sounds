@@ -42,9 +42,13 @@ function RadialWash({ origin, color, extent, width, height }: Wash & { width: nu
               the radius, which visibly reduces 8-bit banding vs. a hard
               two-stop gradient on Android's SVG rasterizer. */}
           <Stop offset="0%" stopColor={color} stopOpacity={0.42} />
+          <Stop offset="10%" stopColor={color} stopOpacity={0.36} />
           <Stop offset="18%" stopColor={color} stopOpacity={0.3} />
+          <Stop offset="28%" stopColor={color} stopOpacity={0.23} />
           <Stop offset="40%" stopColor={color} stopOpacity={0.17} />
+          <Stop offset="52%" stopColor={color} stopOpacity={0.12} />
           <Stop offset="65%" stopColor={color} stopOpacity={0.07} />
+          <Stop offset="80%" stopColor={color} stopOpacity={0.03} />
           <Stop offset="100%" stopColor={color} stopOpacity={0} />
         </SvgRadialGradient>
       </Defs>

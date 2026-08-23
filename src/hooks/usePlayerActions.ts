@@ -3,6 +3,7 @@ import type { Track } from "../types";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { useUserStore } from "../store/useUserStore";
 import { startPlayback } from "../lib/playback";
+import { cancelSleepTimer } from "../lib/player/sleepTimer";
 import type { PlaybackDenyReason } from "../types/playback";
 
 function denyReasonToMessage(reason: PlaybackDenyReason) {
@@ -43,6 +44,9 @@ export function usePlayerActions() {
       setDenyReason(null);
       setCurrentTrack(track);
       setSessionId(result.session_id);
+      // A schedule armed for the previous track must not fire against this
+      // one — the user re-arms the timer explicitly from Now Playing.
+      cancelSleepTimer();
       await TrackPlayer.reset();
       await TrackPlayer.add({
         id: track.id,
@@ -65,10 +69,11 @@ export function usePlayerActions() {
   }
 
   async function stopAndReset() {
-    await TrackPlayer.reset();
+    cancelSleepTimer();
     setCurrentTrack(null);
     setSessionId(null);
     setDenyReason(null);
+    await TrackPlayer.reset();
   }
 
   return { loadAndPlay, togglePlayPause, stopAndReset };

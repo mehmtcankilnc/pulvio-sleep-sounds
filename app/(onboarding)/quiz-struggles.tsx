@@ -27,7 +27,7 @@ export default function QuizStrugglesScreen() {
     <GlowBackground
       variant="pageWash"
       washes={[{ origin: { x: 88, y: -6 }, color: colors.glow, extent: 44 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 24, paddingBottom: 26, justifyContent: "space-between" }}
+      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}
     >
       <View style={{ gap: 22 }}>
         <OnboardingHeader step={1} totalSteps={3} onBack={() => router.back()} onSkip={() => router.push("/(onboarding)/quiz-sounds")} skipLabel={t("skip")} />

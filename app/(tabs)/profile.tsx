@@ -8,10 +8,13 @@ import { useUserStore } from "../../src/store/useUserStore";
 import { fetchUserStatus } from "../../src/lib/playback";
 import { changeAppLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from "../../src/lib/i18n";
 import { getBedtimeReminderPreference, setBedtimeReminder, type BedtimeReminderPreference } from "../../src/lib/bedtimeReminder";
+import { useFavorites } from "../../src/hooks/useFavorites";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { GlowBackground } from "../../src/components/GlowBackground";
+import { ScreenHeader } from "../../src/components/ScreenHeader";
 import { Toggle } from "../../src/components/ui/Toggle";
 import { Button } from "../../src/components/ui/Button";
+import { SelectChip } from "../../src/components/ui/SelectChip";
 import {
   BellIcon,
   ChevronRightIcon,
@@ -102,10 +105,20 @@ export default function ProfileScreen() {
   const setLanguage = useUserStore((state) => state.setLanguage);
   const [isDeleting, setIsDeleting] = useState(false);
   const [bedtime, setBedtime] = useState<BedtimeReminderPreference>({ enabled: false, hour: 22, minute: 0 });
+  const { favoriteIds, refetch: refetchFavorites } = useFavorites();
 
   useEffect(() => {
     getBedtimeReminderPreference().then(setBedtime);
   }, []);
+
+  // A like/unlike happens on the Now Playing screen, a separate mount of
+  // useFavorites with its own fetch — refresh here on focus so the count
+  // doesn't go stale after navigating back.
+  useFocusEffect(
+    useCallback(() => {
+      refetchFavorites();
+    }, [refetchFavorites])
+  );
 
   async function handleSelectLanguage(next: SupportedLanguage) {
     if (next === language) return;
@@ -165,8 +178,10 @@ export default function ProfileScreen() {
     >
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: tabBarHeight + 24, gap: 18 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 18 }}
       >
+        <ScreenHeader eyebrow={t("screenEyebrow")} title={t("screenTitle")} />
+
         <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
           <GlowBackground variant="artworkTile" style={{ width: 62, height: 62, borderRadius: 999, borderWidth: 1, borderColor: colors.stroke, alignItems: "center", justifyContent: "center" }}>
             <UserIcon size={26} color={colors.moon} strokeWidth={1.4} />
@@ -185,7 +200,7 @@ export default function ProfileScreen() {
         <Group label={t("libraryGroup")}>
           <Row icon={CompassIcon} title={t("savedScenesRowTitle")} trailing={<ValueChevron value="0" />} />
           <Hairline />
-          <Row icon={HeartIcon} title={t("favoriteSoundsRowTitle")} trailing={<ValueChevron value="0" />} />
+          <Row icon={HeartIcon} title={t("favoriteSoundsRowTitle")} trailing={<ValueChevron value={String(favoriteIds.size)} />} />
         </Group>
 
         <Group label={t("preferencesGroup")}>
@@ -205,25 +220,14 @@ export default function ProfileScreen() {
 
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           {SUPPORTED_LANGUAGES.map((lang) => (
-            <Pressable
+            <SelectChip
               key={lang}
+              label={LANGUAGE_LABELS[lang]}
+              selected={language === lang}
               onPress={() => handleSelectLanguage(lang)}
-              style={{
-                height: 40,
-                paddingHorizontal: 16,
-                borderRadius: 999,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: language === lang ? colors.button : colors.card,
-                borderWidth: language === lang ? 0 : 1,
-                borderColor: colors.stroke,
-              }}
-              accessibilityRole="button"
-            >
-              <Text style={{ fontSize: 12.5, fontWeight: "600", color: language === lang ? colors.buttonText : colors.muted }}>
-                {LANGUAGE_LABELS[lang]}
-              </Text>
-            </Pressable>
+              height={40}
+              fontSize={12.5}
+            />
           ))}
         </View>
 

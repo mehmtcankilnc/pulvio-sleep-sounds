@@ -17,7 +17,7 @@ export default function OnboardingBedtimeScreen() {
   const [reminderOn, setReminderOn] = useState(true);
 
   return (
-    <GlowBackground variant="pageWash" style={{ flex: 1, paddingHorizontal: 20, paddingTop: 24, paddingBottom: 26, justifyContent: "space-between" }}>
+    <GlowBackground variant="pageWash" style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}>
       <View style={{ gap: 22 }}>
         <OnboardingHeader step={3} totalSteps={3} onBack={() => router.back()} onSkip={() => router.push("/(onboarding)/plan-ready")} skipLabel={t("skip")} />
         <View style={{ gap: 6 }}>

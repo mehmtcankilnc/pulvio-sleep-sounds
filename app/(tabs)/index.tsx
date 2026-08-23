@@ -9,6 +9,7 @@ import { usePlayerActions } from "../../src/hooks/usePlayerActions";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { categoryIcon } from "../../src/lib/categoryIcon";
 import { GlowBackground } from "../../src/components/GlowBackground";
+import { ScreenHeader } from "../../src/components/ScreenHeader";
 import { Button } from "../../src/components/ui/Button";
 import { MoonIcon, PlayIcon } from "../../src/components/icons";
 import type { Track } from "../../src/types";
@@ -94,35 +95,9 @@ export default function ExploreScreen() {
     >
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: tabBarHeight + 24, gap: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
       >
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <View style={{ gap: 3 }}>
-            <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
-              {t("greetingEyebrow")}
-            </Text>
-            <Text className="font-bold" style={{ fontSize: 22, letterSpacing: -0.2, color: colors.text }}>
-              {t("greetingTitle")}
-            </Text>
-          </View>
-          <Pressable
-            onPress={() => router.push("/(tabs)/sleep")}
-            style={{
-              width: 46,
-              height: 46,
-              borderRadius: 999,
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.stroke,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={t("sleep:tabTitle")}
-          >
-            <MoonIcon size={21} color={colors.muted} strokeWidth={1.7} />
-          </Pressable>
-        </View>
+        <ScreenHeader eyebrow={t("greetingEyebrow")} title={t("greetingTitle")} />
 
         {tonightTrack && (
           <Pressable
