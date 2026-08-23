@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import TrackPlayer from "react-native-track-player";
+import { getPlayer, clearLockScreenTrack } from "../lib/player/engine";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { useUserStore } from "../store/useUserStore";
 import { sendHeartbeat } from "../lib/playback";
@@ -38,8 +38,10 @@ export function useListeningHeartbeat() {
       try {
         const result = await sendHeartbeat(sessionId, secondsElapsed);
         if (!result.allowed) {
-          await TrackPlayer.pause();
-          await TrackPlayer.reset();
+          const player = getPlayer();
+          player.pause();
+          player.replace(null);
+          clearLockScreenTrack();
           setCurrentTrack(null);
           setSessionId(null);
           setDenyReason(result.reason);

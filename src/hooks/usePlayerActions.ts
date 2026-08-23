@@ -1,9 +1,9 @@
-import TrackPlayer from "react-native-track-player";
 import type { Track } from "../types";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { useUserStore } from "../store/useUserStore";
 import { startPlayback } from "../lib/playback";
 import { cancelSleepTimer } from "../lib/player/sleepTimer";
+import { getPlayer, setLockScreenTrack, clearLockScreenTrack } from "../lib/player/engine";
 import type { PlaybackDenyReason } from "../types/playback";
 
 function denyReasonToMessage(reason: PlaybackDenyReason) {
@@ -47,24 +47,22 @@ export function usePlayerActions() {
       // A schedule armed for the previous track must not fire against this
       // one — the user re-arms the timer explicitly from Now Playing.
       cancelSleepTimer();
-      await TrackPlayer.reset();
-      await TrackPlayer.add({
-        id: track.id,
-        url: track.storageUrl,
-        title: track.title,
-        artist: "Pulvio",
-      });
-      await TrackPlayer.play();
+
+      const player = getPlayer();
+      player.replace({ uri: track.storageUrl });
+      player.play();
+      setLockScreenTrack({ title: track.title, artist: "Pulvio", artworkUrl: track.coverUrl });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ses yüklenemedi");
     }
   }
 
   async function togglePlayPause() {
+    const player = getPlayer();
     if (isPlaying) {
-      await TrackPlayer.pause();
+      player.pause();
     } else {
-      await TrackPlayer.play();
+      player.play();
     }
   }
 
@@ -73,7 +71,10 @@ export function usePlayerActions() {
     setCurrentTrack(null);
     setSessionId(null);
     setDenyReason(null);
-    await TrackPlayer.reset();
+    const player = getPlayer();
+    player.pause();
+    player.replace(null);
+    clearLockScreenTrack();
   }
 
   return { loadAndPlay, togglePlayPause, stopAndReset };

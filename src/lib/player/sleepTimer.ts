@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import TrackPlayer from "react-native-track-player";
+import { getPlayer } from "./engine";
 import { useSleepTimerStore } from "../../store/useSleepTimerStore";
 
 const STORAGE_KEY = "pulvio_sleep_timer_option";
@@ -31,19 +31,16 @@ function clearScheduled() {
 }
 
 function fadeOutAndPause(fadeDurationMs: number) {
+  const player = getPlayer();
   let step = 0;
   fadeInterval = setInterval(() => {
     step += 1;
-    const volume = Math.max(0, 1 - step / FADE_STEPS);
-    TrackPlayer.setVolume(volume).catch(() => {});
+    player.volume = Math.max(0, 1 - step / FADE_STEPS);
     if (step >= FADE_STEPS) {
       if (fadeInterval) clearInterval(fadeInterval);
       fadeInterval = null;
-      TrackPlayer.pause()
-        .catch(() => {})
-        .finally(() => {
-          TrackPlayer.setVolume(1).catch(() => {});
-        });
+      player.pause();
+      player.volume = 1;
       useSleepTimerStore.getState().setOption(useSleepTimerStore.getState().option, null);
     }
   }, fadeDurationMs / FADE_STEPS);
