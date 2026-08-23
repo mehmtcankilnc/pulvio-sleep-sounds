@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import type { JSX } from "react";
 import { View, Text, Pressable, Alert, ScrollView } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";

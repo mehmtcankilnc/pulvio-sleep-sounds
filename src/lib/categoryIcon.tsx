@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import type { IconProps } from "../components/icons";
 import { CloudRainIcon, WavesIcon, WindIcon, MicIcon, MusicIcon, FlameIcon, MoonIcon } from "../components/icons";
 

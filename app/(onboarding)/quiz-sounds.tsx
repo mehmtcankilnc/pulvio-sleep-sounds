@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { JSX } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
