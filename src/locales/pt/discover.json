@@ -1,6 +1,7 @@
 {
   "tabTitle": "Sons",
-  "loadError": "Não foi possível carregar os sons: {{error}}",
+  "loadError": "Não foi possível carregar os sons. Tente novamente.",
   "empty": "Nenhum som adicionado ainda",
-  "premiumBadge": "Premium"
+  "premiumBadge": "Premium",
+  "clearFilterCta": "Mostrar todos os sons"
 }

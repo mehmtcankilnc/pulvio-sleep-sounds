@@ -7,7 +7,5 @@
   "tonightPickOverline": "TONIGHT'S PICK",
   "playNowCta": "Play now",
   "browseSoundsTitle": "Browse sounds",
-  "seeAllCta": "See all",
-  "soundsCount": "{{count}} sounds",
-  "browseAllCta": "Browse all sounds"
+  "allSoundsChip": "All sounds"
 }

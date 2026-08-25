@@ -7,7 +7,5 @@
   "tonightPickOverline": "RECOMENDACIÓN DE HOY",
   "playNowCta": "Reproducir",
   "browseSoundsTitle": "Explorar sonidos",
-  "seeAllCta": "Ver todo",
-  "soundsCount": "{{count}} sonidos",
-  "browseAllCta": "Explorar todos los sonidos"
+  "allSoundsChip": "Todos los sonidos"
 }

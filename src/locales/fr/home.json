@@ -7,7 +7,5 @@
   "tonightPickOverline": "SÉLECTION DU SOIR",
   "playNowCta": "Lire maintenant",
   "browseSoundsTitle": "Découvrir les sons",
-  "seeAllCta": "Tout voir",
-  "soundsCount": "{{count}} sons",
-  "browseAllCta": "Découvrir tous les sons"
+  "allSoundsChip": "Tous les sons"
 }

@@ -1,6 +1,7 @@
 {
   "tabTitle": "Sesler",
-  "loadError": "Sesler yüklenemedi: {{error}}",
+  "loadError": "Sesler yüklenemedi. Tekrar deneyin.",
   "empty": "Henüz ses eklenmedi",
-  "premiumBadge": "Premium"
+  "premiumBadge": "Premium",
+  "clearFilterCta": "Tüm sesleri göster"
 }

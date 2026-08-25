@@ -59,6 +59,7 @@ export function useTracks() {
       .order("subcategory");
 
     if (fetchError) {
+      console.error("useTracks: failed to fetch tracks", fetchError);
       setError(fetchError.message);
       setSections([]);
       setLoading(false);

@@ -1,6 +1,7 @@
 {
   "tabTitle": "Klänge",
-  "loadError": "Sounds konnten nicht geladen werden: {{error}}",
+  "loadError": "Sounds konnten nicht geladen werden. Erneut versuchen.",
   "empty": "Noch keine Sounds hinzugefügt",
-  "premiumBadge": "Premium"
+  "premiumBadge": "Premium",
+  "clearFilterCta": "Alle Sounds anzeigen"
 }

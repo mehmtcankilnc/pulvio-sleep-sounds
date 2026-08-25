@@ -1,6 +1,7 @@
 {
   "tabTitle": "Sonidos",
-  "loadError": "No se pudieron cargar los sonidos: {{error}}",
+  "loadError": "No se pudieron cargar los sonidos. Inténtalo de nuevo.",
   "empty": "Aún no se han añadido sonidos",
-  "premiumBadge": "Premium"
+  "premiumBadge": "Premium",
+  "clearFilterCta": "Mostrar todos los sonidos"
 }
