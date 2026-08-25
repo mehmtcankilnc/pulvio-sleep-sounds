@@ -3,6 +3,7 @@ import { Pressable } from "react-native";
 import * as Haptics from "expo-haptics";
 import Animated, {
   Easing,
+  ReduceMotion,
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
@@ -24,8 +25,16 @@ export function Toggle({ value, onValueChange, accessibilityLabel }: { value: bo
   const knobX = useSharedValue(value ? KNOB_TRAVEL : 0);
 
   useEffect(() => {
-    progress.value = withTiming(value ? 1 : 0, { duration: 200, easing: Easing.bezier(0.77, 0, 0.175, 1) });
-    knobX.value = withSpring(value ? KNOB_TRAVEL : 0, { duration: 400, dampingRatio: 0.8 });
+    progress.value = withTiming(value ? 1 : 0, {
+      duration: 200,
+      easing: Easing.bezier(0.77, 0, 0.175, 1),
+      reduceMotion: ReduceMotion.System,
+    });
+    knobX.value = withSpring(value ? KNOB_TRAVEL : 0, {
+      duration: 400,
+      dampingRatio: 0.8,
+      reduceMotion: ReduceMotion.System,
+    });
   }, [value, progress, knobX]);
 
   const trackStyle = useAnimatedStyle(() => ({

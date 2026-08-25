@@ -3,7 +3,6 @@
   "nowPlayingOverline": "REPRODUCIENDO AHORA",
   "timerFadeHint": "El sonido baja poco a poco al dormirte",
   "timerAccessibilityLabel": "Temporizador de sueño: {{option}}",
-  "addLayerCta": "Añadir una capa",
   "likeAccessibilityLabel": "Guardar en favoritos",
   "limitTitle": "Se acabó tu tiempo de escucha gratis",
   "limitRemaining": "Tiempo restante",

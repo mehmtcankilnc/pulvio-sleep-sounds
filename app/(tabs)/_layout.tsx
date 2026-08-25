@@ -16,7 +16,6 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: t("home:tabTitle") }} />
-      <Tabs.Screen name="mixer" options={{ title: t("mixer:tabTitle") }} />
       <Tabs.Screen name="sleep" options={{ title: t("sleep:tabTitle") }} />
       <Tabs.Screen name="profile" options={{ title: t("settings:tabTitle") }} />
     </Tabs>

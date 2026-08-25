@@ -1,5 +1,5 @@
 import { Pressable, Text, ActivityIndicator, type GestureResponderEvent } from "react-native";
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useThemeColors } from "../../hooks/useThemeColors";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -44,10 +44,18 @@ export function Button({ label, onPress, variant = "primary", disabled, loading,
       ]}
       onPress={onPress}
       onPressIn={() => {
-        scale.value = withTiming(0.97, { duration: 150, easing: Easing.bezier(0.23, 1, 0.32, 1) });
+        scale.value = withTiming(0.97, {
+          duration: 150,
+          easing: Easing.bezier(0.23, 1, 0.32, 1),
+          reduceMotion: ReduceMotion.System,
+        });
       }}
       onPressOut={() => {
-        scale.value = withTiming(1, { duration: 150, easing: Easing.bezier(0.23, 1, 0.32, 1) });
+        scale.value = withTiming(1, {
+          duration: 150,
+          easing: Easing.bezier(0.23, 1, 0.32, 1),
+          reduceMotion: ReduceMotion.System,
+        });
       }}
       disabled={isDisabled}
       accessibilityRole="button"

@@ -10,7 +10,6 @@ import trDiscover from "../locales/tr/discover.json";
 import trPlayer from "../locales/tr/player.json";
 import trSettings from "../locales/tr/settings.json";
 import trPaywall from "../locales/tr/paywall.json";
-import trMixer from "../locales/tr/mixer.json";
 import trSleep from "../locales/tr/sleep.json";
 import trOnboarding from "../locales/tr/onboarding.json";
 
@@ -21,7 +20,6 @@ import enDiscover from "../locales/en/discover.json";
 import enPlayer from "../locales/en/player.json";
 import enSettings from "../locales/en/settings.json";
 import enPaywall from "../locales/en/paywall.json";
-import enMixer from "../locales/en/mixer.json";
 import enSleep from "../locales/en/sleep.json";
 import enOnboarding from "../locales/en/onboarding.json";
 
@@ -62,12 +60,12 @@ export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 const LANGUAGE_STORAGE_KEY = "pulvio_language";
 
-// mixer/sleep/onboarding are only translated in tr/en for now (see
+// sleep/onboarding are only translated in tr/en for now (see
 // docs/DRIFT_IMPLEMENTATION_PLAN.md) — the other locales fall back to en
 // via fallbackLng below, which i18next does per-key without erroring.
 const resources = {
-  tr: { common: trCommon, auth: trAuth, home: trHome, discover: trDiscover, player: trPlayer, settings: trSettings, paywall: trPaywall, mixer: trMixer, sleep: trSleep, onboarding: trOnboarding },
-  en: { common: enCommon, auth: enAuth, home: enHome, discover: enDiscover, player: enPlayer, settings: enSettings, paywall: enPaywall, mixer: enMixer, sleep: enSleep, onboarding: enOnboarding },
+  tr: { common: trCommon, auth: trAuth, home: trHome, discover: trDiscover, player: trPlayer, settings: trSettings, paywall: trPaywall, sleep: trSleep, onboarding: trOnboarding },
+  en: { common: enCommon, auth: enAuth, home: enHome, discover: enDiscover, player: enPlayer, settings: enSettings, paywall: enPaywall, sleep: enSleep, onboarding: enOnboarding },
   de: { common: deCommon, auth: deAuth, home: deHome, discover: deDiscover, player: dePlayer, settings: deSettings, paywall: dePaywall },
   fr: { common: frCommon, auth: frAuth, home: frHome, discover: frDiscover, player: frPlayer, settings: frSettings, paywall: frPaywall },
   es: { common: esCommon, auth: esAuth, home: esHome, discover: esDiscover, player: esPlayer, settings: esSettings, paywall: esPaywall },
@@ -104,7 +102,7 @@ export async function initI18n(): Promise<SupportedLanguage> {
     resources,
     lng: initialLanguage,
     fallbackLng: "en",
-    ns: ["common", "auth", "home", "discover", "player", "settings", "paywall", "mixer", "sleep", "onboarding"],
+    ns: ["common", "auth", "home", "discover", "player", "settings", "paywall", "sleep", "onboarding"],
     defaultNS: "common",
     interpolation: { escapeValue: false },
   });

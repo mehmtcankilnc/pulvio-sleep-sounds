@@ -1,7 +1,7 @@
 import { View, Text } from "react-native";
 import { useThemeColors } from "../hooks/useThemeColors";
 
-// Shared header for the 4 tab screens: Lora-italic eyebrow + bold title,
+// Shared header for the tab screens: Lora-italic eyebrow + bold title,
 // so every tab opens with the same visual rhythm.
 export function ScreenHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
   const colors = useThemeColors();

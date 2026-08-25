@@ -1,12 +1,11 @@
 # Pulvio
 
-Pulvio is a sleep & relaxation mobile app: ambient sounds, sleep stories, and a sound mixer designed to help people fall asleep faster. It follows a freemium model — a limited free tier with a cooldown between sessions, and a subscription that unlocks the full catalog and unlimited listening.
+Pulvio is a sleep & relaxation mobile app: ambient sounds and sleep stories designed to help people fall asleep faster. It follows a freemium model — a limited free tier with a cooldown between sessions, and a subscription that unlocks the full catalog and unlimited listening.
 
 ## Features
 
 - **Guided onboarding** — a short quiz (sleep struggles, sound preferences, bedtime) that personalizes the initial experience
 - **Explore** — browse the sound/story catalog by category
-- **Mixer** — layer multiple ambient sounds into a custom mix
 - **Sleep** — bedtime-focused content and reminders
 - **Player** — background audio playback with lock-screen controls
 - **Bedtime & push notifications** — reminders and announcements
@@ -46,7 +45,7 @@ app/                    # Expo Router screens
   _layout.tsx           # Root stack: fonts, i18n, auth gate, providers
   (auth)/               # Sign in / sign up
   (onboarding)/         # Welcome, quiz, bedtime, plan-ready
-  (tabs)/               # Main app: Explore, Mixer, Sleep, Profile
+  (tabs)/               # Main app: Explore, Sleep, Profile
   discover.tsx          # Category browsing
   player.tsx            # Full-screen player (modal)
   paywall.tsx           # Subscription paywall

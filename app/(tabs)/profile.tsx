@@ -19,7 +19,6 @@ import { SelectChip } from "../../src/components/ui/SelectChip";
 import {
   BellIcon,
   ChevronRightIcon,
-  CompassIcon,
   HeartIcon,
   PencilIcon,
   UserIcon,
@@ -199,8 +198,6 @@ export default function ProfileScreen() {
         </View>
 
         <Group label={t("libraryGroup")}>
-          <Row icon={CompassIcon} title={t("savedScenesRowTitle")} trailing={<ValueChevron value="0" />} />
-          <Hairline />
           <Row icon={HeartIcon} title={t("favoriteSoundsRowTitle")} trailing={<ValueChevron value={String(favoriteIds.size)} />} />
         </Group>
 

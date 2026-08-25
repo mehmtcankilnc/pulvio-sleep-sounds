@@ -29,6 +29,20 @@ function mapRowToTrack(row: {
   };
 }
 
+// Standalone (not part of the hook) — used by the bedtime-play notification
+// tap handler, which needs a single track outside of any component's list
+// state.
+export async function fetchTrackById(trackId: string): Promise<Track | null> {
+  const { data, error } = await supabase
+    .from("tracks")
+    .select("id, title, category, subcategory, duration, storage_url, cover_url, is_premium_only")
+    .eq("id", trackId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return mapRowToTrack(data);
+}
+
 export function useTracks() {
   const [sections, setSections] = useState<TrackSection[]>([]);
   const [loading, setLoading] = useState(true);

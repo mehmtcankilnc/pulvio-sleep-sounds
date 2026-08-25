@@ -70,6 +70,10 @@ export function PlusIcon({ size = 22, color = "#f2b48c" }: IconProps) {
   return <Ionicons name="add" size={size} color={color} />;
 }
 
+export function MinusIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="remove" size={size} color={color} />;
+}
+
 export function PencilIcon({ size = 22, color = "#f2b48c" }: IconProps) {
   return <Ionicons name="pencil-outline" size={size} color={color} />;
 }

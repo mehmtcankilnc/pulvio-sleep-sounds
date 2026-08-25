@@ -17,7 +17,7 @@ import { GlowBackground, MoonRingOuter, MoonRingInner } from "../src/components/
 import { StarField } from "../src/components/StarField";
 import { Button } from "../src/components/ui/Button";
 import { SelectChip } from "../src/components/ui/SelectChip";
-import { ChevronDownIcon, HeartIcon, PauseIcon, PlayIcon, PlusIcon, SkipBackIcon, SkipFwdIcon } from "../src/components/icons";
+import { ChevronDownIcon, HeartIcon, PauseIcon, PlayIcon, SkipBackIcon, SkipFwdIcon } from "../src/components/icons";
 
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 
@@ -228,27 +228,6 @@ export default function PlayerScreen() {
       </View>
 
       {error && <Text style={{ textAlign: "center", color: "#ef4444" }}>{error}</Text>}
-
-      <View style={{ alignItems: "center" }}>
-        <Pressable
-          onPress={() => router.push("/(tabs)/mixer")}
-          style={{
-            height: 46,
-            paddingHorizontal: 22,
-            borderRadius: 999,
-            borderWidth: 1,
-            borderColor: colors.stroke,
-            backgroundColor: colors.glowSoft,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
-          }}
-          accessibilityRole="button"
-        >
-          <PlusIcon size={15} color={colors.accent} strokeWidth={2} />
-          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.accent }}>{t("addLayerCta")}</Text>
-        </Pressable>
-      </View>
     </GlowBackground>
   );
 }

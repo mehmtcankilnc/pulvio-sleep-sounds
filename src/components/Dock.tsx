@@ -11,13 +11,12 @@ import { usePlayerActions } from "../hooks/usePlayerActions";
 import { useThemeColors } from "../hooks/useThemeColors";
 import { categoryIcon } from "../lib/categoryIcon";
 import { GlowBackground } from "./GlowBackground";
-import { PauseIcon, PlayIcon, XIcon, CompassIcon, SlidersIcon, MoonIcon, UserIcon } from "./icons";
+import { PauseIcon, PlayIcon, XIcon, CompassIcon, MoonIcon, UserIcon } from "./icons";
 import type { IconProps } from "./icons";
 import type { Track } from "../types";
 
 const TAB_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   index: CompassIcon,
-  mixer: SlidersIcon,
   sleep: MoonIcon,
   profile: UserIcon,
 };
@@ -38,14 +37,21 @@ const EXIT_DURATION = 160; // system's own response to a user action (stop/dismi
 // player, a progress line, a hairline, and the 4-tab nav row. Collapses to
 // nav-only when no track is loaded.
 //
-// This project has `newArchEnabled: false` (app.json), and Reanimated's
-// `entering`/`exiting` layout-animation system is built primarily around
-// Fabric — on the old architecture it still runs, but through a
-// less-optimized path that showed up here as persistent sub-60fps motion no
-// matter how the curve/duration was tuned. So this animates manually via a
-// plain `useSharedValue` + `useAnimatedStyle` instead: just a per-frame
-// opacity/transform style commit, which has identical, fully-supported
+// At the time this was written, the project had `newArchEnabled: false`,
+// and Reanimated's `entering`/`exiting` layout-animation system — built
+// primarily around Fabric — showed up here as persistent sub-60fps motion
+// no matter how the curve/duration was tuned. So this animates manually via
+// a plain `useSharedValue` + `useAnimatedStyle` instead: just a per-frame
+// opacity/transform style commit, with identical, fully-supported
 // performance on both architectures.
+//
+// Since then the SDK 57 upgrade dropped the `newArchEnabled` key from
+// app.json entirely, and Expo defaults SDK 57 to New Architecture on — the
+// generated `android/gradle.properties` confirms `newArchEnabled=true`, so
+// the app is actually running Fabric now. The original `entering`/`exiting`
+// slowness this workaround was built for may no longer reproduce, but the
+// manual approach costs nothing extra and stays correct either way, so it's
+// left as-is rather than reverted on a guess.
 //
 // Both the mini player and the tab row are anchored to the container's
 // BOTTOM edge with a fixed own-height (never `top: 0` of a box whose real

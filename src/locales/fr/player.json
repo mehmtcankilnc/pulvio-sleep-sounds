@@ -3,7 +3,6 @@
   "nowPlayingOverline": "EN COURS DE LECTURE",
   "timerFadeHint": "Le son baisse doucement en t'endormant",
   "timerAccessibilityLabel": "Minuteur de sommeil : {{option}}",
-  "addLayerCta": "Ajouter une couche",
   "likeAccessibilityLabel": "Ajouter aux favoris",
   "limitTitle": "Ton temps d'écoute gratuit est terminé",
   "limitRemaining": "Temps restant",

@@ -15,53 +15,67 @@ Real data throughout (`useTracks`, `useContinueListening`, `usePlayerActions`).
   explicit id→icon table.
 
 ## 2. Now Playing — [app/player.tsx](../app/player.tsx) 🟡
-Playback state is real (player store). Visual-only additions:
-- Timer pills (15/30/45/∞) are local `useState`, not wired to an actual
-  fade/stop timer. **Needs:** a real sleep-timer in
-  `src/lib/player/PlayerEngineProvider.tsx` or the track player service
-  (schedule stop/fade-out, persist selection).
-- Skip back/forward controls render but have no handler — the current
+Playback state is real (player store).
+- **Real now:** sleep timer (15/30/45/∞ pills arm a real fade-then-pause in
+  `src/lib/player/sleepTimer.ts`, persisted across sessions). Like/heart
+  toggle is real (`src/hooks/useFavorites.ts`, Supabase `favorites` table),
+  surfaced in Profile's "Favorite sounds" row.
+- Skip back/forward controls still render but have no handler — the
   player only supports single-track playback. **Needs:** either remove
   these controls or define what "skip" means for a single ambient track.
-- Like/heart toggle is local state only. **Needs:** a `favorites` table +
-  hook, surfaced again in Profile's "Favorite sounds" row.
-- "Add a layer" navigates to Mixer but doesn't hand off the current track.
+- The old "Add a layer" CTA (linked to Mixer) was removed on 2026-08-25
+  along with the Mixer feature — see below.
 
-## 3. Sound Mixer — [app/(tabs)/mixer.tsx](../app/(tabs)/mixer.tsx) ⚪
-Fully mock: hardcoded layers/scenes, sliders are visual only (not
-draggable, don't affect audio).
-- **Needs:** a real multi-track mixing architecture. `react-native-track-player`
-  is single-queue by default — mixing 2-4 simultaneous looping sounds with
-  independent volume likely needs either multiple concurrent players (check
-  platform limits) or a native audio-graph approach (e.g. `expo-av`/`react-native-audio-api`
-  for simultaneous sounds with per-sound gain). Needs its own spike.
-- Scenes (named layer presets) need a `scenes` table (Supabase) keyed by
-  user, each row a set of `{track_id, level}[]`.
-- "Add a sound" should open a picker (reuse Discover's list) constrained to
-  the current scene's remaining layer slots.
+## 3. ~~Sound Mixer~~ — removed (2026-08-25)
+The Mixer tab, its scenes/layers data model, and the `scenes`/`scene_layers`
+Supabase tables were fully removed per an explicit product decision — not a
+technical dead end, a deliberate "don't want this in the app" call. Do not
+resume this section; if multi-sound mixing comes back, treat it as a new
+feature request from scratch. Nav is back to 3 tabs (Explore/Sleep/Profile).
+Other sections below that referenced "the Mixer's scene model" (old #4, #5,
+#7–11) no longer have that model to reuse — flagged inline where relevant.
 
-## 4. Sleep — [app/(tabs)/sleep.tsx](../app/(tabs)/sleep.tsx) ⚪
-Decorative bedtime arc + static 23:30/07:00 times. All 4 routine rows are
-mock (no persistence, toggles don't do anything).
-- **Needs:** a `sleep_schedule` table (bedtime/wake time), "Adjust" opens a
-  real time picker, and the arc's "Bedtime in Xh Ym" label computed live.
-- "Play Cabin Night at bedtime" needs to reuse the Mixer's scene model.
-- "Sleep timer" here should read/write the same timer state as Now Playing's
-  timer pills once that's real.
-- "Gentle fade-out" toggle should gate whether the sleep timer fades or cuts.
-- "Quiet wake-up" is a second scheduled notification/playback — same
-  scheduling primitive as bedtime reminder, offset to wake time.
+## 4. Sleep — [app/(tabs)/sleep.tsx](../app/(tabs)/sleep.tsx) 🟢 (2026-08-25)
+Bedtime/wake schedule is real, backed by a new `sleep_schedule` Supabase
+table (`0010_sleep_schedule.sql`, one row per user) via
+`src/lib/sleepSchedule.ts` + `src/hooks/useSleepSchedule.ts`.
+- Bedtime arc's "Bedtime in Xh Ym" hint is a live countdown to the next
+  bedtime occurrence (today or tomorrow), ticking once a minute.
+- "Adjust" opens a real time picker (`react-native-date-picker`, added this
+  pass — needs a dev client rebuild) for both bedtime and wake time,
+  debounced 400ms before writing so a fast spin doesn't spam Supabase.
+- "Play [track] at bedtime": since the Mixer's scene model is gone, this
+  plays a single user-picked track (a picker modal reusing `useTracks`),
+  not a mix. Implemented as a **tap-to-open local notification** at bedtime
+  carrying the trackId — tapping it opens Now Playing and starts the track.
+  Auto-playing audio from a background trigger isn't reliably possible on
+  iOS/Android, so this was a deliberate scope decision, not a shortcut.
+- "Sleep timer" row reads/writes the same real timer state
+  `src/lib/player/sleepTimer.ts` already exposed (Now Playing's pills use
+  the same store) — tapping the row expands the same 15m/30m/45m/∞ chips.
+- "Gentle fade-out" toggle (`fade_out_enabled`) now actually gates
+  `sleepTimer.ts`'s behavior: off means the timer cuts audio at the full
+  duration instead of fading over the last 15s. Read lazily at fire time
+  (`setSleepTimerFadeEnabled`), so flipping it mid-countdown still applies.
+- "Quiet wake-up" is the same tap-to-open notification pattern as
+  "Play at bedtime", scheduled at wake time — see `src/lib/sleepNotifications.ts`
+  (distinct identifiers from `bedtimeReminder.ts`'s own notification, so
+  toggling one never cancels the other).
 - Note: the real, already-wired **bedtime reminder** notification (existing
   `src/lib/bedtimeReminder.ts`) intentionally lives in **Profile → Preferences**
   to match DESIGN.html exactly — Sleep's routine card does not duplicate it.
+- **Not yet device-tested** — `tsc --noEmit` is clean, that's all that's
+  verified so far. The new native dependency (datetimepicker) needs a dev
+  client rebuild before any of this is testable at all.
 
 ## 5. Profile — [app/(tabs)/profile.tsx](../app/(tabs)/profile.tsx) 🟡
 Real: premium status, language switch, sign out, delete account, bedtime
 reminder toggle (moved from the old Settings screen, still backed by
-`src/lib/bedtimeReminder.ts`).
-- Mock: "Saved scenes" and "Favorite sounds" library rows show `0` — needs
-  the scenes table (see #3) and a favorites table (see #2).
-- "Preview onboarding flow" link is a **temporary dev entry point** into
+`src/lib/bedtimeReminder.ts`), "Favorite sounds" library row (real count
+from `useFavorites`).
+- The "Saved scenes" library row was removed on 2026-08-25 along with Mixer
+  — no scenes feature exists to back it.
+- "Preview onboarding flow" link is still a **temporary dev entry point** into
   `app/(onboarding)/` — remove once onboarding is wired ahead of `(auth)`
   (see #7-11).
 
@@ -85,13 +99,14 @@ Mind" scene card is static copy, not actually built from the quiz answers.
      creation) before or after Plan Ready — needs a product decision on
      order (create account first vs. show the payoff first, current build
      shows Plan Ready → Paywall directly).
-  4. Plan Ready should read the persisted answers and pick/build a real
-     scene (reuse the Mixer scene model) instead of the hardcoded "Quiet
-     Mind" / "Rain on a Tin Roof" + "Slow Piano" pairing.
+  4. Plan Ready should read the persisted answers and pick a real track (or
+     small set of tracks) — it previously assumed reusing the Mixer's scene
+     model, which no longer exists (see #3); needs a fresh, simpler design
+     since there's no multi-layer mix to build.
   5. Remove the Profile "Preview onboarding flow" dev link once real.
-- i18n: the `onboarding` namespace (plus `mixer`/`sleep`) is only
-  translated in **en/tr** right now — de/fr/es/pt fall back to English
-  automatically (safe, no crash) but need real translations before ship.
+- i18n: the `onboarding` namespace (plus `sleep`) is only translated in
+  **en/tr** right now — de/fr/es/pt fall back to English automatically
+  (safe, no crash) but need real translations before ship.
 
 ## 12. Paywall — [app/paywall.tsx](../app/paywall.tsx) 🟡
 Real RevenueCat offering/packages, real purchase flow (unchanged from
@@ -124,10 +139,12 @@ shows when the selected package's identifier matches `/year|annual/i`.
 - New deps: `react-native-svg`, `expo-linear-gradient`.
 
 ## Suggested next order of work
-1. Real sleep timer (unblocks Now Playing + Sleep's "Sleep timer" row).
-2. Scenes data model (unblocks Mixer real mixing + Sleep's "Play scene at
-   bedtime" + Plan Ready's real scene).
-3. Favorites table (unblocks Now Playing's heart + Profile's library row).
-4. Onboarding persistence + wiring ahead of `(auth)`.
-5. Paywall trial-date derivation from real RevenueCat product data.
-6. Fill in de/fr/es/pt for the `mixer`/`sleep`/`onboarding` i18n namespaces.
+1. ~~Real sleep timer~~ — done (`src/lib/player/sleepTimer.ts`).
+2. ~~Favorites table~~ — done (`src/hooks/useFavorites.ts`).
+3. ~~Scenes data model / Mixer~~ — removed instead of built (2026-08-25,
+   product decision).
+4. ~~Sleep screen persistence~~ — done (2026-08-25, `sleep_schedule` table +
+   `useSleepSchedule`), not yet device-tested.
+5. Onboarding persistence + wiring ahead of `(auth)`.
+6. Paywall trial-date derivation from real RevenueCat product data.
+7. Fill in de/fr/es/pt for the `sleep`/`onboarding` i18n namespaces.

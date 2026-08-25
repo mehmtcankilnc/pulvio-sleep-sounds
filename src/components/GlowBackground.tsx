@@ -60,7 +60,7 @@ function RadialWash({ origin, color, extent, width, height }: Wash & { width: nu
 type Variant = "pageWash" | "nightScene" | "heroCard" | "artworkTile";
 
 const VARIANTS: Record<Variant, { washes: Wash[]; base: [string, string]; baseLocations?: [number, number, number]; baseDirection: "vertical" | "diagonal" }> = {
-  // Default (Mixer/Sleep-style single top-center glow); some screens
+  // Default (Sleep-style single top-center glow); some screens
   // override with their own wash(es) via the `washes` prop — see
   // DESIGN.html for the exact per-screen origin/extent values.
   pageWash: { washes: [{ origin: { x: 50, y: -8 }, color: colors.glow, extent: 46 }], base: [colors.bg, colors.bg], baseDirection: "vertical" },

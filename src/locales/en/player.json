@@ -3,7 +3,6 @@
   "nowPlayingOverline": "NOW PLAYING",
   "timerFadeHint": "Fades out slowly as you drift off",
   "timerAccessibilityLabel": "Sleep timer: {{option}}",
-  "addLayerCta": "Add a layer",
   "likeAccessibilityLabel": "Save to favorites",
   "limitTitle": "Your free listening time is up",
   "limitRemaining": "Time remaining",

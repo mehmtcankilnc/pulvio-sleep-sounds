@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-25T00:00:00Z",
+  "title": "Design System: Pulvio",
+  "extensions": {
+    "colorMeta": {
+      "bg": { "role": "neutral", "displayName": "Near-Black Plum", "canonical": "#1a1118", "tonalRamp": ["#0a0709", "#120a10", "#1a1118", "#251a22", "#31222c", "#4a3540", "#6d4f5c", "#9a7280"] },
+      "card": { "role": "neutral", "displayName": "Card Plum", "canonical": "#251a22", "tonalRamp": ["#0f0a0d", "#1a1118", "#251a22", "#31222c", "#3f2c38", "#5a3f4c", "#7d5a6b", "#a67f92"] },
+      "accent": { "role": "primary", "displayName": "Peach", "canonical": "#f2b48c", "tonalRamp": ["#4a2c1a", "#7a4728", "#a86538", "#d1875a", "#f2b48c", "#f6c7a6", "#f9d9c0", "#fceada"] },
+      "button": { "role": "primary", "displayName": "Ember", "canonical": "#d97e52", "tonalRamp": ["#3a1c0f", "#5e2f18", "#874424", "#b25f38", "#d97e52", "#e59d78", "#eebc9f", "#f6dcc8"] },
+      "text": { "role": "neutral", "displayName": "Warm White", "canonical": "#f6ede9", "tonalRamp": ["#2b201d", "#4a3a35", "#6f5952", "#96786f", "#bfa198", "#e1d0ca", "#f0e4df", "#f6ede9"] },
+      "muted": { "role": "neutral", "displayName": "Dusty Rose", "canonical": "#b49c99", "tonalRamp": ["#241a19", "#3d2c2a", "#5c4442", "#7d5f5b", "#977f7b", "#b49c99", "#cbb9b6", "#e2d6d4"] },
+      "faint": { "role": "neutral", "displayName": "Faded Rose", "canonical": "#85716f", "tonalRamp": ["#1c1615", "#332827", "#4d3c3a", "#69534f", "#85716f", "#a3928f", "#c2b6b3", "#e0dad8"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Bedtime-wheel time readout only — the single largest number in the app." },
+      "eyebrow": { "displayName": "Eyebrow (Lora)", "purpose": "One warm italic-serif framing line above a screen title. Max one per screen." },
+      "screenTitle": { "displayName": "Screen Title", "purpose": "Per-tab greeting / Now Playing title / quiz question." },
+      "body": { "displayName": "Row Label", "purpose": "Setting-row and option-row titles inside list cards." },
+      "navLabel": { "displayName": "Nav Label", "purpose": "Dock tab labels; weight flips 500→700 on the active tab." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "press-scale", "value": "scale(0.97–0.98), 150ms, cubic-bezier(0.23,1,0.32,1)", "purpose": "App-wide press feedback for buttons, chips, and pressable rows — replaces opacity-only dimming." },
+      { "name": "select-crossfade", "value": "interpolateColor, 180–200ms, cubic-bezier(0.77,0,0.175,1)", "purpose": "Selected/deselected color transition on chips and the toggle track." },
+      { "name": "toggle-knob-spring", "value": "withSpring, dampingRatio 0.8, 400ms", "purpose": "Toggle knob's physical position change — deliberately a different animation type than its own track's color crossfade." },
+      { "name": "breathe", "value": "scale 1→1.045, 7s ease-in-out, infinite, disabled under prefers-reduced-motion", "purpose": "The one ambient/looping animation in the app, on the Now Playing moon ring." },
+      { "name": "mini-player-enter", "value": "opacity 0→1 + scale 0.96→1, ~200ms strong ease-out", "purpose": "Dock mini-player arrival/departure — never a flat opacity swap, never scale(0)." }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Full-width 54px pill CTA. One per screen.",
+      "html": "<button class=\"ds-btn-primary\">Get started</button>",
+      "css": ".ds-btn-primary { height: 54px; padding: 0 24px; border-radius: 999px; border: none; background: #d97e52; color: #2b130a; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; font-weight: 700; box-shadow: 0 10px 28px rgba(230,140,90,0.26); transition: transform 150ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 2px solid #f2b48c; outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action — transparent fill, hairline border.",
+      "html": "<button class=\"ds-btn-outline\">Sign out</button>",
+      "css": ".ds-btn-outline { height: 54px; padding: 0 24px; border-radius: 999px; background: transparent; border: 1px solid rgba(242,180,140,0.14); color: #f6ede9; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; font-weight: 700; transition: transform 150ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-outline:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Toggle",
+      "kind": "custom",
+      "refersTo": "toggle",
+      "description": "44×26px switch. Track color and knob position animate on separate curves (color = timing, position = spring).",
+      "html": "<button role=\"switch\" aria-checked=\"true\" class=\"ds-toggle ds-toggle-on\"><span class=\"ds-toggle-knob\"></span></button>",
+      "css": ".ds-toggle { width: 44px; height: 26px; border-radius: 999px; padding: 3px; border: none; display: inline-flex; align-items: center; background: rgba(255,255,255,0.09); transition: background 200ms cubic-bezier(0.77,0,0.175,1); } .ds-toggle-on { background: #d97e52; justify-content: flex-end; } .ds-toggle-knob { width: 20px; height: 20px; border-radius: 999px; background: #85716f; transition: background 200ms cubic-bezier(0.77,0,0.175,1); } .ds-toggle-on .ds-toggle-knob { background: #ffe9d6; }"
+    },
+    {
+      "name": "Selectable Chip",
+      "kind": "chip",
+      "refersTo": "pill-active",
+      "description": "44px pill, crossfades between inactive (card+stroke) and active (button+buttonText) on selection, plus a haptic on commit.",
+      "html": "<button class=\"ds-chip ds-chip-active\">30 min</button>",
+      "css": ".ds-chip { height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid rgba(242,180,140,0.14); background: #251a22; color: #b49c99; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 13px; font-weight: 600; transition: background 180ms cubic-bezier(0.77,0,0.175,1), border-color 180ms cubic-bezier(0.77,0,0.175,1), color 180ms cubic-bezier(0.77,0,0.175,1); } .ds-chip-active { background: #d97e52; border-color: #d97e52; color: #2b130a; font-weight: 700; }"
+    },
+    {
+      "name": "List Row Card",
+      "kind": "card",
+      "refersTo": "list-row-card",
+      "description": "The dominant Sleep/Profile content pattern: bare icon, label + optional subtitle, trailing value/chevron/toggle, rows separated by hairlines inside one card.",
+      "html": "<div class=\"ds-list-card\"><div class=\"ds-row\"><span class=\"ds-row-icon\">●</span><div class=\"ds-row-text\"><div class=\"ds-row-title\">Gentle fade-out</div><div class=\"ds-row-subtitle\">Volume lowers as you drift</div></div></div></div>",
+      "css": ".ds-list-card { background: #251a22; border: 1px solid rgba(242,180,140,0.14); border-radius: 20px; padding: 6px 14px; } .ds-row { display: flex; align-items: center; gap: 12px; min-height: 56px; } .ds-row-icon { color: #f2b48c; font-size: 20px; } .ds-row-title { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 14px; font-weight: 600; color: #f6ede9; } .ds-row-subtitle { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 11.5px; color: #85716f; margin-top: 2px; }"
+    },
+    {
+      "name": "Dock Nav Item",
+      "kind": "nav",
+      "refersTo": "dock-nav-item",
+      "description": "One of 3 destinations (Explore/Sleep/Profile) in the edge-to-edge bottom bar. Active state is color+weight only — no pill highlight, no dot.",
+      "html": "<button class=\"ds-nav-item ds-nav-item-active\"><span class=\"ds-nav-icon\">◈</span><span class=\"ds-nav-label\">Sleep</span></button>",
+      "css": ".ds-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 58px; min-height: 48px; background: transparent; border: none; color: #85716f; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 10px; font-weight: 500; } .ds-nav-item-active { color: #f2b48c; font-weight: 700; } .ds-nav-icon { font-size: 21px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Dusk Ember",
+    "overview": "Pulvio is a sleep-sounds app, and every visual decision serves exactly one goal: lower the user's arousal level. The UI is meant to be the last calm thing someone sees before they put the phone down — not a dashboard, not a feed, not a thing that competes for attention. Dusk Ember is the implemented direction: a near-black plum base lit only by a single warm peach/ember glow, rendered as soft layered radial gradients rather than any hard light source. There is one hue family in the whole app. There is no light mode — night is the product, not a theme option. The system is deliberately restrained rather than richly decorated: flat surfaces, no drop shadows, no blur or frosted glass, no icon chips, no gamification. If an element would excite a half-asleep user rather than settle them, it doesn't belong. The one animated exception is a slow ambient breathe — everything else fades or resolves quickly and quietly.",
+    "keyCharacteristics": [
+      "Dark plum base + one warm ember glow, applied as radial-gradient washes, never a hard light or blur",
+      "Flat by default — depth comes from tonal layering and glow, never box-shadow",
+      "Bare content icons in the accent color, no tinted icon-chip backgrounds",
+      "One primary action per screen",
+      "Ionicons outline glyphs carry all iconography — not custom stroke SVGs"
+    ],
+    "rules": [
+      { "name": "The One Hue Rule", "body": "Every accent, highlight, and glow shares the same peach/ember hue family. A second hue is a signal something has gone off-brief, not a design decision to make locally.", "section": "colors" },
+      { "name": "The Button-Text Rule", "body": "Text or an icon drawn directly on button (#d97e52) is always buttonText (#2b130a). White-on-ember never happens, even for a single label.", "section": "colors" },
+      { "name": "The One Lora Rule", "body": "At most one italic-serif moment per screen. Lora marks warmth (a greeting, a scene name); it never labels a control or a setting row.", "section": "typography" },
+      { "name": "The No-Blur Rule", "body": "All atmosphere and depth comes from layered radial/linear gradients. blur()/BlurView never appears, anywhere, for any reason.", "section": "elevation" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces sit flat against their background. The only thing that lifts a surface visually is a glow wash underneath it, never a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep every accent, highlight, and glow inside the single peach/ember hue family (accent/button/glow/glowSoft).",
+      "Do put buttonText on anything drawn directly on a button-colored surface, never white or text.",
+      "Do use the scale-press feedback recipe (~0.97 scale, ~150ms, cubic-bezier(0.23,1,0.32,1)) for new pressables instead of an opacity-only press state.",
+      "Do build depth with tonal layering and radial-gradient glow washes, never box-shadow or blur.",
+      "Do give every card/row a 1px stroke border at rest, upgrading to accent on selection."
+    ],
+    "donts": [
+      "Don't put a tinted rounded-square/circle chip behind a content icon. Icons sit bare in their accent color. (Round control buttons keep their own circular background.)",
+      "Don't add streaks, badges, unread-style counters, confetti, or red notification dots.",
+      "Don't use blur()/BlurView anywhere; every soft edge in this app is a gradient, never a blur.",
+      "Don't assume passing strokeWidth to an icon component changes anything visually — the icon set is Ionicons glyphs now, and that prop is inert.",
+      "Don't build a second primary CTA on a screen that already has one."
+    ]
+  }
+}
