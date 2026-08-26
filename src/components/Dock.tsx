@@ -11,14 +11,14 @@ import { usePlayerActions } from "../hooks/usePlayerActions";
 import { useThemeColors } from "../hooks/useThemeColors";
 import { categoryIcon } from "../lib/categoryIcon";
 import { GlowBackground } from "./GlowBackground";
-import { PauseIcon, PlayIcon, XIcon, CompassIcon, MoonIcon, UserIcon } from "./icons";
+import { PauseIcon, PlayIcon, XIcon, CompassIcon, MoonIcon, SettingsIcon } from "./icons";
 import type { IconProps } from "./icons";
 import type { Track } from "../types";
 
 const TAB_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   index: CompassIcon,
   sleep: MoonIcon,
-  profile: UserIcon,
+  profile: SettingsIcon,
 };
 
 // Measured, not estimated: row1 (paddingTop 10 + 44 artwork + paddingBottom 8)

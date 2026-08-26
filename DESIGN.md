@@ -21,6 +21,8 @@ colors:
   sliderTrack: "rgba(255,255,255,0.07)"
   toggleOffTrack: "rgba(255,255,255,0.09)"
   notice: "#e0a86a"
+  danger: "#e0655c"
+  dangerGlow: "rgba(224,101,92,0.13)"
 typography:
   display:
     fontFamily: "Plus Jakarta Sans, Segoe UI, system-ui"
@@ -160,10 +162,11 @@ The palette is nearly monochrome by design: one warm ember hue carries every acc
 - **Starlight** (`#f4d4bc`, token `star`): starfield dots, always inline SVG, never image assets.
 - **Ember glow, strong** (`rgba(230,140,90,0.26)`, token `glow`) / **Ember glow, soft** (`rgba(230,140,90,0.12)`, token `glowSoft`): the radial wash atmosphere and selected-state fills, respectively.
 
-- **Notice amber** (`#e0a86a`, token `notice`): the *only* sanctioned "something needs your attention" text color — a recoverable load failure, a free-limit stop. It is a warmer, higher-value step of the same ember hue, deliberately **not** a red: a red flash destroys a dark-adapted eye and signals danger for what is usually a mundane stop. Used for short notice lines only, never as a fill or border.
+- **Notice amber** (`#e0a86a`, token `notice`): the sanctioned "something needs your attention" text color for *recoverable* events — a load failure, a free-limit stop. A warmer, higher-value step of the same ember hue, deliberately not a red: a red flash for a mundane, recoverable stop over-signals. Used for short notice lines only, never as a fill or border.
+- **Danger red** (`#e0655c`, token `danger`) / **Danger glow** (`rgba(224,101,92,0.13)`, token `dangerGlow`): the one true red in the system, reserved for *irreversible destructive* actions — today that is delete-account only. It is desaturated and pushed toward the warm end so it still belongs to Dusk Ember rather than firing as a cold system-red alarm, but it reads unmistakably as red next to the ember accent. Legible as text/icon/border on `bg` (~5:1); a solid `danger` button pairs it with dark `buttonText`, never white, and stays flat (the shadow carve-out is the ember primary only). Restraint is the rule: the Settings "danger zone" group uses only the `danger` border + overline (icon and title on its delete row also `danger`) — **not** a full `dangerGlow` fill, which over-signals on a near-monochrome bedtime screen. The full red-bordered treatment belongs on the confirmation sheet. `dangerGlow` stays available as a faint fill for a surface that is entirely about the destructive act. Not for errors or warnings — those stay `notice`.
 
 ### Named Rules
-**The One Hue Rule.** Every accent, highlight, and glow shares the same peach/ember hue family — including `notice`, which is a hue-family member, not an exception. A *different* hue (a true red, a blue) is a signal something has gone off-brief, not a design decision to make locally.
+**The One Hue Rule.** Every accent, highlight, and glow shares the same peach/ember hue family — including `notice`, which is a hue-family member, not an exception. The single deliberate departure is `danger` (`#e0655c`), used *only* on irreversible destructive actions (delete account); it is still warm-shifted to sit as close to the family as a recognizable red can. Any other off-family hue (a blue, a cold pure red, a green) is a signal something has gone off-brief, not a local decision.
 
 **The Button-Text Rule.** Text or an icon drawn directly on `button` (`#d97e52`) is always `buttonText` (`#2b130a`). White-on-ember never happens, even for a single label.
 

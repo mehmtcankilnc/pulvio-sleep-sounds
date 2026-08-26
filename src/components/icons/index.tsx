@@ -82,6 +82,46 @@ export function BellIcon({ size = 20, color = "#f2b48c" }: IconProps) {
   return <Ionicons name="notifications-outline" size={size} color={color} />;
 }
 
+export function TrashIcon({ size = 20, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="trash-outline" size={size} color={color} />;
+}
+
+export function LanguageIcon({ size = 20, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="language-outline" size={size} color={color} />;
+}
+
+export function SparklesIcon({ size = 20, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="sparkles-outline" size={size} color={color} />;
+}
+
+export function SettingsIcon({ size = 21, color = "#85716f" }: IconProps) {
+  return <Ionicons name="settings-outline" size={size} color={color} />;
+}
+
+export function LogOutIcon({ size = 18, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="log-out-outline" size={size} color={color} />;
+}
+
+export function ShieldIcon({ size = 20, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="shield-checkmark-outline" size={size} color={color} />;
+}
+
+export function DocumentIcon({ size = 20, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="document-text-outline" size={size} color={color} />;
+}
+
+export function MailIcon({ size = 20, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="mail-outline" size={size} color={color} />;
+}
+
+export function RefreshIcon({ size = 20, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="refresh-outline" size={size} color={color} />;
+}
+
+export function CardIcon({ size = 20, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="card-outline" size={size} color={color} />;
+}
+
 export function ChevronRightIcon({ size = 22, color = "#f2b48c" }: IconProps) {
   return <Ionicons name="chevron-forward" size={size} color={color} />;
 }

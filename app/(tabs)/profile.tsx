@@ -1,28 +1,46 @@
 import { useCallback, useEffect, useState } from "react";
 import type { JSX } from "react";
-import { View, Text, Pressable, Alert, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView, ActivityIndicator } from "react-native";
+import Constants from "expo-constants";
+import * as Haptics from "expo-haptics";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useBottomTabBarHeight } from "expo-router/js-tabs";
+import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { signOut, deleteAccount } from "../../src/lib/auth";
 import { useUserStore } from "../../src/store/useUserStore";
-import { fetchUserStatus } from "../../src/lib/playback";
+import { resolveSubscriptionState } from "../../src/lib/subscription";
+import { restorePurchases, getManagementUrl } from "../../src/lib/revenuecat";
+import {
+  PRIVACY_POLICY_URL,
+  TERMS_URL,
+  SUPPORT_EMAIL,
+  LEGAL_LINKS_READY,
+  openExternalUrl,
+  openSupportEmail,
+  openManageSubscription,
+} from "../../src/lib/links";
 import { changeAppLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from "../../src/lib/i18n";
 import { getBedtimeReminderPreference, setBedtimeReminder, type BedtimeReminderPreference } from "../../src/lib/bedtimeReminder";
-import { useFavorites } from "../../src/hooks/useFavorites";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { GlowBackground } from "../../src/components/GlowBackground";
 import { ScreenHeader } from "../../src/components/ScreenHeader";
+import { BottomSheet } from "../../src/components/BottomSheet";
 import { Toggle } from "../../src/components/ui/Toggle";
 import { Button } from "../../src/components/ui/Button";
-import { SelectChip } from "../../src/components/ui/SelectChip";
 import {
   BellIcon,
+  CheckIcon,
   ChevronRightIcon,
-  HeartIcon,
-  PencilIcon,
-  UserIcon,
-  WindIcon,
+  DocumentIcon,
+  LanguageIcon,
+  LogOutIcon,
+  MailIcon,
+  RefreshIcon,
+  ShieldIcon,
+  SparklesIcon,
+  TrashIcon,
+  XIcon,
 } from "../../src/components/icons";
 import type { IconProps } from "../../src/components/icons";
 
@@ -35,6 +53,34 @@ const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   pt: "Português",
 };
 
+type Notice = {
+  title: string;
+  message: string;
+  // Failure notices that can just be retried carry the action here; the
+  // sheet then leads with "Try again" instead of a dead-end "OK".
+  retry?: () => void | Promise<void>;
+};
+
+// App-wide press vocabulary (Button.tsx / SelectChip.tsx / sleep.tsx) —
+// reused here rather than inventing an opacity-only fallback.
+const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+function usePressScale(targetScale: number, duration = 150, disabled = false) {
+  const scale = useSharedValue(1);
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  return {
+    style,
+    onPressIn: () => {
+      if (disabled) return;
+      scale.value = withTiming(targetScale, { duration, easing: EASE_OUT, reduceMotion: ReduceMotion.System });
+    },
+    onPressOut: () => {
+      scale.value = withTiming(1, { duration, easing: EASE_OUT, reduceMotion: ReduceMotion.System });
+    },
+  };
+}
+
 function Hairline() {
   const colors = useThemeColors();
   return <View style={{ height: 1, backgroundColor: colors.stroke }} />;
@@ -46,31 +92,72 @@ function Row({
   subtitle,
   trailing,
   onPress,
+  tone = "default",
+  busy = false,
+  accessibilityLabel,
 }: {
   icon: (props: IconProps) => JSX.Element;
   title: string;
   subtitle?: string;
-  trailing: React.ReactNode;
+  trailing?: React.ReactNode;
   onPress?: () => void;
+  tone?: "default" | "danger";
+  // A non-pressable row whose title reflects an in-flight operation
+  // (delete → "Deleting…"): announce the change and keep it a status node.
+  busy?: boolean;
+  accessibilityLabel?: string;
 }) {
   const colors = useThemeColors();
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={!onPress}
-      style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 56, paddingVertical: 8, paddingHorizontal: 2 }}
-      accessibilityRole={onPress ? "button" : undefined}
-    >
-      <Icon size={20} color={colors.accent} strokeWidth={1.6} />
+  const press = usePressScale(0.98, 150, !onPress);
+  const leadColor = tone === "danger" ? colors.danger : colors.accent;
+  const titleColor = tone === "danger" ? colors.danger : colors.text;
+
+  const content = (
+    <>
+      <Icon size={20} color={leadColor} strokeWidth={1.6} />
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-        <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>{title}</Text>
-        {subtitle && <Text style={{ fontSize: 11.5, color: colors.faint }}>{subtitle}</Text>}
+        <Text style={{ fontSize: 14, fontWeight: "600", color: titleColor }}>{title}</Text>
+        {/* muted (~6.5:1 on `card`), not faint (~3.7:1, under the 4.5:1
+            small-text floor) — this line carries the row's current value,
+            read at arm's length in the dark. Same fix applied on sleep.tsx. */}
+        {subtitle ? <Text style={{ fontSize: 11.5, color: colors.muted }}>{subtitle}</Text> : null}
       </View>
       {trailing}
-    </Pressable>
+    </>
+  );
+
+  const layout = { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 56, paddingVertical: 8, paddingHorizontal: 2 } as const;
+
+  if (!onPress) {
+    return (
+      <View
+        style={layout}
+        accessible={busy || undefined}
+        accessibilityLiveRegion={busy ? "polite" : "none"}
+        accessibilityLabel={busy ? accessibilityLabel ?? title : undefined}
+      >
+        {content}
+      </View>
+    );
+  }
+
+  return (
+    <AnimatedPressable
+      onPress={onPress}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? title}
+      style={[layout, press.style]}
+    >
+      {content}
+    </AnimatedPressable>
   );
 }
 
+// Chevron here means "opens something" — every Row that renders it now
+// actually navigates. Value text in `muted` (a real value the user reads),
+// chevron in `faint` (a decorative affordance cue).
 function ValueChevron({ value }: { value: string }) {
   const colors = useThemeColors();
   return (
@@ -81,19 +168,42 @@ function ValueChevron({ value }: { value: string }) {
   );
 }
 
-function Group({ label, children }: { label: string; children: React.ReactNode }) {
+function Chevron() {
   const colors = useThemeColors();
+  return <ChevronRightIcon size={15} color={colors.faint} strokeWidth={1.7} />;
+}
+
+function Group({ label, children, tone = "default" }: { label: string; children: React.ReactNode; tone?: "default" | "danger" }) {
+  const colors = useThemeColors();
+  const isDanger = tone === "danger";
   return (
     <View style={{ gap: 9 }}>
-      <Text style={{ fontSize: 11, fontWeight: "700", letterSpacing: 1.3, color: colors.faint }}>{label}</Text>
-      <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.stroke, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 4 }}>
+      {/* Overline in `muted` (DESIGN.md's Overline role is accent or muted).
+          The danger section steps the overline + the card border up to the
+          `danger` red — enough to read as a distinct, cautionary zone
+          without a full red-tinted fill (which over-signalled on an
+          otherwise near-monochrome bedtime screen). The full red-bordered
+          treatment lives on the confirmation sheet, where it belongs. */}
+      <Text accessibilityRole="header" style={{ fontSize: 11, fontWeight: "700", letterSpacing: 1.3, color: isDanger ? colors.danger : colors.muted }}>
+        {label}
+      </Text>
+      <View
+        style={{
+          backgroundColor: colors.card,
+          borderWidth: 1,
+          borderColor: isDanger ? colors.danger : colors.stroke,
+          borderRadius: 20,
+          paddingHorizontal: 14,
+          paddingVertical: 4,
+        }}
+      >
         {children}
       </View>
     </View>
   );
 }
 
-export default function ProfileScreen() {
+export default function SettingsScreen() {
   const { t } = useTranslation("settings");
   const router = useRouter();
   const colors = useThemeColors();
@@ -103,35 +213,21 @@ export default function ProfileScreen() {
   const setCooldownEndsAt = useUserStore((state) => state.setCooldownEndsAt);
   const language = useUserStore((state) => state.language);
   const setLanguage = useUserStore((state) => state.setLanguage);
-  const [isDeleting, setIsDeleting] = useState(false);
+
   const [bedtime, setBedtime] = useState<BedtimeReminderPreference>({ enabled: false, hour: 22, minute: 0 });
-  const { favoriteIds, refetch: refetchFavorites } = useFavorites();
+
+  const [languageSheetOpen, setLanguageSheetOpen] = useState(false);
+  const [pendingLanguage, setPendingLanguage] = useState<SupportedLanguage | null>(null);
+  const [signOutSheetOpen, setSignOutSheetOpen] = useState(false);
+  const [deleteSheetOpen, setDeleteSheetOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [isOpeningManage, setIsOpeningManage] = useState(false);
+  const [notice, setNotice] = useState<Notice | null>(null);
 
   useEffect(() => {
     getBedtimeReminderPreference().then(setBedtime);
   }, []);
-
-  // A like/unlike happens on the Now Playing screen, a separate mount of
-  // useFavorites with its own fetch — refresh here on focus so the count
-  // doesn't go stale after navigating back.
-  useFocusEffect(
-    useCallback(() => {
-      refetchFavorites();
-    }, [refetchFavorites])
-  );
-
-  async function handleSelectLanguage(next: SupportedLanguage) {
-    if (next === language) return;
-    await changeAppLanguage(next);
-    setLanguage(next);
-  }
-
-  async function handleToggleBedtime() {
-    const next = { ...bedtime, enabled: !bedtime.enabled };
-    const granted = await setBedtimeReminder(next);
-    setBedtime(granted ? next : { ...next, enabled: false });
-    if (!granted) Alert.alert(t("bedtimePermissionDeniedTitle"), t("bedtimePermissionDeniedMessage"));
-  }
 
   // RevenueCat'in cihaz-lokal customerInfo listener'ı iptal/expire gibi
   // durumlarda gecikmeli tetiklenebiliyor. Ekran her odaklandığında backend'in
@@ -139,36 +235,105 @@ export default function ProfileScreen() {
   // aynı kaynak) tekrar sorarak iki ekran arasında tutarsızlığı önlüyoruz.
   useFocusEffect(
     useCallback(() => {
-      fetchUserStatus().then((status) => {
-        if (!status) return;
-        setSubscriptionStatus(status.plan);
-        setCooldownEndsAt(status.cooldown_ends_at);
+      resolveSubscriptionState().then((state) => {
+        if (!state) return;
+        setSubscriptionStatus(state.plan);
+        setCooldownEndsAt(state.cooldownEndsAt);
       });
     }, [setSubscriptionStatus, setCooldownEndsAt])
   );
 
-  async function handleSignOut() {
-    const { error } = await signOut();
-    if (error) Alert.alert(t("signOutFailedTitle"), error.message);
+  async function handleToggleBedtime() {
+    const next = { ...bedtime, enabled: !bedtime.enabled };
+    const granted = await setBedtimeReminder(next);
+    setBedtime(granted ? next : { ...next, enabled: false });
+    if (!granted) setNotice({ title: t("bedtimePermissionDeniedTitle"), message: t("bedtimePermissionDeniedMessage") });
   }
 
-  function handleDeleteAccount() {
-    Alert.alert(t("deleteConfirmTitle"), t("deleteConfirmMessage"), [
-      { text: t("common:cancel"), style: "cancel" },
-      {
-        text: t("deleteAccount"),
-        style: "destructive",
-        onPress: async () => {
-          setIsDeleting(true);
-          const { error } = await deleteAccount();
-          setIsDeleting(false);
-          if (error) Alert.alert(t("deleteFailedTitle"), error.message);
-        },
-      },
-    ]);
+  async function handleSelectLanguage(next: SupportedLanguage) {
+    if (next === language || pendingLanguage) {
+      if (next === language) setLanguageSheetOpen(false);
+      return;
+    }
+    // Show a spinner on the tapped row while the switch applies + a short
+    // settle beat, so the pause reads as "applying" rather than a frozen
+    // sheet. Other rows go inert until it resolves (guard above).
+    setPendingLanguage(next);
+    Haptics.selectionAsync().catch(() => {});
+    await changeAppLanguage(next);
+    setLanguage(next);
+    setTimeout(() => {
+      setLanguageSheetOpen(false);
+      setPendingLanguage(null);
+    }, 350);
+  }
+
+  async function runSignOut() {
+    setNotice(null);
+    const { error } = await signOut();
+    if (error) setNotice({ title: t("signOutFailedTitle"), message: t("signOutFailedMessage"), retry: runSignOut });
+  }
+
+  function confirmSignOut() {
+    setSignOutSheetOpen(false);
+    void runSignOut();
+  }
+
+  async function runDeleteAccount() {
+    setNotice(null);
+    setIsDeleting(true);
+    const { error } = await deleteAccount();
+    setIsDeleting(false);
+    setDeleteSheetOpen(false);
+    if (error) setNotice({ title: t("deleteFailedTitle"), message: t("deleteFailedMessage"), retry: runDeleteAccount });
+  }
+
+  async function handleRestore() {
+    setNotice(null);
+    setIsRestoring(true);
+    try {
+      await restorePurchases();
+      const state = await resolveSubscriptionState();
+      if (state?.plan === "premium") {
+        setSubscriptionStatus("premium");
+        setCooldownEndsAt(null);
+        setNotice({ title: t("restoreSuccessTitle"), message: t("restoreSuccessMessage") });
+      } else {
+        setNotice({ title: t("restoreNoneTitle"), message: t("restoreNoneMessage") });
+      }
+    } catch {
+      setNotice({ title: t("restoreFailedTitle"), message: t("restoreFailedMessage"), retry: handleRestore });
+    } finally {
+      setIsRestoring(false);
+    }
+  }
+
+  async function handleManageSubscription() {
+    if (isOpeningManage) return;
+    setIsOpeningManage(true);
+    try {
+      const url = await getManagementUrl();
+      openManageSubscription(url);
+    } finally {
+      setIsOpeningManage(false);
+    }
+  }
+
+  async function handleSupportEmail() {
+    try {
+      await openSupportEmail();
+    } catch {
+      // No mail client — surface the address instead of a dead tap.
+      setNotice({ title: t("supportRow"), message: t("supportFallbackMessage", { email: SUPPORT_EMAIL }) });
+    }
   }
 
   const bedtimeTime = `${bedtime.hour.toString().padStart(2, "0")}:${bedtime.minute.toString().padStart(2, "0")}`;
+  const bedtimeStateLabel = bedtime.enabled
+    ? t("bedtimeReminderOnSubtitle", { time: bedtimeTime })
+    : t("bedtimeReminderOffSubtitle");
+  const isPremium = subscriptionStatus === "premium";
+  const version = Constants.expoConfig?.version ?? "";
 
   return (
     <GlowBackground
@@ -178,75 +343,351 @@ export default function ProfileScreen() {
     >
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 18 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
       >
         <ScreenHeader eyebrow={t("screenEyebrow")} title={t("screenTitle")} />
 
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-          <GlowBackground variant="artworkTile" style={{ width: 62, height: 62, borderRadius: 999, borderWidth: 1, borderColor: colors.stroke, alignItems: "center", justifyContent: "center" }}>
-            <UserIcon size={26} color={colors.moon} strokeWidth={1.4} />
-          </GlowBackground>
-          <View style={{ flex: 1, gap: 3 }}>
-            {subscriptionStatus === "premium" ? (
-              <Text style={{ fontSize: 12.5, fontWeight: "700", color: "#4ade80" }}>{t("premiumActive")}</Text>
-            ) : (
-              <Pressable onPress={() => router.push("/paywall")} accessibilityRole="button">
-                <Text style={{ fontSize: 12.5, fontWeight: "700", color: colors.accent }}>{t("common:goPremium")}</Text>
-              </Pressable>
-            )}
+        {/* Membership — the app's one monetization surface, and it carries
+            exactly one CTA: Go Premium for free, Manage subscription for
+            premium (so the plan and its controls sit together). No fake
+            urgency (PRODUCT.md principle 1): the copy names the free limit
+            plainly and lets the user decide. */}
+        <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.stroke, borderRadius: 20, padding: 16, gap: 14 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <SparklesIcon size={20} color={colors.accent} strokeWidth={1.6} />
+            <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+              <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+                {isPremium ? t("planPremiumTitle") : t("planFreeTitle")}
+              </Text>
+              <Text style={{ fontSize: 12, color: colors.muted }}>
+                {isPremium ? t("planPremiumSubtitle") : t("planFreeSubtitle")}
+              </Text>
+            </View>
           </View>
+          {isPremium ? (
+            <Button
+              label={t("manageSubscription")}
+              variant="outline"
+              loading={isOpeningManage}
+              onPress={handleManageSubscription}
+            />
+          ) : (
+            <Button label={t("common:goPremium")} onPress={() => router.push("/paywall")} />
+          )}
         </View>
-
-        <Group label={t("libraryGroup")}>
-          <Row icon={HeartIcon} title={t("favoriteSoundsRowTitle")} trailing={<ValueChevron value={String(favoriteIds.size)} />} />
-        </Group>
 
         <Group label={t("preferencesGroup")}>
           <Row
             icon={BellIcon}
             title={t("bedtimeTitle")}
-            subtitle={bedtime.enabled ? t("bedtimeReminderOnSubtitle", { time: bedtimeTime }) : t("bedtimeReminderOffSubtitle")}
-            trailing={<Toggle value={bedtime.enabled} onValueChange={handleToggleBedtime} accessibilityLabel={t("bedtimeTitle")} />}
+            subtitle={bedtimeStateLabel}
+            trailing={
+              <Toggle
+                value={bedtime.enabled}
+                onValueChange={handleToggleBedtime}
+                accessibilityLabel={`${t("bedtimeTitle")}, ${bedtimeStateLabel}`}
+              />
+            }
           />
           <Hairline />
           <Row
-            icon={WindIcon}
+            icon={LanguageIcon}
             title={t("languageRowTitle")}
             trailing={<ValueChevron value={LANGUAGE_LABELS[language]} />}
+            onPress={() => setLanguageSheetOpen(true)}
+            accessibilityLabel={`${t("languageRowTitle")}, ${LANGUAGE_LABELS[language]}`}
           />
         </Group>
-
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {SUPPORTED_LANGUAGES.map((lang) => (
-            <SelectChip
-              key={lang}
-              label={LANGUAGE_LABELS[lang]}
-              selected={language === lang}
-              onPress={() => handleSelectLanguage(lang)}
-              height={40}
-              fontSize={12.5}
-            />
-          ))}
-        </View>
 
         <Group label={t("accountGroup")}>
-          <Row icon={UserIcon} title={t("accountRowTitle")} trailing={<ChevronRightIcon size={15} color={colors.faint} strokeWidth={1.7} />} onPress={handleSignOut} />
-          <Hairline />
+          {!isPremium && (
+            <>
+              <Row
+                icon={RefreshIcon}
+                title={t("restorePurchases")}
+                subtitle={isRestoring ? t("restoring") : undefined}
+                busy={isRestoring}
+                accessibilityLabel={isRestoring ? t("restoring") : undefined}
+                trailing={isRestoring ? <ActivityIndicator size="small" color={colors.muted} /> : undefined}
+                onPress={isRestoring ? undefined : handleRestore}
+              />
+              <Hairline />
+            </>
+          )}
+          {/* No chevron — sign-out opens a confirmation sheet, it doesn't
+              navigate; the missing chevron also sets it apart from the
+              external ABOUT links below. */}
+          <Row icon={LogOutIcon} title={t("signOut")} onPress={() => setSignOutSheetOpen(true)} />
+        </Group>
+
+        <Group label={t("aboutGroup")}>
+          {LEGAL_LINKS_READY && (
+            <>
+              <Row icon={ShieldIcon} title={t("privacyRow")} trailing={<Chevron />} onPress={() => openExternalUrl(PRIVACY_POLICY_URL)} />
+              <Hairline />
+              <Row icon={DocumentIcon} title={t("termsRow")} trailing={<Chevron />} onPress={() => openExternalUrl(TERMS_URL)} />
+              <Hairline />
+            </>
+          )}
+          <Row icon={MailIcon} title={t("supportRow")} trailing={<Chevron />} onPress={handleSupportEmail} />
+        </Group>
+
+        <Group label={t("dangerGroup")} tone="danger">
           <Row
-            icon={PencilIcon}
+            icon={TrashIcon}
             title={isDeleting ? t("deleting") : t("deleteAccount")}
-            trailing={<ChevronRightIcon size={15} color={colors.faint} strokeWidth={1.7} />}
-            onPress={handleDeleteAccount}
+            tone="danger"
+            busy={isDeleting}
+            onPress={isDeleting ? undefined : () => setDeleteSheetOpen(true)}
           />
         </Group>
 
-        {/* Dev/review-only entry point for the not-yet-wired onboarding funnel. */}
-        <Pressable onPress={() => router.push("/(onboarding)/welcome")} accessibilityRole="button">
-          <Text style={{ fontSize: 12.5, color: colors.faint, textAlign: "center" }}>{t("previewOnboarding")}</Text>
-        </Pressable>
+        {/* Dev/review-only entry point for the not-yet-wired onboarding
+            funnel — gated so it never ships in a production build. */}
+        {__DEV__ && (
+          <Pressable
+            onPress={() => router.push("/(onboarding)/welcome")}
+            accessibilityRole="button"
+            style={{ minHeight: 44, justifyContent: "center" }}
+          >
+            <Text style={{ fontSize: 12.5, color: colors.muted, textAlign: "center" }}>{t("previewOnboarding")}</Text>
+          </Pressable>
+        )}
 
-        <Button label={t("signOut")} variant="outline" onPress={handleSignOut} />
+        <View style={{ alignItems: "center", gap: 3, paddingTop: 2 }}>
+          <Text style={{ fontSize: 12, color: colors.muted, letterSpacing: 0.2 }}>{t("footerTagline")}</Text>
+          {version ? <Text style={{ fontSize: 11, color: colors.muted }}>{`Pulvio ${version}`}</Text> : null}
+        </View>
       </ScrollView>
+
+      <LanguageSheet
+        visible={languageSheetOpen}
+        current={language}
+        pending={pendingLanguage}
+        onSelect={handleSelectLanguage}
+        onClose={() => setLanguageSheetOpen(false)}
+      />
+      <SignOutSheet visible={signOutSheetOpen} onConfirm={confirmSignOut} onClose={() => setSignOutSheetOpen(false)} />
+      <DeleteAccountSheet
+        visible={deleteSheetOpen}
+        deleting={isDeleting}
+        onConfirm={runDeleteAccount}
+        onClose={() => {
+          if (!isDeleting) setDeleteSheetOpen(false);
+        }}
+      />
+      <NoticeSheet notice={notice} onClose={() => setNotice(null)} />
     </GlowBackground>
+  );
+}
+
+// Same dark BottomSheet the rest of the app uses instead of a bright native
+// Alert — a full-brightness system dialog is the single most jarring thing
+// this screen could produce in a dark room (see sleep.tsx's PermissionDeniedSheet).
+// A failure notice with a `retry` leads with "Try again" so the user isn't
+// left to re-find and re-trigger the action they just attempted.
+function NoticeSheet({ notice, onClose }: { notice: Notice | null; onClose: () => void }) {
+  const { t } = useTranslation("settings");
+  const colors = useThemeColors();
+  // Retain the last content so the copy doesn't blank out mid close-animation.
+  const [shown, setShown] = useState(notice);
+  useEffect(() => {
+    if (notice) setShown(notice);
+  }, [notice]);
+
+  const retry = notice?.retry;
+
+  return (
+    <BottomSheet visible={!!notice} onClose={onClose} style={{ borderWidth: 1, borderColor: colors.stroke, padding: 20, gap: 16 }}>
+      <View style={{ gap: 6 }} accessible accessibilityLiveRegion="polite">
+        <Text className="font-bold" style={{ fontSize: 16, color: colors.text }}>
+          {shown?.title}
+        </Text>
+        <Text style={{ fontSize: 13.5, color: colors.muted, lineHeight: 19 }}>{shown?.message}</Text>
+      </View>
+      {retry ? (
+        <View style={{ gap: 8 }}>
+          <Button
+            label={t("common:retry")}
+            onPress={() => {
+              onClose();
+              void retry();
+            }}
+          />
+          <Button label={t("common:close")} variant="outline" onPress={onClose} />
+        </View>
+      ) : (
+        <Button label={t("common:ok")} onPress={onClose} />
+      )}
+    </BottomSheet>
+  );
+}
+
+// Sign-out lives in exactly one place (the ACCOUNT row) and always asks
+// first. Being dropped at an auth wall is a real late-night valley — one
+// mis-tap should never do it.
+function SignOutSheet({ visible, onConfirm, onClose }: { visible: boolean; onConfirm: () => void; onClose: () => void }) {
+  const { t } = useTranslation("settings");
+  const colors = useThemeColors();
+  return (
+    <BottomSheet visible={visible} onClose={onClose} style={{ borderWidth: 1, borderColor: colors.stroke, padding: 20, gap: 16 }}>
+      <View style={{ gap: 6 }}>
+        <Text className="font-bold" style={{ fontSize: 16, color: colors.text }}>
+          {t("signOutConfirmTitle")}
+        </Text>
+        <Text style={{ fontSize: 13.5, color: colors.muted, lineHeight: 19 }}>{t("signOutConfirmMessage")}</Text>
+      </View>
+      <View style={{ gap: 8 }}>
+        <Button label={t("signOut")} onPress={onConfirm} />
+        <Button label={t("common:cancel")} variant="outline" onPress={onClose} />
+      </View>
+    </BottomSheet>
+  );
+}
+
+// Irreversible, so it earns real friction: a `danger` heading and border, a
+// deliberate two-tap confirm — "Delete account" (danger outline) arms
+// "Delete forever" (solid danger) with a warning haptic — and a modal lock
+// while the request runs, with a "this can take a moment" note so it never
+// reads as frozen.
+function DeleteAccountSheet({
+  visible,
+  deleting,
+  onConfirm,
+  onClose,
+}: {
+  visible: boolean;
+  deleting: boolean;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation("settings");
+  const colors = useThemeColors();
+  const [armed, setArmed] = useState(false);
+
+  useEffect(() => {
+    if (visible) setArmed(false);
+  }, [visible]);
+
+  function arm() {
+    setArmed(true);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+  }
+
+  return (
+    <BottomSheet visible={visible} onClose={onClose} style={{ borderWidth: 1, borderColor: colors.danger, backgroundColor: colors.bg, padding: 20, gap: 16 }}>
+      <View style={{ gap: 6 }} accessible accessibilityLiveRegion="polite">
+        <Text className="font-bold" style={{ fontSize: 16, color: colors.danger }}>
+          {t("deleteConfirmTitle")}
+        </Text>
+        <Text style={{ fontSize: 13.5, color: colors.muted, lineHeight: 19 }}>{t("deleteConfirmMessage")}</Text>
+        {armed && !deleting && (
+          <Text style={{ fontSize: 13, fontWeight: "700", color: colors.danger }}>{t("deleteFinalPrompt")}</Text>
+        )}
+        {deleting && <Text style={{ fontSize: 12.5, color: colors.muted }}>{t("deleteWorkingNote")}</Text>}
+      </View>
+      <View style={{ gap: 8 }}>
+        {armed ? (
+          <Button label={deleting ? t("deleting") : t("deleteFinalCta")} variant="danger" loading={deleting} onPress={onConfirm} />
+        ) : (
+          <Button label={t("deleteConfirmCta")} variant="danger-outline" onPress={arm} />
+        )}
+        {!deleting && <Button label={t("common:cancel")} variant="outline" onPress={onClose} />}
+      </View>
+    </BottomSheet>
+  );
+}
+
+function LanguageOption({
+  label,
+  selected,
+  pending,
+  disabled,
+  onPress,
+  last,
+}: {
+  label: string;
+  selected: boolean;
+  pending: boolean;
+  disabled: boolean;
+  onPress: () => void;
+  last: boolean;
+}) {
+  const colors = useThemeColors();
+  const press = usePressScale(0.98, 150, disabled);
+  return (
+    <AnimatedPressable
+      onPress={disabled ? undefined : onPress}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      accessibilityRole="button"
+      accessibilityState={{ selected, disabled, busy: pending }}
+      style={[
+        {
+          flexDirection: "row",
+          alignItems: "center",
+          minHeight: 52,
+          borderBottomWidth: last ? 0 : 1,
+          borderBottomColor: colors.stroke,
+          opacity: disabled && !pending ? 0.4 : 1,
+        },
+        press.style,
+      ]}
+    >
+      <Text style={{ flex: 1, fontSize: 15, fontWeight: selected || pending ? "700" : "500", color: selected || pending ? colors.accent : colors.text }}>
+        {label}
+      </Text>
+      {pending ? (
+        <ActivityIndicator size="small" color={colors.accent} />
+      ) : selected ? (
+        <CheckIcon size={18} color={colors.accent} strokeWidth={2} />
+      ) : null}
+    </AnimatedPressable>
+  );
+}
+
+// One representation of the language setting — the Row opens this, the
+// choice lives here. Selecting shows a spinner on that row while the switch
+// applies + a short settle beat (see handleSelectLanguage), then dismisses.
+function LanguageSheet({
+  visible,
+  current,
+  pending,
+  onSelect,
+  onClose,
+}: {
+  visible: boolean;
+  current: SupportedLanguage;
+  pending: SupportedLanguage | null;
+  onSelect: (lang: SupportedLanguage) => void;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation("settings");
+  const colors = useThemeColors();
+  return (
+    <BottomSheet visible={visible} onClose={onClose} style={{ borderWidth: 1, borderColor: colors.stroke, paddingTop: 16, paddingBottom: 24 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 12 }}>
+        <Text className="font-bold" accessibilityRole="header" style={{ fontSize: 16, color: colors.text }}>
+          {t("languageSheetTitle")}
+        </Text>
+        <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel={t("common:close")} hitSlop={12}>
+          <XIcon size={20} color={colors.faint} strokeWidth={1.7} />
+        </Pressable>
+      </View>
+      <Hairline />
+      <View style={{ paddingHorizontal: 20 }}>
+        {SUPPORTED_LANGUAGES.map((lang, index) => (
+          <LanguageOption
+            key={lang}
+            label={LANGUAGE_LABELS[lang]}
+            selected={lang === current}
+            pending={pending === lang}
+            disabled={pending !== null}
+            onPress={() => onSelect(lang)}
+            last={index === SUPPORTED_LANGUAGES.length - 1}
+          />
+        ))}
+      </View>
+    </BottomSheet>
   );
 }

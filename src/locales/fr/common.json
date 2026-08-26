@@ -4,5 +4,7 @@
   "cancel": "Annuler",
   "retry": "Réessayer",
   "notNow": "Plus tard",
-  "goPremium": "Passer à Premium"
+  "goPremium": "Passer à Premium",
+  "back": "Retour",
+  "loading": "Chargement"
 }

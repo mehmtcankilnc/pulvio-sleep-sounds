@@ -4,5 +4,7 @@
   "cancel": "Vazgeç",
   "retry": "Tekrar dene",
   "notNow": "Şimdi değil",
-  "goPremium": "Premium'a Geç"
+  "goPremium": "Premium'a Geç",
+  "back": "Geri",
+  "loading": "Yükleniyor"
 }

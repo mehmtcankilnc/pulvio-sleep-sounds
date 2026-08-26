@@ -20,6 +20,13 @@ import { PlayerEngineProvider } from "../src/lib/player/PlayerEngineProvider";
 import { initI18n } from "../src/lib/i18n";
 import { useThemeColors } from "../src/hooks/useThemeColors";
 
+// Cold start resolves `/` to this group, not `(auth)` — so a logged-in user
+// never gets the login screen as the first painted frame while the guard
+// below settles.
+export const unstable_settings = {
+  initialRouteName: "(tabs)",
+};
+
 export default function RootLayout() {
   const colors = useThemeColors();
   useAuthListener();
@@ -48,22 +55,29 @@ export default function RootLayout() {
     });
   }, [setLanguage]);
 
+  const ready = session !== undefined && i18nReady && fontsLoaded;
+  const inAuthGroup = segments[0] === "(auth)";
+  // True for the frame(s) where auth is known but the current route is still
+  // the wrong group and the guard's replace() hasn't landed yet.
+  const redirecting = ready && (!session ? !inAuthGroup : inAuthGroup);
+
   // Root Layout only mounts the Stack (below) once session/i18n/fonts are
   // all ready — redirecting before that throws "navigate before mounting
   // the Root Layout component", since there's no navigator mounted yet.
   useEffect(() => {
-    if (session === undefined || !i18nReady || !fontsLoaded) return;
-
-    const inAuthGroup = segments[0] === "(auth)";
+    if (!ready) return;
 
     if (!session && !inAuthGroup) {
       router.replace("/(auth)");
     } else if (session && inAuthGroup) {
       router.replace("/(tabs)");
     }
-  }, [session, i18nReady, fontsLoaded, segments, router]);
+  }, [ready, session, inAuthGroup, router]);
 
-  if (session === undefined || !i18nReady || !fontsLoaded) {
+  // Keep the plain loading screen up until auth is resolved AND we're already
+  // on the right group — so neither the login screen nor the tabs flash for a
+  // frame before the guard settles.
+  if (!ready || redirecting) {
     return (
       <View
         className="flex-1 items-center justify-center"
@@ -89,6 +103,7 @@ function AppShell() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="discover" />
+        <Stack.Screen name="favorites" />
         <Stack.Screen
           name="player"
           options={{

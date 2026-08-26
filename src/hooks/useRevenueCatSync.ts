@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import Purchases from "react-native-purchases";
 import { useUserStore } from "../store/useUserStore";
 import { configureRevenueCatOnce } from "../lib/revenuecat";
-import { fetchUserStatus } from "../lib/playback";
+import { resolveSubscriptionState } from "../lib/subscription";
 
 // app/_layout.tsx içinde bir kez mount edilir. RevenueCat SDK'sını başlatır,
 // Supabase user id'sini RevenueCat app_user_id'si olarak eşler (webhook'taki
@@ -32,10 +32,10 @@ export function useRevenueCatSync() {
 
   useEffect(() => {
     const listener = () => {
-      fetchUserStatus().then((status) => {
-        if (!status) return;
-        setSubscriptionStatus(status.plan);
-        setCooldownEndsAt(status.cooldown_ends_at);
+      resolveSubscriptionState().then((state) => {
+        if (!state) return;
+        setSubscriptionStatus(state.plan);
+        setCooldownEndsAt(state.cooldownEndsAt);
       });
     };
 

@@ -11,11 +11,21 @@ export function useAuthListener() {
   const setSession = useUserStore((state) => state.setSession);
 
   useEffect(() => {
+    // getSession() AsyncStorage kurtarma + gerekirse token yenilemesini
+    // bekleyip İLK yetkili değeri verir. onAuthStateChange ise abone olur
+    // olmaz, storage kurtarması bitmeden geçici bir INITIAL_SESSION(null)
+    // yayınlayabiliyor — bunu store'a yazarsak, oturumu açık bir kullanıcı
+    // soğuk açılışta bir an login ekranına düşüp sonra geri yönleniyor.
+    // Bu yüzden getSession() çözülene kadar listener olaylarını yok sayıyoruz.
+    let initialResolved = false;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      initialResolved = true;
       setSession(session);
     });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!initialResolved) return;
       setSession(session);
     });
 

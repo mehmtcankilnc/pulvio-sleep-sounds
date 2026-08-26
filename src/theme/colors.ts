@@ -23,6 +23,17 @@ export const colors = {
   // family (never a red alert). Used for recoverable notices — a failed load,
   // a free-limit stop — where a red flash would wreck a dark-adapted eye.
   notice: "#e0a86a",
+  // Danger: the ONE sanctioned red, for irreversible destructive actions only
+  // (delete account). Deliberately pushed toward the warm end and desaturated
+  // so it still belongs to Dusk Ember rather than firing as a cold system-red
+  // alarm in a dark room — but unmistakably red next to the ember accent.
+  // Legible as text/icon/border on `bg` (~5:1); the solid danger button pairs
+  // it with dark `buttonText`, never white (Button-Text Rule). The danger-zone
+  // card in Settings uses only the `danger` border + overline (a full red
+  // fill over-signalled on a near-monochrome bedtime screen); `dangerGlow` is
+  // kept as an available faint red fill for a fully-committed danger surface.
+  danger: "#e0655c",
+  dangerGlow: "rgba(224,101,92,0.13)",
 } as const;
 
 export type ColorToken = keyof typeof colors;

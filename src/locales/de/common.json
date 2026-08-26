@@ -4,5 +4,7 @@
   "cancel": "Abbrechen",
   "retry": "Erneut versuchen",
   "notNow": "Jetzt nicht",
-  "goPremium": "Premium holen"
+  "goPremium": "Premium holen",
+  "back": "Zurück",
+  "loading": "Wird geladen"
 }

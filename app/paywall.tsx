@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import type { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
 import { getCurrentOffering, purchasePackage } from "../src/lib/revenuecat";
-import { fetchUserStatus } from "../src/lib/playback";
+import { resolveSubscriptionState } from "../src/lib/subscription";
 import { useUserStore } from "../src/store/useUserStore";
 import { usePlayerStore } from "../src/store/usePlayerStore";
 import { usePlayerActions } from "../src/hooks/usePlayerActions";
@@ -69,8 +69,8 @@ export default function PaywallScreen() {
 
       for (let attempt = 0; attempt < 5; attempt++) {
         await new Promise((resolve) => setTimeout(resolve, 1500));
-        const status = await fetchUserStatus();
-        if (status?.plan === "premium") {
+        const state = await resolveSubscriptionState();
+        if (state?.plan === "premium") {
           setSubscriptionStatus("premium");
           setCooldownEndsAt(null);
           usePlayerStore.getState().setDenyReason(null);

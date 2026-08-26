@@ -10,7 +10,7 @@ export function ScreenHeader({ eyebrow, title }: { eyebrow: string; title: strin
       <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
         {eyebrow}
       </Text>
-      <Text className="font-bold" style={{ fontSize: 22, letterSpacing: -0.2, color: colors.text }}>
+      <Text accessibilityRole="header" className="font-bold" style={{ fontSize: 22, letterSpacing: -0.2, color: colors.text }}>
         {title}
       </Text>
     </View>

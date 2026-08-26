@@ -1,12 +1,13 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { JSX } from "react";
 import { View, Text, ScrollView, ActivityIndicator, Pressable, Image, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated from "react-native-reanimated";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useBottomTabBarHeight } from "expo-router/js-tabs";
 import { useTracks } from "../../src/hooks/useTracks";
+import { useFavorites } from "../../src/hooks/useFavorites";
 import { useContinueListening } from "../../src/hooks/useContinueListening";
 import { usePlayerActions } from "../../src/hooks/usePlayerActions";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
@@ -15,9 +16,13 @@ import { categoryIcon } from "../../src/lib/categoryIcon";
 import { GlowBackground } from "../../src/components/GlowBackground";
 import { ScreenHeader } from "../../src/components/ScreenHeader";
 import { Button } from "../../src/components/ui/Button";
-import { EqBarsIcon, MoonIcon, PlayIcon } from "../../src/components/icons";
+import { ChevronRightIcon, MoonIcon, PlayIcon } from "../../src/components/icons";
 import type { IconProps } from "../../src/components/icons";
 import type { Track } from "../../src/types";
+
+// Rail is capped like the category rail (5) — a scannable set, with the
+// header "See all" as the path to the full, category-sectioned list.
+const FAVORITES_RAIL_CAP = 6;
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -139,55 +144,30 @@ function CategoryCard({
   );
 }
 
-// Deliberately not a CategoryCard: this isn't a category, it's the escape
-// hatch to the full catalog, so it gets its own accent-outlined surface
-// (transparent background, accent border, accent icon+label, centered
-// layout) instead of a photo tile — a distinct treatment on purpose, per
-// explicit product feedback that it shouldn't read as just another
-// category. It shares CategoryCard's footprint (width/height/radius) and
-// the app-wide press-scale recipe (usePressScale) but is otherwise its own
-// pattern, not a reuse of Button.tsx's outline variant — that button is a
-// full-width 54px pill with colors.stroke/colors.text, a different shape
-// and token pair entirely.
-function AllSoundsCard({
-  label,
-  onPress,
-  accessibilityLabel,
-}: {
-  label: string;
-  onPress: () => void;
-  accessibilityLabel: string;
-}) {
+// Every horizontal-rail section (Browse sounds, Favorites) opens with this:
+// a bold title and a right-aligned text link to the full view. The link
+// lives in the header, never at the end of the rail — the rail's far edge
+// is the worst spot on the screen for a nav action (behind a scroll, worst
+// thumb reach). For "All sounds" this also fully satisfies the product note
+// that it must not read as just another category: it isn't a card at all.
+function SectionHeader({ title, actionLabel, onAction }: { title: string; actionLabel: string; onAction: () => void }) {
   const colors = useThemeColors();
-  const press = usePressScale();
-
   return (
-    <AnimatedPressable
-      onPress={onPress}
-      onPressIn={press.onPressIn}
-      onPressOut={press.onPressOut}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      style={[
-        {
-          width: CARD_WIDTH,
-          height: CARD_HEIGHT,
-          borderRadius: 18,
-          borderWidth: 1,
-          borderColor: colors.accent,
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          paddingHorizontal: 10,
-        },
-        press.animatedStyle,
-      ]}
-    >
-      <EqBarsIcon size={22} color={colors.accent} strokeWidth={1.6} />
-      <Text numberOfLines={1} style={{ fontSize: 12.5, fontWeight: "700", color: colors.accent }}>
-        {label}
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <Text className="font-bold" style={{ fontSize: 15.5, color: colors.text }}>
+        {title}
       </Text>
-    </AnimatedPressable>
+      <Pressable
+        onPress={onAction}
+        accessibilityRole="button"
+        accessibilityLabel={actionLabel}
+        hitSlop={8}
+        style={{ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 3, justifyContent: "flex-end" }}
+      >
+        <Text style={{ fontSize: 12.5, fontWeight: "600", color: colors.accent }}>{actionLabel}</Text>
+        <ChevronRightIcon size={14} color={colors.accent} strokeWidth={1.7} />
+      </Pressable>
+    </View>
   );
 }
 
@@ -197,10 +177,23 @@ export default function ExploreScreen() {
   const colors = useThemeColors();
   const tabBarHeight = useBottomTabBarHeight();
   const { sections, loading, error, refetch } = useTracks();
+  const { favoriteIds, refetch: refetchFavorites } = useFavorites();
   const continueListeningId = useContinueListening();
   const { loadAndPlay } = usePlayerActions();
 
+  // A like/unlike happens on Now Playing (its own useFavorites mount) —
+  // refresh on focus so this section reflects it after navigating back.
+  useFocusEffect(
+    useCallback(() => {
+      refetchFavorites();
+    }, [refetchFavorites])
+  );
+
   const allTracks = useMemo(() => sections.flatMap((section) => section.data), [sections]);
+  const favoriteTracks = useMemo(
+    () => allTracks.filter((track) => favoriteIds.has(track.id)),
+    [allTracks, favoriteIds]
+  );
   const continueTrack = allTracks.find((track) => track.id === continueListeningId) ?? null;
   const tonightTrack = useMemo(
     () => pickTonightTrack(allTracks, continueTrack?.id ?? null),
@@ -310,10 +303,36 @@ export default function ExploreScreen() {
           </AnimatedPressable>
         )}
 
+        {favoriteTracks.length > 0 && (
+          <View style={{ gap: 12 }}>
+            <SectionHeader
+              title={t("favoritesTitle")}
+              actionLabel={t("favoritesSeeAll")}
+              onAction={() => router.push("/favorites")}
+            />
+            <View style={{ marginHorizontal: -20 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}>
+                {favoriteTracks.slice(0, FAVORITES_RAIL_CAP).map((track) => (
+                  <CategoryCard
+                    key={track.id}
+                    icon={categoryIcon(track.category, track.subcategory)}
+                    label={track.title}
+                    coverUrl={track.coverUrl}
+                    onPress={() => play(track)}
+                    accessibilityLabel={track.title}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        )}
+
         <View style={{ gap: 12 }}>
-          <Text className="font-bold" style={{ fontSize: 15.5, color: colors.text }}>
-            {t("browseSoundsTitle")}
-          </Text>
+          <SectionHeader
+            title={t("browseSoundsTitle")}
+            actionLabel={t("allSoundsChip")}
+            onAction={() => router.push("/discover")}
+          />
           <View style={{ marginHorizontal: -20 }}>
             <ScrollView
               horizontal
@@ -330,11 +349,6 @@ export default function ExploreScreen() {
                   accessibilityLabel={category.name}
                 />
               ))}
-              <AllSoundsCard
-                label={t("allSoundsChip")}
-                onPress={() => router.push("/discover")}
-                accessibilityLabel={t("allSoundsChip")}
-              />
             </ScrollView>
           </View>
         </View>

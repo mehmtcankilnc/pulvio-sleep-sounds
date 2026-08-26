@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useUserStore } from "../store/useUserStore";
-import { fetchUserStatus } from "../lib/playback";
+import { resolveSubscriptionState } from "../lib/subscription";
 
 // Giriş yapıldığında (session set olduğunda) mevcut plan/cooldown durumunu bir
 // kez yükler. Gerçek yetkilendirme her zaman startPlayback/heartbeat RPC'lerinde
@@ -13,10 +13,10 @@ export function useSubscriptionStatus() {
   useEffect(() => {
     if (!session) return;
 
-    fetchUserStatus().then((status) => {
-      if (!status) return;
-      setSubscriptionStatus(status.plan);
-      setCooldownEndsAt(status.cooldown_ends_at);
+    resolveSubscriptionState().then((state) => {
+      if (!state) return;
+      setSubscriptionStatus(state.plan);
+      setCooldownEndsAt(state.cooldownEndsAt);
     });
   }, [session, setSubscriptionStatus, setCooldownEndsAt]);
 }
