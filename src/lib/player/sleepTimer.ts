@@ -3,6 +3,9 @@ import { getPlayer } from "./engine";
 import { useSleepTimerStore } from "../../store/useSleepTimerStore";
 
 const STORAGE_KEY = "pulvio_sleep_timer_option";
+const AUTOARM_DISCLOSED_KEY = "pulvio_autoarm_disclosed";
+// Lazily hydrated cache of the AUTOARM_DISCLOSED_KEY flag.
+let autoArmDisclosed: boolean | null = null;
 
 // Now Playing's preset row (app/player.tsx) still reads this fixed list.
 // Sleep tab's routine row (app/(tabs)/sleep.tsx) has its own smaller preset
@@ -52,10 +55,13 @@ function stopImmediately() {
   const player = getPlayer();
   player.pause();
   player.volume = 1;
-  useSleepTimerStore.getState().setOption(useSleepTimerStore.getState().option, null);
+  // Order matters: setOption clears firedAt, then markFired stamps it — so the
+  // UI can distinguish "timer ran out and stopped playback" from "idle".
+  useSleepTimerStore.getState().setOption(useSleepTimerStore.getState().option, null, null);
+  useSleepTimerStore.getState().markFired();
 }
 
-function fadeOutAndPause(fadeDurationMs: number) {
+function runFade(fadeDurationMs: number) {
   const player = getPlayer();
   let step = 0;
   fadeInterval = setInterval(() => {
@@ -69,6 +75,15 @@ function fadeOutAndPause(fadeDurationMs: number) {
   }, fadeDurationMs / FADE_STEPS);
 }
 
+// Exported so a hard stop that isn't the sleep timer — e.g. the free-limit
+// lockout interrupting playback — can still leave on the same gentle fade
+// rather than an abrupt cut. Clears any pending sleep-timer schedule first so
+// the two fades can't run against each other.
+export function fadeOutAndPause(fadeDurationMs: number = 1200) {
+  clearScheduled();
+  runFade(fadeDurationMs);
+}
+
 // Arms the sleep timer against whatever is playing right now — called when
 // the user taps a timer chip in Now Playing. "∞" cancels any pending fade
 // without touching the persisted option (there's nothing to schedule).
@@ -77,13 +92,14 @@ export function armSleepTimer(option: TimerOption) {
   AsyncStorage.setItem(STORAGE_KEY, option).catch(() => {});
 
   if (option === "∞") {
-    useSleepTimerStore.getState().setOption(option, null);
+    useSleepTimerStore.getState().setOption(option, null, null);
     return;
   }
 
   const totalMs = optionMinutes(option) * 60 * 1000;
-  const endsAt = Date.now() + totalMs;
-  useSleepTimerStore.getState().setOption(option, endsAt);
+  const startedAt = Date.now();
+  const endsAt = startedAt + totalMs;
+  useSleepTimerStore.getState().setOption(option, endsAt, startedAt);
 
   // Fade starts FADE_DURATION_MS before the target mark so the last moment
   // of audio is the tail of the fade, not an abrupt cut. Always scheduled
@@ -93,9 +109,35 @@ export function armSleepTimer(option: TimerOption) {
   const fadeDurationMs = Math.min(FADE_DURATION_MS, totalMs / 2);
   const msUntilFadeStart = Math.max(0, totalMs - fadeDurationMs);
   stopTimeout = setTimeout(() => {
-    if (fadeEnabled) fadeOutAndPause(fadeDurationMs);
+    if (fadeEnabled) runFade(fadeDurationMs);
     else stopImmediately();
   }, msUntilFadeStart);
+}
+
+// Same as armSleepTimer, but for the case where playback *silently* armed a
+// timer the user didn't tap for (see usePlayerActions.loadAndPlay). The first
+// time this happens on an install it flags a one-time disclosure hint so Now
+// Playing can tell the user a timer was set. "∞" arms nothing and discloses
+// nothing.
+export function armSleepTimerAuto(option: TimerOption) {
+  armSleepTimer(option);
+  if (option === "∞") return;
+  if (autoArmDisclosed === null) {
+    AsyncStorage.getItem(AUTOARM_DISCLOSED_KEY)
+      .then((v) => {
+        autoArmDisclosed = v === "1";
+        if (!autoArmDisclosed) discloseAutoArm(option);
+      })
+      .catch(() => {});
+    return;
+  }
+  if (!autoArmDisclosed) discloseAutoArm(option);
+}
+
+function discloseAutoArm(option: TimerOption) {
+  autoArmDisclosed = true;
+  AsyncStorage.setItem(AUTOARM_DISCLOSED_KEY, "1").catch(() => {});
+  useSleepTimerStore.getState().flagAutoArmHint(option);
 }
 
 // Cancels any pending fade/stop without changing the persisted option —
@@ -105,7 +147,7 @@ export function armSleepTimer(option: TimerOption) {
 export function cancelSleepTimer() {
   clearScheduled();
   const { option } = useSleepTimerStore.getState();
-  useSleepTimerStore.getState().setOption(option, null);
+  useSleepTimerStore.getState().setOption(option, null, null);
 }
 
 // Hydrates the persisted option once at app start (PlayerEngineProvider).
@@ -114,5 +156,5 @@ export function cancelSleepTimer() {
 export async function restoreSleepTimerOption() {
   const stored = await AsyncStorage.getItem(STORAGE_KEY);
   const option = isTimerOption(stored ?? "") ? (stored as TimerOption) : "45m";
-  useSleepTimerStore.getState().setOption(option, null);
+  useSleepTimerStore.getState().setOption(option, null, null);
 }

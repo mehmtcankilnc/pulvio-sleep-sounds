@@ -48,7 +48,8 @@ export function useListeningHeartbeat() {
           setDenyReason(result.reason);
           setCooldownEndsAt(result.cooldown_ends_at);
           if (result.reason !== "cooldown" && result.reason !== "limit_reached") {
-            setError("Dinleme oturumu sonlandı");
+            // Stable code — app/player.tsx localizes it (`t("error.<code>")`).
+            setError("sessionEnded");
           }
         }
       } catch {

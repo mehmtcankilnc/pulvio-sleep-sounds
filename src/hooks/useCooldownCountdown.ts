@@ -1,15 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUserStore } from "../store/useUserStore";
-
-function formatCountdown(msRemaining: number) {
-  const totalSeconds = Math.max(0, Math.ceil(msRemaining / 1000));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  const mm = minutes.toString().padStart(2, "0");
-  const ss = seconds.toString().padStart(2, "0");
-  return hours > 0 ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`;
-}
+import { formatCountdown } from "../lib/time";
 
 // cooldownEndsAt backend'den gelen sabit bir hedef zaman damgasıdır — bu hook
 // sadece o hedefe kalan farkı gösterir, cooldown süresini ÜRETMEZ. Süre

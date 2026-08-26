@@ -3,14 +3,32 @@ import type { TimerOption } from "../lib/player/sleepTimer";
 
 type SleepTimerState = {
   option: TimerOption;
+  // epoch ms the countdown began; paired with `endsAt` so the UI can render a
+  // depleting ring (needs the full span, not just the end). null when idle/"∞".
+  startedAt: number | null;
   // epoch ms the fade-out is scheduled to start; null when idle or "∞".
   // Exposed so UI (Now Playing, later Sleep) can render a live countdown.
   endsAt: number | null;
-  setOption: (option: TimerOption, endsAt: number | null) => void;
+  // epoch ms the timer actually fired and stopped playback. Lets Now Playing
+  // say "timer ended — playback stopped" instead of reverting to the idle
+  // hint over silence. Cleared whenever a timer is (re-)armed or cancelled.
+  firedAt: number | null;
+  // Set once, the first time playback silently auto-arms a timer, so Now
+  // Playing can disclose "Timer set — 45m. Change below." exactly once per
+  // install. Cleared on any explicit (re-)arm or cancel.
+  autoArmHint: { at: number; option: TimerOption } | null;
+  setOption: (option: TimerOption, endsAt: number | null, startedAt?: number | null) => void;
+  markFired: () => void;
+  flagAutoArmHint: (option: TimerOption) => void;
 };
 
 export const useSleepTimerStore = create<SleepTimerState>((set) => ({
   option: "45m",
+  startedAt: null,
   endsAt: null,
-  setOption: (option, endsAt) => set({ option, endsAt }),
+  firedAt: null,
+  autoArmHint: null,
+  setOption: (option, endsAt, startedAt = null) => set({ option, endsAt, startedAt, firedAt: null, autoArmHint: null }),
+  markFired: () => set({ firedAt: Date.now() }),
+  flagAutoArmHint: (option) => set({ autoArmHint: { at: Date.now(), option } }),
 }));

@@ -89,7 +89,19 @@ function AppShell() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="discover" />
-        <Stack.Screen name="player" options={{ presentation: "modal" }} />
+        <Stack.Screen
+          name="player"
+          options={{
+            // Full-screen card (not a `modal` presentation, whose Android
+            // dismiss animation is unreliable) that slides up from the bottom
+            // and, on pop, slides straight back down — so the header chevron
+            // reads as "swipe this away downward". Vertical gesture enables
+            // swipe-down-to-dismiss to match.
+            animation: "slide_from_bottom",
+            gestureEnabled: true,
+            gestureDirection: "vertical",
+          }}
+        />
         <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
       </Stack>
     </>

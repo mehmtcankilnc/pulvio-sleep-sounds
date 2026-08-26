@@ -19,6 +19,10 @@ export const colors = {
   star: "#f4d4bc",
   sliderTrack: "rgba(255,255,255,0.07)",
   toggleOffTrack: "rgba(255,255,255,0.09)",
+  // Gentle-caution text: a warmer amber that still sits in the one ember hue
+  // family (never a red alert). Used for recoverable notices — a failed load,
+  // a free-limit stop — where a red flash would wreck a dark-adapted eye.
+  notice: "#e0a86a",
 } as const;
 
 export type ColorToken = keyof typeof colors;

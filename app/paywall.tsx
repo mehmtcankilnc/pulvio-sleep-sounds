@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, ActivityIndicator, Alert, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import type { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
 import { getCurrentOffering, purchasePackage } from "../src/lib/revenuecat";
 import { fetchUserStatus } from "../src/lib/playback";
 import { useUserStore } from "../src/store/useUserStore";
+import { usePlayerStore } from "../src/store/usePlayerStore";
+import { usePlayerActions } from "../src/hooks/usePlayerActions";
 import { useThemeColors } from "../src/hooks/useThemeColors";
 import { GlowBackground } from "../src/components/GlowBackground";
 import { CheckIcon, MoonIcon, TimerIcon, XIcon } from "../src/components/icons";
@@ -20,11 +22,27 @@ export default function PaywallScreen() {
   const colors = useThemeColors();
   const setSubscriptionStatus = useUserStore((state) => state.setSubscriptionStatus);
   const setCooldownEndsAt = useUserStore((state) => state.setCooldownEndsAt);
+  const { retryLast } = usePlayerActions();
+  // Only Now Playing opens the paywall with `?resume=1` (from its cooldown /
+  // premium lockout). Reached any other way — Profile, Explore, onboarding —
+  // a successful purchase must NOT start playback, because there is no player
+  // on screen to control it.
+  const { resume } = useLocalSearchParams<{ resume?: string }>();
+  const shouldResume = resume === "1";
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // The entitlement poll runs for up to ~7.5s after purchasePackage resolves.
+  // If the user dismisses the paywall in that window, a late "premium"
+  // result must NOT yank them back / auto-play a track they walked away from.
+  const dismissed = useRef(false);
+
+  function dismiss() {
+    dismissed.current = true;
+    router.back();
+  }
 
   useEffect(() => {
     getCurrentOffering()
@@ -55,7 +73,18 @@ export default function PaywallScreen() {
         if (status?.plan === "premium") {
           setSubscriptionStatus("premium");
           setCooldownEndsAt(null);
-          router.back();
+          usePlayerStore.getState().setDenyReason(null);
+          usePlayerStore.getState().setError(null);
+          // Resume the blocked track ONLY when Now Playing opened this paywall
+          // to unblock it (`?resume=1`) and the user hasn't already left.
+          const resumeNow = shouldResume && !dismissed.current;
+          if (resumeNow) {
+            // Flip the player into its loading state BEFORE popping, so it
+            // never renders the empty branch behind the dismissing modal.
+            usePlayerStore.getState().setStartingPlayback(true);
+          }
+          if (!dismissed.current) router.back();
+          if (resumeNow) retryLast();
           return;
         }
       }
@@ -93,7 +122,7 @@ export default function PaywallScreen() {
       <ScrollView contentContainerStyle={{ gap: 14 }} showsVerticalScrollIndicator={false}>
         <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
           <Pressable
-            onPress={() => router.back()}
+            onPress={dismiss}
             style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }}
             accessibilityRole="button"
             accessibilityLabel={t("common:close")}
@@ -203,8 +232,8 @@ export default function PaywallScreen() {
         <View style={{ minHeight: 34, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ fontSize: 11.5, color: colors.faint }}>{t("noChargeHint")}</Text>
         </View>
-        <Pressable onPress={() => router.back()} style={{ minHeight: 40, alignItems: "center", justifyContent: "center" }} accessibilityRole="button">
-          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.muted }}>{t("continueFreeCta")}</Text>
+        <Pressable onPress={dismiss} style={{ minHeight: 44, alignItems: "center", justifyContent: "center" }} accessibilityRole="button">
+          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.muted }}>{t("common:notNow")}</Text>
         </Pressable>
       </View>
     </GlowBackground>

@@ -114,15 +114,10 @@ export function GlowBackground({
 }
 
 // Moon ring (DESIGN.md §3): outer glow ring + inner soft-fill ring, used on
-// Now Playing behind the breathing moon icon. Fixed square size, so a
-// plain onLayout-free measurement isn't needed — callers always pass an
-// explicit square `style` (see usages).
-function useSquareGlow(size: number) {
-  return size;
-}
-
+// Now Playing behind the breathing moon icon. Callers always pass an explicit
+// square `style`, so the wash size is read straight off `style.width`.
 export function MoonRingOuter({ style, children }: { style?: ViewStyle & { width: number; height: number }; children?: React.ReactNode }) {
-  const size = useSquareGlow(typeof style?.width === "number" ? style.width : 0);
+  const size = typeof style?.width === "number" ? style.width : 0;
   return (
     <View style={[{ borderRadius: 999, borderWidth: 1, borderColor: colors.stroke, alignItems: "center", justifyContent: "center", overflow: "hidden" }, style]}>
       <RadialWash origin={{ x: 50, y: 42 }} color={colors.glow} extent={70} width={size} height={size} />
@@ -132,7 +127,7 @@ export function MoonRingOuter({ style, children }: { style?: ViewStyle & { width
 }
 
 export function MoonRingInner({ style, children }: { style?: ViewStyle & { width: number; height: number }; children?: React.ReactNode }) {
-  const size = useSquareGlow(typeof style?.width === "number" ? style.width : 0);
+  const size = typeof style?.width === "number" ? style.width : 0;
   return (
     <View style={[{ borderRadius: 999, borderWidth: 1, borderColor: colors.stroke, backgroundColor: colors.card, alignItems: "center", justifyContent: "center", overflow: "hidden" }, style]}>
       <RadialWash origin={{ x: 50, y: 38 }} color={colors.glowSoft} extent={78} width={size} height={size} />

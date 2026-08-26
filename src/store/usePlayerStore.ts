@@ -6,6 +6,12 @@ type PlayerState = {
   currentTrack: Track | null;
   isPlaying: boolean;
   isBuffering: boolean;
+  // True from the moment loadAndPlay is called until start_playback resolves
+  // (allowed or denied). Distinct from isBuffering, which is the audio engine
+  // filling its buffer *after* a track is accepted. Lets Now Playing show a
+  // loading state instead of the "no sound selected yet" empty screen during
+  // the RPC round-trip.
+  isStartingPlayback: boolean;
   elapsedSeconds: number;
   durationSeconds: number;
   error: string | null;
@@ -18,6 +24,7 @@ type PlayerState = {
   setCurrentTrack: (track: Track | null) => void;
   setIsPlaying: (isPlaying: boolean) => void;
   setIsBuffering: (isBuffering: boolean) => void;
+  setStartingPlayback: (starting: boolean) => void;
   setElapsed: (seconds: number) => void;
   setDuration: (seconds: number) => void;
   setError: (error: string | null) => void;
@@ -30,6 +37,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   currentTrack: null,
   isPlaying: false,
   isBuffering: false,
+  isStartingPlayback: false,
   elapsedSeconds: 0,
   durationSeconds: 0,
   error: null,
@@ -38,6 +46,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   setCurrentTrack: (track) => set({ currentTrack: track }),
   setIsPlaying: (isPlaying) => set({ isPlaying }),
   setIsBuffering: (isBuffering) => set({ isBuffering }),
+  setStartingPlayback: (starting) => set({ isStartingPlayback: starting }),
   setElapsed: (seconds) => set({ elapsedSeconds: seconds }),
   setDuration: (seconds) => set({ durationSeconds: seconds }),
   setError: (error) => set({ error }),
@@ -48,6 +57,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
       currentTrack: null,
       isPlaying: false,
       isBuffering: false,
+      isStartingPlayback: false,
       elapsedSeconds: 0,
       durationSeconds: 0,
       error: null,

@@ -20,6 +20,7 @@ colors:
   star: "#f4d4bc"
   sliderTrack: "rgba(255,255,255,0.07)"
   toggleOffTrack: "rgba(255,255,255,0.09)"
+  notice: "#e0a86a"
 typography:
   display:
     fontFamily: "Plus Jakarta Sans, Segoe UI, system-ui"
@@ -128,7 +129,7 @@ components:
 
 Pulvio is a sleep-sounds app, and every visual decision serves exactly one goal: lower the user's arousal level. The UI is meant to be the last calm thing someone sees before they put the phone down — not a dashboard, not a feed, not a thing that competes for attention. Dusk Ember is the implemented direction: a near-black plum base (`#1a1118`) lit only by a single warm peach/ember glow (`#f2b48c`/`#d97e52`), rendered as soft layered radial gradients rather than any hard light source. There is one hue family in the whole app. There is no light mode — night is the product, not a theme option.
 
-The system is deliberately restrained rather than richly decorated: flat surfaces, no drop shadows, no blur or frosted glass, no icon chips, no gamification (no streaks, badges, counters, confetti, red dots). If an element would excite a half-asleep user rather than settle them, it doesn't belong. The one animated exception is a slow ambient "breathe" — a ring that scales almost imperceptibly over seven seconds — everything else fades or resolves quickly and quietly.
+The system is deliberately restrained rather than richly decorated: flat surfaces, no drop shadows, no blur or frosted glass, no icon chips, no gamification (no streaks, badges, counters, confetti, red dots). If an element would excite a half-asleep user rather than settle them, it doesn't belong. Two ambient motions are sanctioned, both on Now Playing and both tied to a real function, not decoration: (1) the slow "breathe" — a ring that scales almost imperceptibly over seven seconds; (2) the **sleep-timer ring** — a thin `accent` arc around the moon that depletes over the armed duration (15m–45m), moving sub-pixel per second and stepping coarsely (15s) under Reduce Motion. It exists because the sleep timer is Now Playing's real clock and a half-asleep user needs a glanceable "how long until this stops". Nothing else animates: everything else fades or resolves quickly and quietly.
 
 The app ships as one native codebase on iOS and Android with this single fixed dark visual language; it does not adapt per OS. Real device affordances (safe areas, back gesture, keyboard handling) still apply per platform even though the skin itself never changes.
 
@@ -159,8 +160,10 @@ The palette is nearly monochrome by design: one warm ember hue carries every acc
 - **Starlight** (`#f4d4bc`, token `star`): starfield dots, always inline SVG, never image assets.
 - **Ember glow, strong** (`rgba(230,140,90,0.26)`, token `glow`) / **Ember glow, soft** (`rgba(230,140,90,0.12)`, token `glowSoft`): the radial wash atmosphere and selected-state fills, respectively.
 
+- **Notice amber** (`#e0a86a`, token `notice`): the *only* sanctioned "something needs your attention" text color — a recoverable load failure, a free-limit stop. It is a warmer, higher-value step of the same ember hue, deliberately **not** a red: a red flash destroys a dark-adapted eye and signals danger for what is usually a mundane stop. Used for short notice lines only, never as a fill or border.
+
 ### Named Rules
-**The One Hue Rule.** Every accent, highlight, and glow shares the same peach/ember hue family. A second hue is a signal something has gone off-brief, not a design decision to make locally.
+**The One Hue Rule.** Every accent, highlight, and glow shares the same peach/ember hue family — including `notice`, which is a hue-family member, not an exception. A *different* hue (a true red, a blue) is a signal something has gone off-brief, not a design decision to make locally.
 
 **The Button-Text Rule.** Text or an icon drawn directly on `button` (`#d97e52`) is always `buttonText` (`#2b130a`). White-on-ember never happens, even for a single label.
 

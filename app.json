@@ -6,18 +6,23 @@
     "orientation": "portrait",
     "scheme": "pulvio",
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pulvio.app",
+      "icon": "./assets/icon.png",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "audio"
-        ]
+        "UIBackgroundModes": ["audio"]
       }
     },
     "android": {
       "package": "com.pulvio.app",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "monochromeImage": "./assets/adaptive-monochrome.png",
+        "backgroundColor": "#1a1118"
+      }
     },
     "plugins": [
       "expo-router",
@@ -35,11 +40,21 @@
       [
         "expo-notifications",
         {
-          "color": "#000000"
+          "icon": "./assets/notification-icon.png",
+          "color": "#f2b48c"
         }
       ],
       "expo-font",
       "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#120a10"
+        }
+      ],
       [
         "expo-audio",
         {
