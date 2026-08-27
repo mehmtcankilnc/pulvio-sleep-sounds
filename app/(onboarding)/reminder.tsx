@@ -6,28 +6,39 @@ import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { GlowBackground } from "../../src/components/GlowBackground";
 import { OnboardingHeader } from "../../src/components/OnboardingHeader";
 import { OnboardingCta } from "../../src/components/OnboardingCta";
-import { CheckIcon } from "../../src/components/icons";
-import { STRUGGLE_KEYS, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
+import { BellIcon } from "../../src/components/icons";
+import { formatBedtime, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
 
-export default function QuizStrugglesScreen() {
+function reminderTime(hour: number, minute: number): string {
+  let total = hour * 60 + minute - 15;
+  if (total < 0) total += 24 * 60;
+  return formatBedtime(Math.floor(total / 60) % 24, total % 60);
+}
+
+export default function OnboardingReminderScreen() {
   const { t } = useTranslation("onboarding");
   const router = useRouter();
   const colors = useThemeColors();
-  const struggles = useOnboardingAnswers((s) => s.struggles);
-  const toggleStruggle = useOnboardingAnswers((s) => s.toggleStruggle);
-  useMarkOnboardingStep(2);
+  const { bedtimeHour, bedtimeMinute, reminderOn, setReminderOn } = useOnboardingAnswers();
+  const nudgeAt = reminderTime(bedtimeHour, bedtimeMinute);
+  useMarkOnboardingStep(6);
+
+  const OPTIONS: Array<{ value: boolean; label: string; hint: string }> = [
+    { value: true, label: t("reminderYes"), hint: t("reminderYesHint", { time: nudgeAt }) },
+    { value: false, label: t("reminderNo"), hint: t("reminderNoHint") },
+  ];
 
   return (
     <GlowBackground
       variant="pageWash"
-      washes={[{ origin: { x: 88, y: -6 }, color: colors.glow, extent: 44 }]}
+      washes={[{ origin: { x: 50, y: -8 }, color: colors.glow, extent: 44 }]}
       style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}
     >
       <View style={{ gap: 22 }}>
         <OnboardingHeader
-          step={2}
+          step={6}
           totalSteps={6}
-          answered={struggles.length >= 1}
+          answered
           onBack={() => router.back()}
           backLabel={t("back")}
           onSkip={() => router.push("/(onboarding)/plan-ready")}
@@ -35,22 +46,22 @@ export default function QuizStrugglesScreen() {
         />
         <View style={{ gap: 6 }}>
           <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
-            {t("struggleEyebrow")}
+            {t("reminderEyebrow")}
           </Text>
           <Text className="font-bold" style={{ fontSize: 23, letterSpacing: -0.2, color: colors.text }}>
-            {t("struggleTitle")}
+            {t("reminderTitle")}
           </Text>
-          <Text style={{ fontSize: 13, color: colors.muted }}>{t("chooseAllHint")}</Text>
+          <Text style={{ fontSize: 13, color: colors.muted }}>{t("reminderSubtitle")}</Text>
         </View>
         <View style={{ gap: 10 }}>
-          {STRUGGLE_KEYS.map((key) => {
-            const active = struggles.includes(key);
+          {OPTIONS.map((opt) => {
+            const active = reminderOn === opt.value;
             return (
               <Pressable
-                key={key}
+                key={String(opt.value)}
                 onPress={() => {
                   Haptics.selectionAsync();
-                  toggleStruggle(key);
+                  setReminderOn(opt.value);
                 }}
                 style={{
                   borderRadius: 16,
@@ -59,40 +70,35 @@ export default function QuizStrugglesScreen() {
                   flexDirection: "row",
                   alignItems: "center",
                   gap: 12,
-                  minHeight: 54,
+                  minHeight: 60,
                   backgroundColor: active ? colors.glowSoft : colors.card,
                   borderWidth: 1,
                   borderColor: active ? colors.accent : colors.stroke,
                 }}
-                accessibilityRole="checkbox"
+                accessibilityRole="radio"
                 accessibilityState={{ checked: active }}
               >
-                <Text style={{ flex: 1, fontSize: 15, fontWeight: "600", color: colors.text }}>{t(`struggle_${key}`)}</Text>
+                {opt.value ? <BellIcon size={20} color={colors.accent} strokeWidth={1.6} /> : <View style={{ width: 20 }} />}
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>{opt.label}</Text>
+                  <Text style={{ fontSize: 12, color: colors.muted }}>{opt.hint}</Text>
+                </View>
                 <View
                   style={{
-                    width: 24,
-                    height: 24,
+                    width: 22,
+                    height: 22,
                     borderRadius: 999,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: active ? colors.button : "transparent",
-                    borderWidth: active ? 0 : 1.5,
-                    borderColor: colors.stroke,
+                    borderWidth: active ? 6 : 1.5,
+                    borderColor: active ? colors.button : colors.stroke,
                   }}
-                >
-                  {active && <CheckIcon size={14} color={colors.buttonText} strokeWidth={2.2} />}
-                </View>
+                />
               </Pressable>
             );
           })}
         </View>
       </View>
 
-      <OnboardingCta
-        label={t("continueCta")}
-        disabled={struggles.length === 0}
-        onPress={() => router.push("/(onboarding)/quiz-sounds")}
-      />
+      <OnboardingCta label={t("continueCta")} onPress={() => router.push("/(onboarding)/plan-ready")} />
     </GlowBackground>
   );
 }

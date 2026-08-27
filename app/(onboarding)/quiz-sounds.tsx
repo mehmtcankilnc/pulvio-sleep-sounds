@@ -1,36 +1,32 @@
-import { useState } from "react";
 import type { JSX } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import * as Haptics from "expo-haptics";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { GlowBackground } from "../../src/components/GlowBackground";
 import { OnboardingHeader } from "../../src/components/OnboardingHeader";
+import { OnboardingCta } from "../../src/components/OnboardingCta";
 import { CheckIcon, CloudRainIcon, FlameIcon, MicIcon, MusicIcon, WavesIcon, WindIcon } from "../../src/components/icons";
 import type { IconProps } from "../../src/components/icons";
+import { SOUND_KEYS, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
 
-const SOUND_OPTIONS: Array<{ key: string; icon: (props: IconProps) => JSX.Element }> = [
-  { key: "rainThunder", icon: CloudRainIcon },
-  { key: "oceanWaves", icon: WavesIcon },
-  { key: "whiteNoise", icon: WindIcon },
-  { key: "asmr", icon: MicIcon },
-  { key: "pianoAmbient", icon: MusicIcon },
-  { key: "fireplace", icon: FlameIcon },
-];
+const SOUND_ICONS: Record<(typeof SOUND_KEYS)[number], (props: IconProps) => JSX.Element> = {
+  rainThunder: CloudRainIcon,
+  oceanWaves: WavesIcon,
+  whiteNoise: WindIcon,
+  asmr: MicIcon,
+  pianoAmbient: MusicIcon,
+  fireplace: FlameIcon,
+};
 
 export default function QuizSoundsScreen() {
   const { t } = useTranslation("onboarding");
   const router = useRouter();
   const colors = useThemeColors();
-  const [selected, setSelected] = useState<Set<string>>(new Set(["rainThunder", "pianoAmbient"]));
-
-  function toggle(key: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  }
+  const sounds = useOnboardingAnswers((s) => s.sounds);
+  const toggleSound = useOnboardingAnswers((s) => s.toggleSound);
+  useMarkOnboardingStep(3);
 
   return (
     <GlowBackground
@@ -39,7 +35,15 @@ export default function QuizSoundsScreen() {
       style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}
     >
       <View style={{ gap: 22 }}>
-        <OnboardingHeader step={2} totalSteps={3} onBack={() => router.back()} onSkip={() => router.push("/(onboarding)/bedtime")} skipLabel={t("skip")} />
+        <OnboardingHeader
+          step={3}
+          totalSteps={6}
+          answered={sounds.length >= 1}
+          onBack={() => router.back()}
+          backLabel={t("back")}
+          onSkip={() => router.push("/(onboarding)/plan-ready")}
+          skipLabel={t("skip")}
+        />
         <View style={{ gap: 6 }}>
           <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
             {t("soundsEyebrow")}
@@ -50,12 +54,16 @@ export default function QuizSoundsScreen() {
           <Text style={{ fontSize: 13, color: colors.muted }}>{t("soundsSubtitle")}</Text>
         </View>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 11 }}>
-          {SOUND_OPTIONS.map(({ key, icon: Icon }) => {
-            const active = selected.has(key);
+          {SOUND_KEYS.map((key) => {
+            const Icon = SOUND_ICONS[key];
+            const active = sounds.includes(key);
             return (
               <Pressable
                 key={key}
-                onPress={() => toggle(key)}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  toggleSound(key);
+                }}
                 style={{
                   width: "47.5%",
                   borderRadius: 18,
@@ -83,24 +91,11 @@ export default function QuizSoundsScreen() {
         </View>
       </View>
 
-      <Pressable
-        onPress={() => router.push("/(onboarding)/bedtime")}
-        style={{
-          height: 54,
-          borderRadius: 999,
-          backgroundColor: colors.button,
-          alignItems: "center",
-          justifyContent: "center",
-          shadowColor: colors.glow,
-          shadowOpacity: 1,
-          shadowRadius: 28,
-          shadowOffset: { width: 0, height: 10 },
-          elevation: 6,
-        }}
-        accessibilityRole="button"
-      >
-        <Text style={{ fontSize: 15, fontWeight: "700", color: colors.buttonText }}>{t("continueCta")}</Text>
-      </Pressable>
+      <OnboardingCta
+        label={t("continueCta")}
+        disabled={sounds.length === 0}
+        onPress={() => router.push("/(onboarding)/voice")}
+      />
     </GlowBackground>
   );
 }

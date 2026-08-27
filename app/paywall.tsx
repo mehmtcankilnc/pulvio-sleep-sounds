@@ -27,8 +27,13 @@ export default function PaywallScreen() {
   // premium lockout). Reached any other way — Profile, Explore, onboarding —
   // a successful purchase must NOT start playback, because there is no player
   // on screen to control it.
-  const { resume } = useLocalSearchParams<{ resume?: string }>();
+  //
+  // `?from=onboarding` is the pre-auth funnel step: the user has no account
+  // yet, so every exit (skip OR purchase) leads to signup, where
+  // Purchases.logIn() attaches any anonymous purchase to the new account.
+  const { resume, from } = useLocalSearchParams<{ resume?: string; from?: string }>();
   const shouldResume = resume === "1";
+  const fromOnboarding = from === "onboarding";
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
@@ -41,6 +46,10 @@ export default function PaywallScreen() {
 
   function dismiss() {
     dismissed.current = true;
+    if (fromOnboarding) {
+      router.replace("/(auth)/signup");
+      return;
+    }
     router.back();
   }
 
@@ -66,6 +75,15 @@ export default function PaywallScreen() {
     setError(null);
     try {
       await purchasePackage(selectedPackage);
+
+      if (fromOnboarding) {
+        // Anonymous purchase — the entitlement is confirmed after signup,
+        // when Purchases.logIn() aliases it to the real account and the
+        // backend webhook lands. Polling an anonymous user's status here
+        // would just time out.
+        router.replace("/(auth)/signup");
+        return;
+      }
 
       for (let attempt = 0; attempt < 5; attempt++) {
         await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -170,7 +188,7 @@ export default function PaywallScreen() {
           ))}
         </View>
 
-        {error && <Text style={{ textAlign: "center", color: "#ef4444" }}>{error}</Text>}
+        {error && <Text style={{ textAlign: "center", color: colors.danger }}>{error}</Text>}
 
         <View style={{ flexDirection: "row", gap: 11 }}>
           {offering.availablePackages.map((pkg: PurchasesPackage) => {
@@ -233,7 +251,9 @@ export default function PaywallScreen() {
           <Text style={{ fontSize: 11.5, color: colors.faint }}>{t("noChargeHint")}</Text>
         </View>
         <Pressable onPress={dismiss} style={{ minHeight: 44, alignItems: "center", justifyContent: "center" }} accessibilityRole="button">
-          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.muted }}>{t("common:notNow")}</Text>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.muted }}>
+            {fromOnboarding ? t("continueFreeCta") : t("common:notNow")}
+          </Text>
         </Pressable>
       </View>
     </GlowBackground>

@@ -6,28 +6,27 @@ import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { GlowBackground } from "../../src/components/GlowBackground";
 import { OnboardingHeader } from "../../src/components/OnboardingHeader";
 import { OnboardingCta } from "../../src/components/OnboardingCta";
-import { CheckIcon } from "../../src/components/icons";
-import { STRUGGLE_KEYS, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
+import { VOICE_KEYS, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
 
-export default function QuizStrugglesScreen() {
+export default function OnboardingVoiceScreen() {
   const { t } = useTranslation("onboarding");
   const router = useRouter();
   const colors = useThemeColors();
-  const struggles = useOnboardingAnswers((s) => s.struggles);
-  const toggleStruggle = useOnboardingAnswers((s) => s.toggleStruggle);
-  useMarkOnboardingStep(2);
+  const voice = useOnboardingAnswers((s) => s.voice);
+  const setVoice = useOnboardingAnswers((s) => s.setVoice);
+  useMarkOnboardingStep(4);
 
   return (
     <GlowBackground
       variant="pageWash"
-      washes={[{ origin: { x: 88, y: -6 }, color: colors.glow, extent: 44 }]}
+      washes={[{ origin: { x: 92, y: 10 }, color: colors.glow, extent: 44 }]}
       style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}
     >
       <View style={{ gap: 22 }}>
         <OnboardingHeader
-          step={2}
+          step={4}
           totalSteps={6}
-          answered={struggles.length >= 1}
+          answered={voice !== null}
           onBack={() => router.back()}
           backLabel={t("back")}
           onSkip={() => router.push("/(onboarding)/plan-ready")}
@@ -35,22 +34,22 @@ export default function QuizStrugglesScreen() {
         />
         <View style={{ gap: 6 }}>
           <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
-            {t("struggleEyebrow")}
+            {t("voiceEyebrow")}
           </Text>
           <Text className="font-bold" style={{ fontSize: 23, letterSpacing: -0.2, color: colors.text }}>
-            {t("struggleTitle")}
+            {t("voiceTitle")}
           </Text>
-          <Text style={{ fontSize: 13, color: colors.muted }}>{t("chooseAllHint")}</Text>
+          <Text style={{ fontSize: 13, color: colors.muted }}>{t("voiceSubtitle")}</Text>
         </View>
         <View style={{ gap: 10 }}>
-          {STRUGGLE_KEYS.map((key) => {
-            const active = struggles.includes(key);
+          {VOICE_KEYS.map((key) => {
+            const active = voice === key;
             return (
               <Pressable
                 key={key}
                 onPress={() => {
                   Haptics.selectionAsync();
-                  toggleStruggle(key);
+                  setVoice(key);
                 }}
                 style={{
                   borderRadius: 16,
@@ -59,29 +58,27 @@ export default function QuizStrugglesScreen() {
                   flexDirection: "row",
                   alignItems: "center",
                   gap: 12,
-                  minHeight: 54,
+                  minHeight: 60,
                   backgroundColor: active ? colors.glowSoft : colors.card,
                   borderWidth: 1,
                   borderColor: active ? colors.accent : colors.stroke,
                 }}
-                accessibilityRole="checkbox"
+                accessibilityRole="radio"
                 accessibilityState={{ checked: active }}
               >
-                <Text style={{ flex: 1, fontSize: 15, fontWeight: "600", color: colors.text }}>{t(`struggle_${key}`)}</Text>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>{t(`voice_${key}`)}</Text>
+                  <Text style={{ fontSize: 12, color: colors.muted }}>{t(`voice_${key}_hint`)}</Text>
+                </View>
                 <View
                   style={{
-                    width: 24,
-                    height: 24,
+                    width: 22,
+                    height: 22,
                     borderRadius: 999,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: active ? colors.button : "transparent",
-                    borderWidth: active ? 0 : 1.5,
-                    borderColor: colors.stroke,
+                    borderWidth: active ? 6 : 1.5,
+                    borderColor: active ? colors.button : colors.stroke,
                   }}
-                >
-                  {active && <CheckIcon size={14} color={colors.buttonText} strokeWidth={2.2} />}
-                </View>
+                />
               </Pressable>
             );
           })}
@@ -90,8 +87,8 @@ export default function QuizStrugglesScreen() {
 
       <OnboardingCta
         label={t("continueCta")}
-        disabled={struggles.length === 0}
-        onPress={() => router.push("/(onboarding)/quiz-sounds")}
+        disabled={voice === null}
+        onPress={() => router.push("/(onboarding)/bedtime")}
       />
     </GlowBackground>
   );

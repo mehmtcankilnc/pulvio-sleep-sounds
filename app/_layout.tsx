@@ -1,5 +1,5 @@
 import "../global.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import {
@@ -15,7 +15,9 @@ import { useAuthListener } from "../src/hooks/useAuthListener";
 import { useSubscriptionStatus } from "../src/hooks/useSubscriptionStatus";
 import { useRevenueCatSync } from "../src/hooks/useRevenueCatSync";
 import { usePushNotifications } from "../src/hooks/usePushNotifications";
-import { useUserStore } from "../src/store/useUserStore";
+import { useUserStore, hydrateOnboardingCompleted } from "../src/store/useUserStore";
+import { hydrateOnboardingAnswers, useOnboardingAnswers } from "../src/lib/onboarding/useOnboardingAnswers";
+import { saveOnboardingAnswers } from "../src/lib/onboarding/saveAnswers";
 import { PlayerEngineProvider } from "../src/lib/player/PlayerEngineProvider";
 import { initI18n } from "../src/lib/i18n";
 import { useThemeColors } from "../src/hooks/useThemeColors";
@@ -34,6 +36,7 @@ export default function RootLayout() {
   useRevenueCatSync();
   usePushNotifications();
   const session = useUserStore((state) => state.session);
+  const onboardingCompleted = useUserStore((state) => state.onboardingCompleted);
   const setLanguage = useUserStore((state) => state.setLanguage);
   const [i18nReady, setI18nReady] = useState(false);
   const [fontsLoaded] = useFonts({
@@ -55,28 +58,45 @@ export default function RootLayout() {
     });
   }, [setLanguage]);
 
-  const ready = session !== undefined && i18nReady && fontsLoaded;
-  const inAuthGroup = segments[0] === "(auth)";
-  // True for the frame(s) where auth is known but the current route is still
-  // the wrong group and the guard's replace() hasn't landed yet.
-  const redirecting = ready && (!session ? !inAuthGroup : inAuthGroup);
+  useEffect(() => {
+    hydrateOnboardingCompleted();
+  }, []);
 
-  // Root Layout only mounts the Stack (below) once session/i18n/fonts are
-  // all ready — redirecting before that throws "navigate before mounting
-  // the Root Layout component", since there's no navigator mounted yet.
+  const ready = session !== undefined && onboardingCompleted !== undefined && i18nReady && fontsLoaded;
+  const inAuthGroup = segments[0] === "(auth)";
+  const inOnboardingGroup = segments[0] === "(onboarding)";
+  // The pre-auth funnel ends on the paywall (preview -> paywall -> signup), so
+  // a logged-out user legitimately sits there too.
+  const inPaywall = segments[0] === "paywall";
+  const settledForLoggedOut = inAuthGroup || inOnboardingGroup || inPaywall;
+  // True for the frame(s) where state is known but the current route is still
+  // the wrong place and the guard's replace() hasn't landed yet. A logged-in
+  // user never sits in (auth).
+  const redirecting = ready && (!session ? !settledForLoggedOut : inAuthGroup);
+
+  // Root Layout only mounts the Stack (below) once session/onboarding/i18n/
+  // fonts are all ready — redirecting before that throws "navigate before
+  // mounting the Root Layout component", since there's no navigator yet.
   useEffect(() => {
     if (!ready) return;
 
-    if (!session && !inAuthGroup) {
-      router.replace("/(auth)");
-    } else if (session && inAuthGroup) {
+    if (!session) {
+      // First run (never been through the funnel) -> onboarding. Otherwise
+      // -> login. Leave the user alone once they're on a settled route
+      // (auth, onboarding, or the funnel's paywall step).
+      if (!settledForLoggedOut) {
+        router.replace(onboardingCompleted ? "/(auth)" : "/(onboarding)/welcome");
+      }
+    } else if (inAuthGroup) {
+      // Logged in but stranded on a login screen. (Logged-in users in
+      // (onboarding) are left alone — that's the __DEV__ replay path.)
       router.replace("/(tabs)");
     }
-  }, [ready, session, inAuthGroup, router]);
+  }, [ready, session, onboardingCompleted, inAuthGroup, settledForLoggedOut, router]);
 
-  // Keep the plain loading screen up until auth is resolved AND we're already
-  // on the right group — so neither the login screen nor the tabs flash for a
-  // frame before the guard settles.
+  // Keep the plain loading screen up until state is resolved AND we're already
+  // on the right group — so no screen flashes for a frame before the guard
+  // settles.
   if (!ready || redirecting) {
     return (
       <View
@@ -91,10 +111,49 @@ export default function RootLayout() {
   return <AppShell />;
 }
 
+// The pre-auth funnel ends at signup (preview -> paywall -> signup), so the
+// account lands a beat after the answers were gathered. When the session
+// appears, flush the local answers to the account and clear them; the route
+// guard takes it from there. A normal login (no funnel run this session ->
+// furthestStep 0) is a no-op. Any anonymous purchase made on the funnel's
+// paywall is attached to the account separately, by Purchases.logIn() in
+// useRevenueCatSync.
+function useOnboardingHandoff() {
+  const session = useUserStore((state) => state.session);
+  const handled = useRef(false);
+
+  useEffect(() => {
+    if (!session || handled.current) return;
+    handled.current = true;
+    (async () => {
+      await hydrateOnboardingAnswers();
+      const answers = useOnboardingAnswers.getState();
+      if (answers.furthestStep <= 0) return;
+      try {
+        await saveOnboardingAnswers(session.user.id, {
+          frequency: answers.frequency,
+          struggles: answers.struggles,
+          sounds: answers.sounds,
+          voice: answers.voice,
+          bedtimeHour: answers.bedtimeHour,
+          bedtimeMinute: answers.bedtimeMinute,
+          reminderOn: answers.reminderOn,
+        });
+      } catch (e) {
+        // Best-effort: the funnel UX is already done. A failed write (e.g.
+        // offline) just means the answers aren't on the account.
+        console.warn("onboarding: could not save answers to the account", e);
+      }
+      useOnboardingAnswers.getState().reset();
+    })();
+  }, [session]);
+}
+
 // player/paywall/onboarding screens draw their own Drift-styled top bars
 // (back control, title, trailing icon) rather than using the native Stack
 // header, so every modal route here is headerShown: false.
 function AppShell() {
+  useOnboardingHandoff();
   return (
     <>
       <PlayerEngineProvider />

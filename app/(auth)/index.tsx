@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Pressable, Alert } from "react-native";
+import { View, Text, Pressable, Alert, Platform } from "react-native";
 import { Link } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { signInWithEmail, signInWithApple, signInWithGoogle } from "../../src/lib/auth";
@@ -55,9 +55,11 @@ export default function LoginScreen() {
         />
       </View>
 
-      <View className="mb-3">
-        <Button label={t("login.appleButton")} variant="outline" onPress={() => handleOAuth("apple")} />
-      </View>
+      {Platform.OS === "ios" && (
+        <View className="mb-3">
+          <Button label={t("login.appleButton")} variant="outline" onPress={() => handleOAuth("apple")} />
+        </View>
+      )}
 
       <View className="mb-6">
         <Button label={t("login.googleButton")} variant="outline" onPress={() => handleOAuth("google")} />

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { View, Text, Alert } from "react-native";
+import { View, Text, Alert, Platform } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { signUpWithEmail } from "../../src/lib/auth";
+import { signUpWithEmail, signInWithApple, signInWithGoogle } from "../../src/lib/auth";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { TextField } from "../../src/components/ui/TextField";
 import { Button } from "../../src/components/ui/Button";
@@ -26,6 +26,14 @@ export default function SignupScreen() {
     Alert.alert(t("signup.successTitle"), t("signup.successMessage"), [
       { text: t("common:ok"), onPress: () => router.replace("/(auth)") },
     ]);
+  }
+
+  // OAuth handles sign-up and sign-in in one flow — Supabase creates the
+  // account on first return. The session then lands via useAuthListener and
+  // the route guard / onboarding handoff take it from there.
+  async function handleOAuth(provider: "google" | "apple") {
+    const { error } = provider === "google" ? await signInWithGoogle() : await signInWithApple();
+    if (error) Alert.alert(t("signup.failedTitle"), error.message);
   }
 
   return (
@@ -55,6 +63,16 @@ export default function SignupScreen() {
           onPress={handleSignup}
           loading={loading}
         />
+      </View>
+
+      {Platform.OS === "ios" && (
+        <View className="mb-3">
+          <Button label={t("signup.appleButton")} variant="outline" onPress={() => handleOAuth("apple")} />
+        </View>
+      )}
+
+      <View className="mb-6">
+        <Button label={t("signup.googleButton")} variant="outline" onPress={() => handleOAuth("google")} />
       </View>
 
       <Link href="/(auth)">

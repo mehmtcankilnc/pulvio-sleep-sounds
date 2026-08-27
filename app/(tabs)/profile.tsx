@@ -9,6 +9,7 @@ import { useBottomTabBarHeight } from "expo-router/js-tabs";
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { signOut, deleteAccount } from "../../src/lib/auth";
 import { useUserStore } from "../../src/store/useUserStore";
+import { useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
 import { resolveSubscriptionState } from "../../src/lib/subscription";
 import { restorePurchases, getManagementUrl } from "../../src/lib/revenuecat";
 import {
@@ -442,11 +443,16 @@ export default function SettingsScreen() {
           />
         </Group>
 
-        {/* Dev/review-only entry point for the not-yet-wired onboarding
-            funnel — gated so it never ships in a production build. */}
+        {/* Dev-only: replay the (now wired) onboarding funnel. Clears the
+            saved answers + the "completed" flag first so the guard doesn't
+            bounce straight back. __DEV__-gated — never ships. */}
         {__DEV__ && (
           <Pressable
-            onPress={() => router.push("/(onboarding)/welcome")}
+            onPress={() => {
+              useOnboardingAnswers.getState().reset();
+              useUserStore.getState().setOnboardingCompleted(false);
+              router.push("/(onboarding)/welcome");
+            }}
             accessibilityRole="button"
             style={{ minHeight: 44, justifyContent: "center" }}
           >

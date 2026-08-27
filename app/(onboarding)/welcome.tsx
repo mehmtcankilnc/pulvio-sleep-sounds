@@ -4,24 +4,49 @@ import { useTranslation } from "react-i18next";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { GlowBackground, MoonRingOuter, MoonRingInner } from "../../src/components/GlowBackground";
 import { StarField } from "../../src/components/StarField";
-import { MoonIcon, StarIcon } from "../../src/components/icons";
+import { OnboardingCta } from "../../src/components/OnboardingCta";
+import { MoonIcon } from "../../src/components/icons";
+import { useUserStore } from "../../src/store/useUserStore";
+import { onboardingResumePath, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
 
 export default function OnboardingWelcomeScreen() {
   const { t } = useTranslation("onboarding");
   const router = useRouter();
   const colors = useThemeColors();
 
+  const hydrated = useOnboardingAnswers((s) => s.hydrated);
+  const furthestStep = useOnboardingAnswers((s) => s.furthestStep);
+  const resetOnboarding = useOnboardingAnswers((s) => s.reset);
+  const setOnboardingCompleted = useUserStore((s) => s.setOnboardingCompleted);
+  const canResume = hydrated && furthestStep >= 1;
+
+  function begin() {
+    router.push(canResume ? onboardingResumePath(furthestStep) : "/(onboarding)/frequency");
+  }
+
+  function startOver() {
+    resetOnboarding();
+    router.push("/(onboarding)/frequency");
+  }
+
+  function haveAccount() {
+    // They're a returning user, not a new one — don't funnel them again on
+    // the next launch.
+    setOnboardingCompleted(true);
+    router.push("/(auth)");
+  }
+
   return (
     <GlowBackground
       variant="nightScene"
       washes={[{ origin: { x: 50, y: 32 }, color: colors.glow, extent: 54 }]}
-      style={{ flex: 1, paddingHorizontal: 24, paddingTop: 38, paddingBottom: 30, justifyContent: "space-between" }}
+      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 30, justifyContent: "space-between" }}
     >
       <StarField width={390} height={260} />
 
       <View style={{ alignItems: "center" }}>
         <Text className="font-lora-italic" style={{ fontSize: 26, color: colors.accent }}>
-          Drift
+          Pulvio
         </Text>
       </View>
 
@@ -39,36 +64,19 @@ export default function OnboardingWelcomeScreen() {
             {t("welcomeSubtitle")}
           </Text>
         </View>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <View style={{ flexDirection: "row", gap: 3 }}>
-            {[0, 1, 2, 3, 4].map((i) => (
-              <StarIcon key={i} size={14} color={colors.accent} opacity={1} />
-            ))}
-          </View>
-          <Text style={{ fontSize: 12.5, color: colors.muted }}>{t("ratingProof")}</Text>
-        </View>
       </View>
 
       <View style={{ gap: 4 }}>
-        <Pressable
-          onPress={() => router.push("/(onboarding)/quiz-struggles")}
-          style={{
-            height: 54,
-            borderRadius: 999,
-            backgroundColor: colors.button,
-            alignItems: "center",
-            justifyContent: "center",
-            shadowColor: colors.glow,
-            shadowOpacity: 1,
-            shadowRadius: 28,
-            shadowOffset: { width: 0, height: 10 },
-            elevation: 6,
-          }}
-          accessibilityRole="button"
-        >
-          <Text style={{ fontSize: 15, fontWeight: "700", color: colors.buttonText }}>{t("getStartedCta")}</Text>
-        </Pressable>
-        <Pressable onPress={() => router.push("/(auth)")} style={{ minHeight: 44, alignItems: "center", justifyContent: "center" }} accessibilityRole="button">
+        <Text style={{ textAlign: "center", fontSize: 12, color: colors.faint, marginBottom: 8 }}>
+          {canResume ? t("welcomeResumeHint") : t("welcomeSetupHint")}
+        </Text>
+        <OnboardingCta label={canResume ? t("resumeCta") : t("getStartedCta")} onPress={begin} />
+        {canResume ? (
+          <Pressable onPress={startOver} style={{ minHeight: 44, alignItems: "center", justifyContent: "center" }} accessibilityRole="button">
+            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.muted }}>{t("startOverCta")}</Text>
+          </Pressable>
+        ) : null}
+        <Pressable onPress={haveAccount} style={{ minHeight: 44, alignItems: "center", justifyContent: "center" }} accessibilityRole="button">
           <Text style={{ fontSize: 13, fontWeight: "600", color: colors.muted }}>{t("haveAccountCta")}</Text>
         </Pressable>
       </View>
