@@ -9,6 +9,7 @@ supabase/.temp/
 
 ios/
 android/
+keystore/
 
 *.p8
 *.jks

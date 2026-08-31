@@ -50,6 +50,21 @@ export async function restorePurchases() {
   return Purchases.restorePurchases();
 }
 
+// Has this customer ever held the premium entitlement (active OR expired)?
+// The paywall uses it to drop trial framing for a returning subscriber —
+// Google Play won't grant the intro offer again, so promising "7 days free"
+// would just breed a chargeback. Checks the entitlement specifically, NOT
+// "any purchase ever" — an unrelated IAP must not hide the trial. Fails safe
+// to `false` (show the trial) when the SDK isn't configured or offline.
+export async function hasPriorPurchase(): Promise<boolean> {
+  try {
+    const info = await Purchases.getCustomerInfo();
+    return !!info.entitlements.all[REVENUECAT_ENTITLEMENT_ID];
+  } catch {
+    return false;
+  }
+}
+
 // Store-hosted "manage / cancel subscription" page for this exact customer,
 // when RevenueCat can provide it (null on the free tier or before any
 // purchase — caller falls back to the generic store page).
