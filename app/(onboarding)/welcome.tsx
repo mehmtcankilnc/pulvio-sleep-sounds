@@ -8,11 +8,13 @@ import { OnboardingCta } from "../../src/components/OnboardingCta";
 import { MoonIcon } from "../../src/components/icons";
 import { useUserStore } from "../../src/store/useUserStore";
 import { onboardingResumePath, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
+import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
 
 export default function OnboardingWelcomeScreen() {
   const { t } = useTranslation("onboarding");
   const router = useRouter();
   const colors = useThemeColors();
+  const funnelPad = useFunnelPadding();
 
   const hydrated = useOnboardingAnswers((s) => s.hydrated);
   const furthestStep = useOnboardingAnswers((s) => s.furthestStep);
@@ -40,7 +42,7 @@ export default function OnboardingWelcomeScreen() {
     <GlowBackground
       variant="nightScene"
       washes={[{ origin: { x: 50, y: 32 }, color: colors.glow, extent: 54 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 30, justifyContent: "space-between" }}
+      style={{ flex: 1, ...funnelPad, justifyContent: "space-between" }}
     >
       <StarField width={390} height={260} />
 

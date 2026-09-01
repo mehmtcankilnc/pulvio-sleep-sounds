@@ -25,6 +25,7 @@ import { changeAppLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from "
 import { getBedtimeReminderPreference, setBedtimeReminder, type BedtimeReminderPreference } from "../../src/lib/bedtimeReminder";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { GlowBackground } from "../../src/components/GlowBackground";
+import { centeredColumn } from "../../src/theme/layout";
 import { ScreenHeader } from "../../src/components/ScreenHeader";
 import { BottomSheet } from "../../src/components/BottomSheet";
 import { Toggle } from "../../src/components/ui/Toggle";
@@ -344,7 +345,7 @@ export default function SettingsScreen() {
     >
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
+        contentContainerStyle={{ ...centeredColumn, paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
       >
         <ScreenHeader eyebrow={t("screenEyebrow")} title={t("screenTitle")} />
 

@@ -2,6 +2,7 @@
   "tabTitle": "Klänge",
   "loadError": "Sounds konnten nicht geladen werden. Erneut versuchen.",
   "empty": "Noch keine Sounds hinzugefügt",
+  "emptyBody": "Der Katalog ist gerade leer — schau bald wieder vorbei.",
   "premiumBadge": "Premium",
   "clearFilterCta": "Alle Sounds anzeigen"
 }

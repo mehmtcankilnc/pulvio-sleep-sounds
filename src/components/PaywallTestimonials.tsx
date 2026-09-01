@@ -33,7 +33,7 @@ const EASE = Easing.bezier(0.23, 1, 0.32, 1);
 // Deliberate one-off: used only here, so it stays a local const rather than a
 // design-system token.
 const STAR_COLOR = "#ffca97";
-const INTERVAL_MS = 4500;
+const INTERVAL_MS = 3000;
 const SLIDE_MS = 380;
 // After a swipe, hold autoplay off one full interval so it doesn't yank away.
 const PAUSE_AFTER_INTERACT_MS = INTERVAL_MS;

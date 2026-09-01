@@ -12,6 +12,7 @@ import { MoonIcon, WindIcon } from "../../src/components/icons";
 import { categoryIcon } from "../../src/lib/categoryIcon";
 import { formatBedtime, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
 import { recommendPlan } from "../../src/lib/onboarding/recommend";
+import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
 import type { Track } from "../../src/types";
 
 export default function PlanReadyScreen() {
@@ -23,6 +24,7 @@ export default function PlanReadyScreen() {
   const answers = useOnboardingAnswers();
   const setPreviewTrack = useOnboardingAnswers((s) => s.setPreviewTrack);
   useMarkOnboardingStep(7);
+  const funnelPad = useFunnelPadding();
 
   const catalog = useMemo(() => sections.flatMap((s) => s.data), [sections]);
   const picks = useMemo(
@@ -48,10 +50,10 @@ export default function PlanReadyScreen() {
     <GlowBackground
       variant="nightScene"
       washes={[{ origin: { x: 50, y: 16 }, color: colors.glow, extent: 50 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}
+      style={{ flex: 1, ...funnelPad, justifyContent: "space-between" }}
     >
       <View style={{ gap: 20 }}>
-        <OnboardingHeader step={6} totalSteps={6} answered onBack={() => router.back()} backLabel={t("back")} />
+        <OnboardingHeader step={6} totalSteps={6} answered showProgress={false} onBack={() => router.back()} backLabel={t("back")} />
 
         <View style={{ alignItems: "center", gap: 8, paddingTop: 8 }}>
           <Text className="font-lora-italic" style={{ fontSize: 16, color: colors.accent }}>

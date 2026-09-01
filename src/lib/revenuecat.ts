@@ -4,6 +4,12 @@ import type { PurchasesOffering, PurchasesPackage } from "react-native-purchases
 
 const ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY;
 
+// Dev escape hatch for emulators without Google Play Billing: the SDK logs a
+// red `BILLING_UNAVAILABLE` on every configure/logIn there. Set
+// EXPO_PUBLIC_DISABLE_PURCHASES=1 in .env to skip RevenueCat entirely — the
+// paywall then just shows its "couldn't load" state. Never set in production.
+export const purchasesDisabled = process.env.EXPO_PUBLIC_DISABLE_PURCHASES === "1";
+
 // RevenueCat dashboard'daki entitlement kimliği. Client tarafı premium
 // çapraz-kontrolü (src/lib/subscription.ts) bunu okur. Dashboard'da farklı
 // isimlendirildiyse .env'den override edilir.
@@ -18,6 +24,11 @@ let isConfigured = false;
 // mimari iOS'a kapalı değil.
 export function configureRevenueCatOnce() {
   if (isConfigured) return;
+
+  if (purchasesDisabled) {
+    console.warn("EXPO_PUBLIC_DISABLE_PURCHASES=1, RevenueCat devre dışı");
+    return;
+  }
 
   if (Platform.OS !== "android") {
     return;
@@ -34,6 +45,7 @@ export function configureRevenueCatOnce() {
 }
 
 export async function getCurrentOffering(): Promise<PurchasesOffering | null> {
+  if (purchasesDisabled || !isConfigured) return null;
   const offerings = await Purchases.getOfferings();
   return offerings.current;
 }

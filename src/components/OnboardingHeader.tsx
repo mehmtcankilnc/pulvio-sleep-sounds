@@ -30,6 +30,7 @@ export function OnboardingHeader({
   onSkip,
   skipLabel,
   backLabel = "Back",
+  showProgress = true,
 }: {
   step: number;
   totalSteps: number;
@@ -38,6 +39,10 @@ export function OnboardingHeader({
   onSkip?: () => void;
   skipLabel?: string;
   backLabel?: string;
+  // The reveal screens (plan-ready, preview) sit after the funnel is done —
+  // a full progress bar there reads as "still onboarding", so they show just
+  // the back chevron.
+  showProgress?: boolean;
 }) {
   const colors = useThemeColors();
   const fill = useSharedValue(clamp01((step - 1) / totalSteps));
@@ -68,13 +73,17 @@ export function OnboardingHeader({
         <View style={{ width: HIT - 10, height: HIT }} />
       )}
 
-      <View
-        style={{ flex: 1, height: BAR_HEIGHT, borderRadius: 999, backgroundColor: colors.sliderTrack, overflow: "hidden" }}
-        accessibilityRole="progressbar"
-        accessibilityValue={{ min: 0, max: totalSteps, now: step }}
-      >
-        <Animated.View style={[{ height: "100%", borderRadius: 999, backgroundColor: colors.button }, fillStyle]} />
-      </View>
+      {showProgress ? (
+        <View
+          style={{ flex: 1, height: BAR_HEIGHT, borderRadius: 999, backgroundColor: colors.sliderTrack, overflow: "hidden" }}
+          accessibilityRole="progressbar"
+          accessibilityValue={{ min: 0, max: totalSteps, now: step }}
+        >
+          <Animated.View style={[{ height: "100%", borderRadius: 999, backgroundColor: colors.button }, fillStyle]} />
+        </View>
+      ) : (
+        <View style={{ flex: 1 }} />
+      )}
 
       {onSkip ? (
         <Pressable

@@ -23,6 +23,8 @@ import {
 } from "../src/lib/revenuecat";
 import { resolveSubscriptionState } from "../src/lib/subscription";
 import {
+  formatCurrency,
+  monthlyEquivalentPrice,
   monthsFreeVsMonthly,
   pricePerMonth,
   pricePerWeek,
@@ -101,8 +103,9 @@ function partitionPackages(offering: PurchasesOffering | null): {
     : [];
 
   if (primary.length === 0) {
-    // Sensible default = the recommended merchandising: 3-month + annual.
-    primary = [offering?.threeMonth, offering?.annual].filter(
+    // Sensible default merchandising: annual first (the pushed plan), then
+    // the 3-month.
+    primary = [offering?.annual, offering?.threeMonth].filter(
       (p): p is PurchasesPackage => !!p,
     );
   }
@@ -112,6 +115,11 @@ function partitionPackages(offering: PurchasesOffering | null): {
     if (primary.length >= 2) break;
     if (!primary.includes(p)) primary.push(p);
   }
+
+  // Annual always sits first among the primary cards — it's the default
+  // selection (primary[0]) and the top position, regardless of the order
+  // dashboard metadata happened to list.
+  primary.sort((a, b) => Number(b.packageType === "ANNUAL") - Number(a.packageType === "ANNUAL"));
 
   const other = all.filter((p) => !primary.includes(p));
   return { primary, other };
@@ -230,8 +238,18 @@ export default function PaywallScreen() {
     : trialActive
       ? t("title", { days: trialDays })
       : t("titleNoTrial");
+  // Trial CTA leads with "nothing due today" in the user's own currency —
+  // the timeline already carries the day count, so the button reinforces the
+  // zero-payment reassurance instead of repeating "7-day".
+  // formatCurrency falls back to "0.00 TRY" on a Hermes build without full
+  // Intl-currency data — no good in a CTA, so only use it when it produced a
+  // real symbol (no bare 3-letter code).
+  const zeroRaw = selectedPackage ? formatCurrency(0, selectedPackage.product.currencyCode) : null;
+  const zeroToday = zeroRaw && !/[A-Za-z]{3}/.test(zeroRaw) ? zeroRaw : null;
   const ctaLabel = trialActive
-    ? t("startTrialCta", { days: trialDays })
+    ? zeroToday
+      ? t("startTrialCtaZero", { amount: zeroToday })
+      : t("startTrialCta", { days: trialDays })
     : t("subscribeCta");
   const chargeHint = trialActive
     ? t("noChargeHint", { store })
@@ -467,24 +485,29 @@ export default function PaywallScreen() {
       pkg.packageType === "WEEKLY" || /week/i.test(pkg.identifier);
     const pkgTrialDays = trialDaysFor(pkg);
     const showTrial = pkgTrialDays > 0 && !priorPurchase;
-    const perAmount = isWeekly
-      ? pricePerWeek(pkg.product)
-      : pricePerMonth(pkg.product);
+    // Annual is quoted per *week* — the smallest, least daunting unit — to
+    // cut sticker shock; shorter plans stay per-month.
+    const perUnitWeekly = isWeekly || pkg.packageType === "ANNUAL";
+    const perAmount = perUnitWeekly ? pricePerWeek(pkg.product) : pricePerMonth(pkg.product);
     const perPeriodLabel = perAmount
-      ? t(isWeekly ? "perWeekShort" : "perMonthShort", { price: perAmount })
+      ? t(perUnitWeekly ? "perWeekShort" : "perMonthShort", { price: perAmount })
       : null;
     const savingsPct = savingsPctVsMonthly(pkg, monthlyPackage);
     const monthsFree =
       pkg.packageType === "ANNUAL"
         ? monthsFreeVsMonthly(pkg, monthlyPackage)
         : null;
+    // What this plan's span costs paid monthly — struck through beside the
+    // real price. Real figure from the live monthly rate.
+    const anchorPrice = monthlyEquivalentPrice(pkg, monthlyPackage);
 
-    // The saving goes in a pill on the card's top border (like a store badge);
-    // only the trial note stays inline under the plan name.
-    const discountLabel = monthsFree
-      ? t("monthsFree", { count: monthsFree })
-      : savingsPct
-        ? t("savePercent", { pct: savingsPct })
+    // The saving goes in a pill on the card's top border (like a store badge).
+    // Percentage first — it's instant to read; "N months free" is the fallback
+    // when there's no monthly plan to compute a percentage against.
+    const discountLabel = savingsPct
+      ? t("savePercent", { pct: savingsPct })
+      : monthsFree
+        ? t("monthsFree", { count: monthsFree })
         : null;
     const trialLabel = showTrial
       ? t("freeTrialLabel", { days: pkgTrialDays })
@@ -581,6 +604,16 @@ export default function PaywallScreen() {
           )}
         </View>
         <View style={{ alignItems: "flex-end", gap: 1, flexShrink: 0 }}>
+          {anchorPrice && (
+            <Text
+              numberOfLines={1}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+              style={{ fontSize: 11, color: colors.faint, textDecorationLine: "line-through" }}
+            >
+              {anchorPrice}
+            </Text>
+          )}
           <Text
             numberOfLines={1}
             style={{ fontSize: 15, fontWeight: "700", color: colors.text }}

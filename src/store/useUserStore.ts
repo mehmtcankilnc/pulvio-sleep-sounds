@@ -22,12 +22,17 @@ type UserState = {
   // Gerçek kaynak i18next'in kendi state'i; bu alan UI'ın (örn. dil seçici)
   // aktif dili okuyabilmesi için bir ayna, bkz. src/lib/i18n.ts
   language: SupportedLanguage;
+  // True between a PASSWORD_RECOVERY deep link landing and the user setting a
+  // new password. The route guard uses it to keep the (recovery) session on
+  // the reset-password screen instead of bouncing it into the app.
+  passwordRecovery: boolean;
   setSession: (session: Session | null) => void;
   setUser: (userId: string) => void;
   setSubscriptionStatus: (status: SubscriptionStatus) => void;
   setCooldownEndsAt: (isoDate: string | null) => void;
   setOnboardingCompleted: (value: boolean) => void;
   setLanguage: (language: SupportedLanguage) => void;
+  setPasswordRecovery: (value: boolean) => void;
   logout: () => void;
 };
 
@@ -38,6 +43,7 @@ export const useUserStore = create<UserState>((set) => ({
   cooldownEndsAt: null,
   onboardingCompleted: undefined,
   language: "en",
+  passwordRecovery: false,
   setSession: (session) => set({ session, userId: session?.user.id ?? null }),
   setUser: (userId) => set({ userId }),
   setSubscriptionStatus: (status) => set({ subscriptionStatus: status }),
@@ -47,6 +53,7 @@ export const useUserStore = create<UserState>((set) => ({
     AsyncStorage.setItem(ONBOARDING_DONE_KEY, value ? "1" : "0").catch(() => {});
   },
   setLanguage: (language) => set({ language }),
+  setPasswordRecovery: (passwordRecovery) => set({ passwordRecovery }),
   logout: () =>
     set({ session: null, userId: null, subscriptionStatus: "free", cooldownEndsAt: null }),
 }));

@@ -6,5 +6,7 @@
   "notNow": "Jetzt nicht",
   "goPremium": "Premium holen",
   "back": "Zurück",
-  "loading": "Wird geladen"
+  "loading": "Wird geladen",
+  "showPassword": "Passwort anzeigen",
+  "hidePassword": "Passwort verbergen"
 }

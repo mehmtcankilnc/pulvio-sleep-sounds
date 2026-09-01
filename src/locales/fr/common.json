@@ -6,5 +6,7 @@
   "notNow": "Plus tard",
   "goPremium": "Passer à Premium",
   "back": "Retour",
-  "loading": "Chargement"
+  "loading": "Chargement",
+  "showPassword": "Afficher le mot de passe",
+  "hidePassword": "Masquer le mot de passe"
 }

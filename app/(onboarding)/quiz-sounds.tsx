@@ -4,12 +4,11 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
-import { GlowBackground } from "../../src/components/GlowBackground";
-import { OnboardingHeader } from "../../src/components/OnboardingHeader";
 import { OnboardingCta } from "../../src/components/OnboardingCta";
 import { CheckIcon, CloudRainIcon, FlameIcon, MicIcon, MusicIcon, WavesIcon, WindIcon } from "../../src/components/icons";
 import type { IconProps } from "../../src/components/icons";
 import { SOUND_KEYS, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
+import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
 
 const SOUND_ICONS: Record<(typeof SOUND_KEYS)[number], (props: IconProps) => JSX.Element> = {
   rainThunder: CloudRainIcon,
@@ -27,23 +26,11 @@ export default function QuizSoundsScreen() {
   const sounds = useOnboardingAnswers((s) => s.sounds);
   const toggleSound = useOnboardingAnswers((s) => s.toggleSound);
   useMarkOnboardingStep(3);
+  const funnelPad = useFunnelPadding({ hasStageHeader: true });
 
   return (
-    <GlowBackground
-      variant="pageWash"
-      washes={[{ origin: { x: -10, y: 20 }, color: colors.glow, extent: 44 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}
-    >
+    <View style={{ flex: 1, ...funnelPad, justifyContent: "space-between" }}>
       <View style={{ gap: 22 }}>
-        <OnboardingHeader
-          step={3}
-          totalSteps={6}
-          answered={sounds.length >= 1}
-          onBack={() => router.back()}
-          backLabel={t("back")}
-          onSkip={() => router.push("/(onboarding)/plan-ready")}
-          skipLabel={t("skip")}
-        />
         <View style={{ gap: 6 }}>
           <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
             {t("soundsEyebrow")}
@@ -96,6 +83,6 @@ export default function QuizSoundsScreen() {
         disabled={sounds.length === 0}
         onPress={() => router.push("/(onboarding)/voice")}
       />
-    </GlowBackground>
+    </View>
   );
 }

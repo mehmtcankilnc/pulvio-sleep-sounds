@@ -29,6 +29,7 @@
   "hideOtherPlans": "Masquer les autres formules",
   "otherPlansHeading": "Autres formules",
   "startTrialCta": "Démarrer mon essai gratuit de {{days}} jours",
+  "startTrialCtaZero": "Commencer aujourd'hui — {{amount}} à payer maintenant",
   "subscribeCta": "S'abonner",
   "noChargeHint": "Aucun prélèvement aujourd'hui · annulable à tout moment sur {{store}}",
   "noChargeHintNoTrial": "Annulable à tout moment sur {{store}}",

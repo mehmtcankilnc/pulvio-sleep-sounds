@@ -29,6 +29,7 @@
   "hideOtherPlans": "Diğer planları gizle",
   "otherPlansHeading": "Diğer planlar",
   "startTrialCta": "{{days}} günlük ücretsiz denememi başlat",
+  "startTrialCtaZero": "Bugün {{amount}} ile başla",
   "subscribeCta": "Abone ol",
   "noChargeHint": "Bugün ücret yok · {{store}}'dan istediğin an iptal et",
   "noChargeHintNoTrial": "{{store}} üzerinden istediğin zaman iptal et",

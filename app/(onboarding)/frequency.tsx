@@ -4,9 +4,9 @@ import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { GlowBackground } from "../../src/components/GlowBackground";
-import { OnboardingHeader } from "../../src/components/OnboardingHeader";
 import { OnboardingCta } from "../../src/components/OnboardingCta";
 import { FREQUENCY_KEYS, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
+import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
 
 export default function OnboardingFrequencyScreen() {
   const { t } = useTranslation("onboarding");
@@ -15,23 +15,15 @@ export default function OnboardingFrequencyScreen() {
   const frequency = useOnboardingAnswers((s) => s.frequency);
   const setFrequency = useOnboardingAnswers((s) => s.setFrequency);
   useMarkOnboardingStep(1);
+  const funnelPad = useFunnelPadding({ hasStageHeader: true });
 
+  // Step 1 keeps its own opaque background so welcome -> frequency reads as a
+  // real page change, not a panel sliding over the same sky. It's the same
+  // pageWash the layout stage uses, so frequency -> step 2 still looks
+  // seamless (identical glow behind an identical glow).
   return (
-    <GlowBackground
-      variant="pageWash"
-      washes={[{ origin: { x: 12, y: -6 }, color: colors.glow, extent: 44 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}
-    >
+    <GlowBackground variant="pageWash" style={{ flex: 1, ...funnelPad, justifyContent: "space-between" }}>
       <View style={{ gap: 22 }}>
-        <OnboardingHeader
-          step={1}
-          totalSteps={6}
-          answered={frequency !== null}
-          onBack={() => router.back()}
-          backLabel={t("back")}
-          onSkip={() => router.push("/(onboarding)/plan-ready")}
-          skipLabel={t("skip")}
-        />
         <View style={{ gap: 6 }}>
           <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
             {t("frequencyEyebrow")}

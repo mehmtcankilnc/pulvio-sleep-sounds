@@ -3,11 +3,10 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
-import { GlowBackground } from "../../src/components/GlowBackground";
-import { OnboardingHeader } from "../../src/components/OnboardingHeader";
 import { OnboardingCta } from "../../src/components/OnboardingCta";
 import { BellIcon } from "../../src/components/icons";
 import { formatBedtime, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
+import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
 
 function reminderTime(hour: number, minute: number): string {
   let total = hour * 60 + minute - 15;
@@ -22,6 +21,7 @@ export default function OnboardingReminderScreen() {
   const { bedtimeHour, bedtimeMinute, reminderOn, setReminderOn } = useOnboardingAnswers();
   const nudgeAt = reminderTime(bedtimeHour, bedtimeMinute);
   useMarkOnboardingStep(6);
+  const funnelPad = useFunnelPadding({ hasStageHeader: true });
 
   const OPTIONS: Array<{ value: boolean; label: string; hint: string }> = [
     { value: true, label: t("reminderYes"), hint: t("reminderYesHint", { time: nudgeAt }) },
@@ -29,21 +29,8 @@ export default function OnboardingReminderScreen() {
   ];
 
   return (
-    <GlowBackground
-      variant="pageWash"
-      washes={[{ origin: { x: 50, y: -8 }, color: colors.glow, extent: 44 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}
-    >
+    <View style={{ flex: 1, ...funnelPad, justifyContent: "space-between" }}>
       <View style={{ gap: 22 }}>
-        <OnboardingHeader
-          step={6}
-          totalSteps={6}
-          answered
-          onBack={() => router.back()}
-          backLabel={t("back")}
-          onSkip={() => router.push("/(onboarding)/plan-ready")}
-          skipLabel={t("skip")}
-        />
         <View style={{ gap: 6 }}>
           <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
             {t("reminderEyebrow")}
@@ -99,6 +86,6 @@ export default function OnboardingReminderScreen() {
       </View>
 
       <OnboardingCta label={t("continueCta")} onPress={() => router.push("/(onboarding)/plan-ready")} />
-    </GlowBackground>
+    </View>
   );
 }

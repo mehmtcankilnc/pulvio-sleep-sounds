@@ -3,10 +3,9 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
-import { GlowBackground } from "../../src/components/GlowBackground";
-import { OnboardingHeader } from "../../src/components/OnboardingHeader";
 import { OnboardingCta } from "../../src/components/OnboardingCta";
 import { VOICE_KEYS, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
+import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
 
 export default function OnboardingVoiceScreen() {
   const { t } = useTranslation("onboarding");
@@ -15,23 +14,11 @@ export default function OnboardingVoiceScreen() {
   const voice = useOnboardingAnswers((s) => s.voice);
   const setVoice = useOnboardingAnswers((s) => s.setVoice);
   useMarkOnboardingStep(4);
+  const funnelPad = useFunnelPadding({ hasStageHeader: true });
 
   return (
-    <GlowBackground
-      variant="pageWash"
-      washes={[{ origin: { x: 92, y: 10 }, color: colors.glow, extent: 44 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}
-    >
+    <View style={{ flex: 1, ...funnelPad, justifyContent: "space-between" }}>
       <View style={{ gap: 22 }}>
-        <OnboardingHeader
-          step={4}
-          totalSteps={6}
-          answered={voice !== null}
-          onBack={() => router.back()}
-          backLabel={t("back")}
-          onSkip={() => router.push("/(onboarding)/plan-ready")}
-          skipLabel={t("skip")}
-        />
         <View style={{ gap: 6 }}>
           <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
             {t("voiceEyebrow")}
@@ -90,6 +77,6 @@ export default function OnboardingVoiceScreen() {
         disabled={voice === null}
         onPress={() => router.push("/(onboarding)/bedtime")}
       />
-    </GlowBackground>
+    </View>
   );
 }

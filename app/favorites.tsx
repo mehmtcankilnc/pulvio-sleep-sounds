@@ -4,74 +4,19 @@ import { View, Text, ActivityIndicator, Pressable, SectionList } from "react-nat
 import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useTracks } from "../src/hooks/useTracks";
 import { useFavorites } from "../src/hooks/useFavorites";
 import { usePlayerActions } from "../src/hooks/usePlayerActions";
 import { useThemeColors } from "../src/hooks/useThemeColors";
-import { categoryIcon } from "../src/lib/categoryIcon";
 import { GlowBackground } from "../src/components/GlowBackground";
+import { TrackRow, TrackSectionHeader } from "../src/components/TrackRow";
+import { centeredColumn } from "../src/theme/layout";
 import { Button } from "../src/components/ui/Button";
 import { ChevronLeftIcon, HeartIcon } from "../src/components/icons";
 import type { Track } from "../src/types";
 
-// App-wide press vocabulary (Button.tsx / SelectChip.tsx / sleep.tsx).
-const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-function usePressScale(targetScale: number, duration = 150) {
-  const scale = useSharedValue(1);
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  return {
-    style,
-    onPressIn: () => {
-      scale.value = withTiming(targetScale, { duration, easing: EASE_OUT, reduceMotion: ReduceMotion.System });
-    },
-    onPressOut: () => {
-      scale.value = withTiming(1, { duration, easing: EASE_OUT, reduceMotion: ReduceMotion.System });
-    },
-  };
-}
-
-function TrackRow({ track, premiumLabel, onPress }: { track: Track; premiumLabel: string; onPress: () => void }) {
-  const colors = useThemeColors();
-  const Icon = categoryIcon(track.category, track.subcategory);
-  const press = usePressScale(0.98);
-  return (
-    <AnimatedPressable
-      onPress={onPress}
-      onPressIn={press.onPressIn}
-      onPressOut={press.onPressOut}
-      accessibilityRole="button"
-      accessibilityLabel={track.isPremiumOnly ? `${track.title}, ${premiumLabel}` : track.title}
-      style={[
-        {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 12,
-          minHeight: 56,
-          paddingHorizontal: 14,
-          backgroundColor: colors.card,
-          borderWidth: 1,
-          borderColor: colors.stroke,
-          borderRadius: 16,
-        },
-        press.style,
-      ]}
-    >
-      <Icon size={20} color={colors.accent} strokeWidth={1.6} />
-      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-        <Text numberOfLines={1} style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
-          {track.title}
-        </Text>
-        {track.isPremiumOnly && <Text style={{ fontSize: 11, color: colors.accent }}>{premiumLabel}</Text>}
-      </View>
-    </AnimatedPressable>
-  );
-}
-
 export default function FavoritesScreen(): JSX.Element {
-  const { t } = useTranslation("settings");
+  const { t, i18n } = useTranslation("settings");
   const colors = useThemeColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -114,6 +59,7 @@ export default function FavoritesScreen(): JSX.Element {
       washes={[{ origin: { x: 12, y: -8 }, color: colors.glow, extent: 44 }]}
       style={{ flex: 1 }}
     >
+      <View style={{ flex: 1, ...centeredColumn }}>
       <View
         style={{
           flexDirection: "row",
@@ -187,19 +133,7 @@ export default function FavoritesScreen(): JSX.Element {
           stickySectionHeadersEnabled={false}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
           renderSectionHeader={({ section }) => (
-            <Text
-              accessibilityRole="header"
-              style={{
-                fontSize: 11,
-                fontWeight: "700",
-                letterSpacing: 1.3,
-                color: colors.muted,
-                paddingTop: 14,
-                paddingBottom: 8,
-              }}
-            >
-              {section.title.replace(" / ", " · ").toUpperCase()}
-            </Text>
+            <TrackSectionHeader title={section.title} language={i18n.language} />
           )}
           renderItem={({ item }) => (
             <View style={{ marginBottom: 8 }}>
@@ -208,6 +142,7 @@ export default function FavoritesScreen(): JSX.Element {
           )}
         />
       )}
+      </View>
     </GlowBackground>
   );
 }

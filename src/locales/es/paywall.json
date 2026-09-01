@@ -29,6 +29,7 @@
   "hideOtherPlans": "Ocultar otros planes",
   "otherPlansHeading": "Otros planes",
   "startTrialCta": "Empezar mi prueba gratis de {{days}} días",
+  "startTrialCtaZero": "Empieza hoy — {{amount}} a pagar ahora",
   "subscribeCta": "Suscribirme",
   "noChargeHint": "Sin cargo hoy · cancela cuando quieras en {{store}}",
   "noChargeHintNoTrial": "Cancela cuando quieras en {{store}}",

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Modal, Pressable, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import { Modal, Pressable, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   Easing,
   ReduceMotion,
@@ -36,6 +37,7 @@ export function BottomSheet({
   children: React.ReactNode;
 }) {
   const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
   const [mounted, setMounted] = useState(visible);
   const [sheetHeight, setSheetHeight] = useState(400);
   const progress = useSharedValue(0);
@@ -61,6 +63,17 @@ export function BottomSheet({
     if (height > 0) setSheetHeight(height);
   }
 
+  // Stack the Android system nav bar inset on top of whatever bottom padding
+  // the caller's `style` already asks for, so a pinned action ("Continue",
+  // "Log out", the last language row) never sits under the 3-button nav bar.
+  const flat = StyleSheet.flatten(style) ?? {};
+  const callerPadBottom =
+    typeof flat.paddingBottom === "number"
+      ? flat.paddingBottom
+      : typeof flat.padding === "number"
+        ? flat.padding
+        : 0;
+
   return (
     <Modal visible transparent animationType="none" onRequestClose={onClose}>
       <View style={{ flex: 1, justifyContent: "flex-end" }}>
@@ -73,6 +86,7 @@ export function BottomSheet({
             { backgroundColor: colors.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24 },
             sheetStyle,
             style,
+            { paddingBottom: callerPadBottom + insets.bottom },
           ]}
         >
           {children}

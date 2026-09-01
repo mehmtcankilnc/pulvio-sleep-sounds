@@ -24,8 +24,14 @@ export function useAuthListener() {
       setSession(session);
     });
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
       if (!initialResolved) return;
+      // A recovery deep link produces a session AND this event; flag it so the
+      // route guard keeps the user on reset-password instead of dropping them
+      // into the app with a password they haven't set yet.
+      if (event === "PASSWORD_RECOVERY") {
+        useUserStore.getState().setPasswordRecovery(true);
+      }
       setSession(session);
     });
 

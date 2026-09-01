@@ -2,128 +2,142 @@ import { useMemo } from "react";
 import { View, Text, ActivityIndicator, Pressable, SectionList } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTracks } from "../src/hooks/useTracks";
 import { usePlayerActions } from "../src/hooks/usePlayerActions";
 import { useThemeColors } from "../src/hooks/useThemeColors";
-import { categoryIcon } from "../src/lib/categoryIcon";
+import { GlowBackground } from "../src/components/GlowBackground";
+import { TrackRow, TrackSectionHeader } from "../src/components/TrackRow";
 import { Button } from "../src/components/ui/Button";
+import { ChevronLeftIcon, MusicIcon } from "../src/components/icons";
+import { centeredColumn } from "../src/theme/layout";
+import type { Track } from "../src/types";
 
 export default function DiscoverScreen() {
-  const { t } = useTranslation("discover");
+  const { t, i18n } = useTranslation("discover");
   const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
   const { sections: allSections, loading, error, refetch } = useTracks();
   const { loadAndPlay } = usePlayerActions();
   const router = useRouter();
   const { category } = useLocalSearchParams<{ category?: string }>();
 
-  // A category tile promises a filtered view — fall back to the full
-  // catalog if the filter would otherwise leave nothing to show (e.g. a
-  // stale/renamed category), rather than presenting a false "empty" state.
+  // A category tile promises a filtered view — fall back to the full catalog
+  // if the filter would otherwise leave nothing to show (e.g. a stale/renamed
+  // category), rather than presenting a false "empty" state.
   const filtered = useMemo(
     () => (category ? allSections.filter((section) => section.title.startsWith(`${category} / `)) : allSections),
-    [allSections, category]
+    [allSections, category],
   );
   const sections = category && filtered.length > 0 ? filtered : allSections;
   const isFiltered = Boolean(category) && filtered.length > 0;
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.bg }}>
-        <ActivityIndicator color={colors.button} />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View className="flex-1 items-center justify-center px-6" style={{ backgroundColor: colors.bg }}>
-        <Text className="text-center mb-4" style={{ color: colors.text }}>
-          {t("loadError")}
-        </Text>
-        <Button label={t("common:retry")} variant="outline" onPress={refetch} />
-      </View>
-    );
-  }
-
-  if (sections.length === 0) {
-    return (
-      <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.bg }}>
-        <Text style={{ color: colors.text, fontSize: 18 }}>{t("empty")}</Text>
-      </View>
-    );
+  function openTrack(track: Track) {
+    loadAndPlay(track);
+    router.navigate("/player");
   }
 
   return (
-    <SectionList
-      style={{ flex: 1, backgroundColor: colors.bg }}
-      contentContainerStyle={{ paddingBottom: 24 }}
-      sections={sections}
-      keyExtractor={(item) => item.id}
-      ListHeaderComponent={
-        isFiltered ? (
-          <View
+    <GlowBackground
+      variant="pageWash"
+      washes={[{ origin: { x: 12, y: -8 }, color: colors.glow, extent: 44 }]}
+      style={{ flex: 1 }}
+    >
+      <View style={{ flex: 1, ...centeredColumn }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 14,
+            paddingHorizontal: 20,
+            paddingTop: Math.max(insets.top, 20) + 6,
+            paddingBottom: 16,
+          }}
+        >
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={6}
             style={{
-              flexDirection: "row",
+              width: 44,
+              height: 44,
+              borderRadius: 999,
+              backgroundColor: colors.card,
+              borderWidth: 1,
+              borderColor: colors.stroke,
               alignItems: "center",
-              justifyContent: "space-between",
-              paddingHorizontal: 20,
-              paddingTop: 20,
+              justifyContent: "center",
             }}
+            accessibilityRole="button"
+            accessibilityLabel={t("common:back")}
           >
-            <Text className="font-bold" style={{ fontSize: 22, letterSpacing: -0.2, color: colors.text }}>
-              {category}
-            </Text>
+            <ChevronLeftIcon size={20} color={colors.muted} strokeWidth={1.7} />
+          </Pressable>
+          <Text
+            accessibilityRole="header"
+            numberOfLines={1}
+            className="font-bold"
+            style={{ flex: 1, fontSize: 22, letterSpacing: -0.2, color: colors.text }}
+          >
+            {isFiltered ? category : t("tabTitle")}
+          </Text>
+          {isFiltered ? (
             <Pressable
               onPress={() => router.setParams({ category: undefined })}
+              hitSlop={6}
               accessibilityRole="button"
               accessibilityLabel={t("clearFilterCta")}
               style={{ minHeight: 44, justifyContent: "center" }}
             >
               <Text style={{ fontSize: 12.5, fontWeight: "600", color: colors.accent }}>{t("clearFilterCta")}</Text>
             </Pressable>
+          ) : null}
+        </View>
+
+        {loading ? (
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }} accessible accessibilityLabel={t("common:loading")}>
+            <ActivityIndicator color={colors.button} />
           </View>
-        ) : null
-      }
-      renderSectionHeader={({ section }) => (
-        <Text
-          className="font-bold px-5 pt-5 pb-2"
-          style={{ fontSize: 15.5, color: colors.text, backgroundColor: colors.bg }}
-        >
-          {section.title}
-        </Text>
-      )}
-      renderItem={({ item }) => {
-        const Icon = categoryIcon(item.category, item.subcategory);
-        return (
-          <Pressable
-            style={{
-              marginHorizontal: 20,
-              marginBottom: 8,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 12,
-              minHeight: 56,
-              paddingHorizontal: 14,
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.stroke,
-              borderRadius: 16,
-            }}
-            onPress={() => {
-              loadAndPlay(item);
-              router.navigate("/player");
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={item.title}
-          >
-            <Icon size={20} color={colors.accent} strokeWidth={1.6} />
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>{item.title}</Text>
-              {item.isPremiumOnly && <Text style={{ fontSize: 11, color: colors.accent }}>{t("premiumBadge")}</Text>}
+        ) : error ? (
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 12, paddingHorizontal: 32 }}>
+            <Text
+              accessibilityRole="alert"
+              accessibilityLiveRegion="assertive"
+              style={{ textAlign: "center", color: colors.muted, fontSize: 13.5 }}
+            >
+              {t("loadError")}
+            </Text>
+            <View>
+              <Button label={t("common:retry")} variant="outline" onPress={refetch} />
             </View>
-          </Pressable>
-        );
-      }}
-    />
+          </View>
+        ) : sections.length === 0 ? (
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 12, paddingHorizontal: 40 }}>
+            <MusicIcon size={30} color={colors.faint} strokeWidth={1.5} />
+            <Text className="font-bold" style={{ fontSize: 16, color: colors.text, textAlign: "center" }}>
+              {t("empty")}
+            </Text>
+            <Text style={{ fontSize: 13, color: colors.muted, textAlign: "center", lineHeight: 19 }}>
+              {t("emptyBody")}
+            </Text>
+          </View>
+        ) : (
+          <SectionList
+            sections={sections}
+            keyExtractor={(item) => item.id}
+            stickySectionHeadersEnabled={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
+            renderSectionHeader={({ section }) => (
+              <TrackSectionHeader title={section.title} language={i18n.language} />
+            )}
+            renderItem={({ item }) => (
+              <View style={{ marginBottom: 8 }}>
+                <TrackRow track={item} premiumLabel={t("premiumBadge")} onPress={() => openTrack(item)} />
+              </View>
+            )}
+          />
+        )}
+      </View>
+    </GlowBackground>
   );
 }

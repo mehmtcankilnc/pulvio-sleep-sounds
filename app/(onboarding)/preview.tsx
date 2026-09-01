@@ -13,8 +13,9 @@ import { OnboardingCta } from "../../src/components/OnboardingCta";
 import { EqBarsIcon, MoonIcon } from "../../src/components/icons";
 import { useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
 import { saveOnboardingAnswers } from "../../src/lib/onboarding/saveAnswers";
+import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
 
-const MIN_LISTEN_SECONDS = 8; // hear the sound before the choice unlocks
+const MIN_LISTEN_SECONDS = 4; // hear the sound before the choice unlocks
 const LOAD_GRACE_SECONDS = 6; // if it hasn't loaded by now, surface trouble + let the user move on
 
 // The first time Pulvio actually plays. Deliberately pre-auth: no freemium
@@ -26,6 +27,7 @@ export default function OnboardingPreviewScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   useMarkOnboardingStep(7);
+  const funnelPad = useFunnelPadding();
 
   // Freeze the track for this screen's lifetime. The store is reset() after
   // the answers are saved post-signup, and letting the audio source flip to
@@ -37,6 +39,7 @@ export default function OnboardingPreviewScreen() {
   const status = useAudioPlayerStatus(player);
 
   const [canLeave, setCanLeave] = useState(!previewTrack);
+  const [remaining, setRemaining] = useState(previewTrack ? MIN_LISTEN_SECONDS : 0);
   const [loadChecked, setLoadChecked] = useState(false);
   const advanced = useRef(false);
 
@@ -66,10 +69,20 @@ export default function OnboardingPreviewScreen() {
 
   useEffect(() => {
     if (!previewTrack) return;
-    const unlock = setTimeout(() => setCanLeave(true), MIN_LISTEN_SECONDS * 1000);
+    const start = Date.now();
+    const tick = setInterval(() => {
+      const left = Math.ceil(MIN_LISTEN_SECONDS - (Date.now() - start) / 1000);
+      if (left <= 0) {
+        setRemaining(0);
+        setCanLeave(true);
+        clearInterval(tick);
+      } else {
+        setRemaining(left);
+      }
+    }, 250);
     const check = setTimeout(() => setLoadChecked(true), LOAD_GRACE_SECONDS * 1000);
     return () => {
-      clearTimeout(unlock);
+      clearInterval(tick);
       clearTimeout(check);
     };
   }, [previewTrack]);
@@ -116,18 +129,25 @@ export default function OnboardingPreviewScreen() {
 
   const loadFailed = !!previewTrack && loadChecked && !status.isLoaded;
   const canContinue = !previewTrack || loadFailed || canLeave;
+  // While the min-listen window is still counting down, fold the remaining
+  // seconds into the CTA label so the disabled button explains itself.
+  const ctaLabel = loadFailed
+    ? t("previewContinueAnyway")
+    : canContinue
+      ? t("continueCta")
+      : `${t("continueCta")} · ${remaining}s`;
 
   return (
     <GlowBackground
       variant="nightScene"
       washes={[{ origin: { x: 50, y: 30 }, color: colors.glow, extent: 52 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 28 }}
+      style={{ flex: 1, ...funnelPad }}
     >
       <View style={{ position: "absolute", top: 0, left: 0, right: 0 }} pointerEvents="none">
         <StarField width={390} height={240} />
       </View>
 
-      <OnboardingHeader step={6} totalSteps={6} answered onBack={() => router.back()} backLabel={t("back")} />
+      <OnboardingHeader step={6} totalSteps={6} answered showProgress={false} onBack={() => router.back()} backLabel={t("back")} />
 
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 26 }}>
         <BreathingMoon active={!!previewTrack && !loadFailed} />
@@ -152,7 +172,12 @@ export default function OnboardingPreviewScreen() {
       </View>
 
       <View style={{ gap: 4 }}>
-        <OnboardingCta label={loadFailed ? t("previewContinueAnyway") : t("continueCta")} disabled={!canContinue} onPress={goNext} />
+        <OnboardingCta
+          label={ctaLabel}
+          accessibilityLabel={loadFailed ? t("previewContinueAnyway") : t("continueCta")}
+          disabled={!canContinue}
+          onPress={goNext}
+        />
         <Text style={{ minHeight: 34, textAlign: "center", textAlignVertical: "center", fontSize: 12, color: colors.faint }}>
           {t("previewFootnote")}
         </Text>

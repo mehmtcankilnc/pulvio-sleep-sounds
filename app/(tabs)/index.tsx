@@ -14,6 +14,7 @@ import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { usePressScale } from "../../src/hooks/usePressScale";
 import { categoryIcon } from "../../src/lib/categoryIcon";
 import { GlowBackground } from "../../src/components/GlowBackground";
+import { centeredColumn } from "../../src/theme/layout";
 import { ScreenHeader } from "../../src/components/ScreenHeader";
 import { Button } from "../../src/components/ui/Button";
 import { ChevronRightIcon, MoonIcon, PlayIcon } from "../../src/components/icons";
@@ -242,7 +243,7 @@ export default function ExploreScreen() {
     <GlowBackground variant="pageWash" style={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
+        contentContainerStyle={{ ...centeredColumn, paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
       >
         <ScreenHeader eyebrow={t("greetingEyebrow")} title={t("greetingTitle")} />
 

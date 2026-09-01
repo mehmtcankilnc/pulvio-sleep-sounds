@@ -2,6 +2,7 @@
   "tabTitle": "Sons",
   "loadError": "Não foi possível carregar os sons. Tente novamente.",
   "empty": "Nenhum som adicionado ainda",
+  "emptyBody": "O catálogo está vazio no momento — volte em breve.",
   "premiumBadge": "Premium",
   "clearFilterCta": "Mostrar todos os sons"
 }

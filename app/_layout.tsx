@@ -37,6 +37,7 @@ export default function RootLayout() {
   usePushNotifications();
   const session = useUserStore((state) => state.session);
   const onboardingCompleted = useUserStore((state) => state.onboardingCompleted);
+  const passwordRecovery = useUserStore((state) => state.passwordRecovery);
   const setLanguage = useUserStore((state) => state.setLanguage);
   const [i18nReady, setI18nReady] = useState(false);
   const [fontsLoaded] = useFonts({
@@ -72,13 +73,25 @@ export default function RootLayout() {
   // True for the frame(s) where state is known but the current route is still
   // the wrong place and the guard's replace() hasn't landed yet. A logged-in
   // user never sits in (auth).
-  const redirecting = ready && (!session ? !settledForLoggedOut : inAuthGroup);
+  // A recovery session legitimately sits in (auth) on the reset-password
+  // screen — don't treat that as "stranded on login".
+  const onResetPassword = inAuthGroup && segments[segments.length - 1] === "reset-password";
+  const strandedInAuth = inAuthGroup && !passwordRecovery;
+  const redirecting =
+    ready && (passwordRecovery ? !onResetPassword : !session ? !settledForLoggedOut : strandedInAuth);
 
   // Root Layout only mounts the Stack (below) once session/onboarding/i18n/
   // fonts are all ready — redirecting before that throws "navigate before
   // mounting the Root Layout component", since there's no navigator yet.
   useEffect(() => {
     if (!ready) return;
+
+    // A recovery deep link landed — take the user to set a new password,
+    // wherever they were, and keep them there until the flag clears.
+    if (passwordRecovery) {
+      if (!onResetPassword) router.replace("/(auth)/reset-password");
+      return;
+    }
 
     if (!session) {
       // First run (never been through the funnel) -> onboarding. Otherwise
@@ -87,12 +100,13 @@ export default function RootLayout() {
       if (!settledForLoggedOut) {
         router.replace(onboardingCompleted ? "/(auth)" : "/(onboarding)/welcome");
       }
-    } else if (inAuthGroup) {
+    } else if (strandedInAuth) {
       // Logged in but stranded on a login screen. (Logged-in users in
-      // (onboarding) are left alone — that's the __DEV__ replay path.)
+      // (onboarding) are left alone — that's the __DEV__ replay path; a
+      // recovery session on reset-password is left alone via strandedInAuth.)
       router.replace("/(tabs)");
     }
-  }, [ready, session, onboardingCompleted, inAuthGroup, settledForLoggedOut, router]);
+  }, [ready, session, onboardingCompleted, strandedInAuth, settledForLoggedOut, passwordRecovery, onResetPassword, router]);
 
   // Keep the plain loading screen up until state is resolved AND we're already
   // on the right group — so no screen flashes for a frame before the guard

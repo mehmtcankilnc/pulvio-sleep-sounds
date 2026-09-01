@@ -6,5 +6,7 @@
   "notNow": "Şimdi değil",
   "goPremium": "Premium'a Geç",
   "back": "Geri",
-  "loading": "Yükleniyor"
+  "loading": "Yükleniyor",
+  "showPassword": "Şifreyi göster",
+  "hidePassword": "Şifreyi gizle"
 }

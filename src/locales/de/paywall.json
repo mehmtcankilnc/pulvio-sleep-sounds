@@ -29,6 +29,7 @@
   "hideOtherPlans": "Andere Pläne ausblenden",
   "otherPlansHeading": "Weitere Pläne",
   "startTrialCta": "Meine {{days}}-tägige Gratistestphase starten",
+  "startTrialCtaZero": "Heute starten — jetzt {{amount}} fällig",
   "subscribeCta": "Abonnieren",
   "noChargeHint": "Heute keine Abbuchung · jederzeit im {{store}} kündbar",
   "noChargeHintNoTrial": "Jederzeit im {{store}} kündbar",

@@ -106,6 +106,22 @@ export function savingsPctVsMonthly(
   return pct > 0 && pct < 100 ? pct : null;
 }
 
+// The sticker to strike through on a longer plan: what its span would cost
+// paid month-by-month ("₺1,299 if you paid monthly"). Real arithmetic on the
+// live monthly price — null unless a monthly plan exists and paying monthly
+// really is more expensive than this plan.
+export function monthlyEquivalentPrice(
+  pkg: PurchasesPackage,
+  monthlyPkg: PurchasesPackage | undefined
+): string | null {
+  const base = monthlyPkg?.product.price;
+  const months = monthsForPackage(pkg);
+  if (!base || !months || months < 2) return null;
+  const total = base * months;
+  if (total <= pkg.product.price) return null;
+  return formatCurrency(total, pkg.product.currencyCode);
+}
+
 // How many months of the monthly price a longer plan effectively gives away
 // ("annual ≈ 2 months free"). null for sub-monthly plans or no saving.
 export function monthsFreeVsMonthly(

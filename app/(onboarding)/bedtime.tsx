@@ -4,10 +4,9 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import DatePicker from "react-native-date-picker";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
-import { GlowBackground } from "../../src/components/GlowBackground";
-import { OnboardingHeader } from "../../src/components/OnboardingHeader";
 import { OnboardingCta } from "../../src/components/OnboardingCta";
 import { useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
+import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
 
 function dateFrom(hour: number, minute: number): Date {
   const d = new Date();
@@ -22,6 +21,7 @@ export default function OnboardingBedtimeScreen() {
   const { bedtimeHour, bedtimeMinute, setBedtime } = useOnboardingAnswers();
   const [value, setValue] = useState(() => dateFrom(bedtimeHour, bedtimeMinute));
   useMarkOnboardingStep(5);
+  const funnelPad = useFunnelPadding({ hasStageHeader: true });
 
   // Keep the wheel in sync with the store when it changes underneath us
   // (e.g. answers hydrated from storage after this screen mounted).
@@ -30,21 +30,8 @@ export default function OnboardingBedtimeScreen() {
   }, [bedtimeHour, bedtimeMinute]);
 
   return (
-    <GlowBackground
-      variant="pageWash"
-      washes={[{ origin: { x: 8, y: 92 }, color: colors.glow, extent: 44 }]}
-      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 32, paddingBottom: 26, justifyContent: "space-between" }}
-    >
+    <View style={{ flex: 1, ...funnelPad, justifyContent: "space-between" }}>
       <View style={{ gap: 22 }}>
-        <OnboardingHeader
-          step={5}
-          totalSteps={6}
-          answered
-          onBack={() => router.back()}
-          backLabel={t("back")}
-          onSkip={() => router.push("/(onboarding)/plan-ready")}
-          skipLabel={t("skip")}
-        />
         <View style={{ gap: 6 }}>
           <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
             {t("bedtimeEyebrow")}
@@ -70,6 +57,6 @@ export default function OnboardingBedtimeScreen() {
       </View>
 
       <OnboardingCta label={t("continueCta")} onPress={() => router.push("/(onboarding)/reminder")} />
-    </GlowBackground>
+    </View>
   );
 }

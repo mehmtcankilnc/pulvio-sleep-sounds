@@ -6,5 +6,7 @@
   "notNow": "Ahora no",
   "goPremium": "Hazte Premium",
   "back": "Atrás",
-  "loading": "Cargando"
+  "loading": "Cargando",
+  "showPassword": "Mostrar contraseña",
+  "hidePassword": "Ocultar contraseña"
 }

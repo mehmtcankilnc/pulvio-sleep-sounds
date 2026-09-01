@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import Purchases from "react-native-purchases";
 import { useUserStore } from "../store/useUserStore";
-import { configureRevenueCatOnce } from "../lib/revenuecat";
+import { configureRevenueCatOnce, purchasesDisabled } from "../lib/revenuecat";
 import { resolveSubscriptionState } from "../lib/subscription";
 
 // app/_layout.tsx içinde bir kez mount edilir. RevenueCat SDK'sını başlatır,
@@ -19,7 +19,7 @@ export function useRevenueCatSync() {
   }, []);
 
   useEffect(() => {
-    if (session === undefined) return;
+    if (purchasesDisabled || session === undefined) return;
 
     if (session) {
       Purchases.logIn(session.user.id).catch(() => {});
@@ -31,6 +31,8 @@ export function useRevenueCatSync() {
   }, [session]);
 
   useEffect(() => {
+    if (purchasesDisabled) return;
+
     const listener = () => {
       resolveSubscriptionState().then((state) => {
         if (!state) return;
