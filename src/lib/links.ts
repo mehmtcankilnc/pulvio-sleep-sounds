@@ -1,17 +1,18 @@
 import { Platform, Linking } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 
-// TODO(pulvio): replace with the real published URLs before store submission.
+// Hosted on a subdomain of the developer's personal domain rather than a
+// dedicated pulvio.app domain (same setup as the smooth-icon library).
 // App Store Guideline 5.1.1 and Google Play both require a reachable privacy
-// policy; these must resolve to live pages.
-export const PRIVACY_POLICY_URL = "https://pulvio.app/privacy";
-export const TERMS_URL = "https://pulvio.app/terms";
-export const SUPPORT_EMAIL = "support@pulvio.app";
+// policy; these must resolve to live pages before store submission.
+export const PRIVACY_POLICY_URL = "https://pulvio.mehmtcankilinc.com/privacy";
+export const TERMS_URL = "https://pulvio.mehmtcankilinc.com/terms";
+export const SUPPORT_EMAIL = "mehmtcankilinc@gmail.com";
 
 // Flip to `true` once the two URLs above point at live pages. Until then the
 // Settings screen hides the Privacy / Terms rows rather than opening a 404.
 // Contact support (mailto) is unaffected and always shown.
-export const LEGAL_LINKS_READY = false;
+export const LEGAL_LINKS_READY = true;
 
 // Generic store subscription-management landing, used only when RevenueCat
 // doesn't hand back a customer-specific managementURL.
@@ -31,5 +32,7 @@ export function openSupportEmail() {
 }
 
 export function openManageSubscription(managementUrl: string | null) {
-  return Linking.openURL(managementUrl ?? STORE_SUBSCRIPTIONS_FALLBACK).catch(() => {});
+  return Linking.openURL(managementUrl ?? STORE_SUBSCRIPTIONS_FALLBACK).catch(
+    () => {},
+  );
 }

@@ -14,15 +14,16 @@ Real data throughout (`useTracks`, `useContinueListening`, `usePlayerActions`).
   strings. Once the real taxonomy is finalized, replace this with an
   explicit id→icon table.
 
-## 2. Now Playing — [app/player.tsx](../app/player.tsx) 🟡
+## 2. Now Playing — [app/player.tsx](../app/player.tsx) 🟢
 Playback state is real (player store).
 - **Real now:** sleep timer (15/30/45/∞ pills arm a real fade-then-pause in
   `src/lib/player/sleepTimer.ts`, persisted across sessions). Like/heart
   toggle is real (`src/hooks/useFavorites.ts`, Supabase `favorites` table),
   surfaced in Profile's "Favorite sounds" row.
-- Skip back/forward controls still render but have no handler — the
-  player only supports single-track playback. **Needs:** either remove
-  these controls or define what "skip" means for a single ambient track.
+- The dead skip back/forward controls were removed in the player redesign
+  (commit "Redesign player screen UX") — the screen is play/pause only,
+  matching single-track playback. `SkipBackIcon`/`SkipFwdIcon` remain in the
+  icon set (verbatim from DESIGN.html) but are unused.
 - The old "Add a layer" CTA (linked to Mixer) was removed on 2026-08-25
   along with the Mixer feature — see below.
 
@@ -104,23 +105,25 @@ Mind" scene card is static copy, not actually built from the quiz answers.
      model, which no longer exists (see #3); needs a fresh, simpler design
      since there's no multi-layer mix to build.
   5. Remove the Profile "Preview onboarding flow" dev link once real.
-- i18n: the `onboarding` namespace (plus `sleep`) is only translated in
-  **en/tr** right now — de/fr/es/pt fall back to English automatically
-  (safe, no crash) but need real translations before ship.
+- i18n: `onboarding` and `sleep` are now translated in all six locales
+  (de/fr/es/pt added 2026-09-01), wired in `src/lib/i18n.ts`.
 
-## 12. Paywall — [app/paywall.tsx](../app/paywall.tsx) 🟡
+## 12. Paywall — [app/paywall.tsx](../app/paywall.tsx) 🟢
 Real RevenueCat offering/packages, real purchase flow (unchanged from
 before the redesign) — only the visual layer changed. Plan cards render
-whatever `offering.availablePackages` returns; the "SAVE %" badge only
-shows when the selected package's identifier matches `/year|annual/i`.
-- **Mock:** the trial timeline ("Today / Day 5 / Day 7") is static copy.
-  **Needs:** derive the day-5/day-7 labels and the exact charge date from
-  the selected package's `product.introPrice`/`subscriptionPeriod` instead
-  of hardcoding "7 days".
-- **Needs:** confirm RevenueCat package identifiers actually contain
-  "year"/"annual" (the yearly-preferred-selection heuristic in
-  `app/paywall.tsx` assumes this) — replace with an explicit package
-  metadata check if not.
+whatever `offering.availablePackages` returns.
+- The trial timeline is derived, not hardcoded: `trialDaysFor(pkg)` in
+  `src/lib/paywallPricing.ts` reads the package's real free phase (Google
+  Play `freePhase` on the SubscriptionOption, or App Store `introPrice`),
+  and the timeline's middle step is `trialDays - 1` (the reminder day).
+  Every "≈ /month", "SAVE %", strikethrough, and "N months free" figure is
+  live arithmetic on the offering's prices — see the helpers in that file.
+- Plan merchandising (which packages get the two prominent cards) is driven
+  by `offering.metadata.primary`; the fallback is "the plan with a free
+  trial + the annual plan" (`monthsForPackage`, not a string match on the
+  identifier).
+- Optional polish left: the trial-end step still reads "Day 7", not a
+  calendar date ("billed Sep 8"). Enhancement, not a correctness gap.
 
 ## Design-system infra added this pass
 - `src/theme/colors.ts` — Drift token set (replaces the old
@@ -145,6 +148,18 @@ shows when the selected package's identifier matches `/year|annual/i`.
    product decision).
 4. ~~Sleep screen persistence~~ — done (2026-08-25, `sleep_schedule` table +
    `useSleepSchedule`), not yet device-tested.
-5. Onboarding persistence + wiring ahead of `(auth)`.
-6. Paywall trial-date derivation from real RevenueCat product data.
-7. Fill in de/fr/es/pt for the `sleep`/`onboarding` i18n namespaces.
+5. ~~Onboarding persistence + wiring ahead of `(auth)`~~ — done
+   (`onboardingCompleted` flag routes new sessions to `/(onboarding)/welcome`,
+   answers persist via `saveOnboardingAnswers`).
+6. ~~Paywall trial-date derivation from real RevenueCat product data~~ — done
+   (`src/lib/paywallPricing.ts`).
+7. ~~Fill in de/fr/es/pt for the `sleep`/`onboarding` i18n namespaces~~ — done
+   (2026-09-01).
+8. Device pass on everything since the SDK 57 upgrade + Drift redesign —
+   sleep persistence, player engine, onboarding funnel, the rebuilt auth
+   flow. None of it has run on hardware yet.
+9. Real CC0 audio into Supabase Storage (still SoundHelix placeholders).
+10. Live Terms/Privacy URLs — pages hosted at `https://pulvio.mehmtcankilinc.com/{privacy,terms}`
+    (a subdomain of the developer's personal domain, not a dedicated pulvio.app
+    domain). Flip `LEGAL_LINKS_READY` in `src/lib/links.ts` once those pages
+    actually resolve.

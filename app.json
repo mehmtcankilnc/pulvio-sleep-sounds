@@ -11,6 +11,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.pulvio.app",
       "icon": "./assets/icon.png",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "UIBackgroundModes": ["audio"]
       }
@@ -47,6 +48,7 @@
       ],
       "expo-font",
       "expo-web-browser",
+      "expo-apple-authentication",
       [
         "expo-splash-screen",
         {

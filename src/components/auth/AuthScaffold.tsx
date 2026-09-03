@@ -1,26 +1,24 @@
 import type { ReactNode } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColors } from "../../hooks/useThemeColors";
 import { GlowBackground } from "../GlowBackground";
-import { ChevronLeftIcon } from "../icons";
 import { FORM_MAX_W } from "../../theme/layout";
 
 // Shared shell for every (auth) screen. Carries the three things the raw
 // screens were missing: the Dusk Ember wash (every other screen has it), a
 // keyboard-safe scroll (the software keyboard was covering the fields and the
 // CTA), and the funnel's warm framing — a Lora eyebrow over the screen title.
+// No back chevron: every (auth) transition is a router.replace (stack depth 1),
+// so there is nothing to go "back" to — screens that offer a way out use an
+// explicit text link instead.
 export function AuthScaffold({
   eyebrow,
   title,
-  onBack,
-  backLabel,
   children,
 }: {
   eyebrow: string;
   title: string;
-  onBack?: () => void;
-  backLabel?: string;
   children: ReactNode;
 }) {
   const colors = useThemeColors();
@@ -46,18 +44,6 @@ export function AuthScaffold({
         }}
       >
         <View style={{ width: "100%", maxWidth: FORM_MAX_W, alignSelf: "center" }}>
-          {onBack ? (
-            <Pressable
-              onPress={onBack}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={backLabel}
-              style={{ width: 44, height: 44, marginLeft: -10, marginBottom: 4, alignItems: "center", justifyContent: "center" }}
-            >
-              <ChevronLeftIcon size={24} color={colors.muted} strokeWidth={1.7} />
-            </Pressable>
-          ) : null}
-
           <View style={{ gap: 3, marginBottom: 24 }}>
             <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
               {eyebrow}
@@ -65,7 +51,7 @@ export function AuthScaffold({
             <Text
               accessibilityRole="header"
               className="font-bold"
-              style={{ fontSize: 23, letterSpacing: -0.2, color: colors.text }}
+              style={{ fontSize: 22, letterSpacing: -0.2, color: colors.text }}
             >
               {title}
             </Text>

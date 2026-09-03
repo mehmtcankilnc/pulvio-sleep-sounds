@@ -29,7 +29,7 @@ const KIND_PROPS: Record<FieldKind, Partial<TextInputProps>> = {
     autoCapitalize: "none",
     autoComplete: "new-password",
     textContentType: "newPassword",
-    passwordRules: "minlength: 6;",
+    passwordRules: "minlength: 8;",
   },
   text: {},
 };
@@ -55,7 +55,10 @@ export const TextField = forwardRef<TextInput, Props>(function TextField(
   const { t } = useTranslation("common");
   const isPassword = kind === "password" || kind === "newPassword";
   const [revealed, setRevealed] = useState(false);
-  const borderColor = error ? colors.danger : colors.stroke;
+  // A validation error is a recoverable event — DESIGN.md keeps `danger` (the
+  // one true red) for irreversible destructive actions only; errors stay
+  // `notice`, matching the message text below.
+  const borderColor = error ? colors.notice : colors.stroke;
 
   return (
     <View style={{ gap: 6 }}>
@@ -79,7 +82,7 @@ export const TextField = forwardRef<TextInput, Props>(function TextField(
               borderColor,
               paddingHorizontal: 16,
               paddingVertical: 14,
-              paddingRight: isPassword ? 48 : 16,
+              paddingRight: isPassword ? 52 : 16,
               fontSize: 15,
               color: colors.text,
               backgroundColor: colors.card,
@@ -90,10 +93,10 @@ export const TextField = forwardRef<TextInput, Props>(function TextField(
         {isPassword ? (
           <Pressable
             onPress={() => setRevealed((v) => !v)}
-            hitSlop={10}
+            hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={revealed ? t("hidePassword") : t("showPassword")}
-            style={{ position: "absolute", right: 6, width: 40, height: 40, alignItems: "center", justifyContent: "center" }}
+            style={{ position: "absolute", right: 4, width: 44, height: 44, alignItems: "center", justifyContent: "center" }}
           >
             <Ionicons name={revealed ? "eye-off-outline" : "eye-outline"} size={20} color={colors.muted} />
           </Pressable>
@@ -103,7 +106,7 @@ export const TextField = forwardRef<TextInput, Props>(function TextField(
       {error ? (
         <Text
           accessibilityLiveRegion="polite"
-          style={{ fontSize: 12, color: colors.notice, paddingLeft: 2 }}
+          style={{ fontSize: 12.5, color: colors.notice, paddingLeft: 2 }}
         >
           {error}
         </Text>

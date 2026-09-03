@@ -30,6 +30,8 @@ import deDiscover from "../locales/de/discover.json";
 import dePlayer from "../locales/de/player.json";
 import deSettings from "../locales/de/settings.json";
 import dePaywall from "../locales/de/paywall.json";
+import deSleep from "../locales/de/sleep.json";
+import deOnboarding from "../locales/de/onboarding.json";
 
 import frCommon from "../locales/fr/common.json";
 import frAuth from "../locales/fr/auth.json";
@@ -38,6 +40,8 @@ import frDiscover from "../locales/fr/discover.json";
 import frPlayer from "../locales/fr/player.json";
 import frSettings from "../locales/fr/settings.json";
 import frPaywall from "../locales/fr/paywall.json";
+import frSleep from "../locales/fr/sleep.json";
+import frOnboarding from "../locales/fr/onboarding.json";
 
 import esCommon from "../locales/es/common.json";
 import esAuth from "../locales/es/auth.json";
@@ -46,6 +50,8 @@ import esDiscover from "../locales/es/discover.json";
 import esPlayer from "../locales/es/player.json";
 import esSettings from "../locales/es/settings.json";
 import esPaywall from "../locales/es/paywall.json";
+import esSleep from "../locales/es/sleep.json";
+import esOnboarding from "../locales/es/onboarding.json";
 
 import ptCommon from "../locales/pt/common.json";
 import ptAuth from "../locales/pt/auth.json";
@@ -54,22 +60,24 @@ import ptDiscover from "../locales/pt/discover.json";
 import ptPlayer from "../locales/pt/player.json";
 import ptSettings from "../locales/pt/settings.json";
 import ptPaywall from "../locales/pt/paywall.json";
+import ptSleep from "../locales/pt/sleep.json";
+import ptOnboarding from "../locales/pt/onboarding.json";
 
 export const SUPPORTED_LANGUAGES = ["tr", "en", "de", "fr", "es", "pt"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 const LANGUAGE_STORAGE_KEY = "pulvio_language";
 
-// sleep/onboarding are only translated in tr/en for now (see
-// docs/DRIFT_IMPLEMENTATION_PLAN.md) — the other locales fall back to en
-// via fallbackLng below, which i18next does per-key without erroring.
+// All namespaces are translated in every supported language. Any missing key
+// still falls back to en via fallbackLng below, which i18next does per-key
+// without erroring.
 const resources = {
   tr: { common: trCommon, auth: trAuth, home: trHome, discover: trDiscover, player: trPlayer, settings: trSettings, paywall: trPaywall, sleep: trSleep, onboarding: trOnboarding },
   en: { common: enCommon, auth: enAuth, home: enHome, discover: enDiscover, player: enPlayer, settings: enSettings, paywall: enPaywall, sleep: enSleep, onboarding: enOnboarding },
-  de: { common: deCommon, auth: deAuth, home: deHome, discover: deDiscover, player: dePlayer, settings: deSettings, paywall: dePaywall },
-  fr: { common: frCommon, auth: frAuth, home: frHome, discover: frDiscover, player: frPlayer, settings: frSettings, paywall: frPaywall },
-  es: { common: esCommon, auth: esAuth, home: esHome, discover: esDiscover, player: esPlayer, settings: esSettings, paywall: esPaywall },
-  pt: { common: ptCommon, auth: ptAuth, home: ptHome, discover: ptDiscover, player: ptPlayer, settings: ptSettings, paywall: ptPaywall },
+  de: { common: deCommon, auth: deAuth, home: deHome, discover: deDiscover, player: dePlayer, settings: deSettings, paywall: dePaywall, sleep: deSleep, onboarding: deOnboarding },
+  fr: { common: frCommon, auth: frAuth, home: frHome, discover: frDiscover, player: frPlayer, settings: frSettings, paywall: frPaywall, sleep: frSleep, onboarding: frOnboarding },
+  es: { common: esCommon, auth: esAuth, home: esHome, discover: esDiscover, player: esPlayer, settings: esSettings, paywall: esPaywall, sleep: esSleep, onboarding: esOnboarding },
+  pt: { common: ptCommon, auth: ptAuth, home: ptHome, discover: ptDiscover, player: ptPlayer, settings: ptSettings, paywall: ptPaywall, sleep: ptSleep, onboarding: ptOnboarding },
 };
 
 function isSupportedLanguage(lang: string): lang is SupportedLanguage {

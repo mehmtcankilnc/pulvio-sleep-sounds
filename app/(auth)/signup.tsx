@@ -3,7 +3,13 @@ import { View, Text, Pressable, type TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import type { Session } from "@supabase/supabase-js";
-import { signUpWithEmail, signInWithApple, signInWithGoogle, authErrorKey } from "../../src/lib/auth";
+import {
+  signUpWithEmail,
+  signInWithApple,
+  signInWithGoogle,
+  authErrorKey,
+  MIN_PASSWORD,
+} from "../../src/lib/auth";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { useUserStore } from "../../src/store/useUserStore";
 import { LEGAL_LINKS_READY, PRIVACY_POLICY_URL, TERMS_URL, openExternalUrl } from "../../src/lib/links";
@@ -13,7 +19,6 @@ import { AuthScaffold } from "../../src/components/auth/AuthScaffold";
 import { ProviderButtons, OrDivider } from "../../src/components/auth/ProviderButtons";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MIN_PASSWORD = 6;
 
 export default function SignupScreen() {
   const { t } = useTranslation("auth");
@@ -28,11 +33,15 @@ export default function SignupScreen() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [formNotice, setFormNotice] = useState<string | null>(null);
+  // "This email already has an account" carries a jump-to-login action, with
+  // the address kept, rather than making the user find the bottom link.
+  const [showToLogin, setShowToLogin] = useState(false);
 
   function clearErrors() {
     setEmailError(null);
     setPasswordError(null);
     setFormNotice(null);
+    setShowToLogin(false);
   }
 
   async function handleSignup() {
@@ -55,6 +64,7 @@ export default function SignupScreen() {
       const key = authErrorKey(error);
       if (key === "error.alreadyRegistered") {
         setFormNotice(t("error.alreadyRegistered"));
+        setShowToLogin(true);
       } else if (key === "error.weakPassword") {
         setPasswordError(t("error.weakPassword"));
       } else {
@@ -63,6 +73,10 @@ export default function SignupScreen() {
       return;
     }
     router.replace({ pathname: "/(auth)/check-email", params: { email: email.trim() } });
+  }
+
+  function goToLogin() {
+    router.replace({ pathname: "/(auth)", params: { email: email.trim() } });
   }
 
   async function handleOAuth(provider: "google" | "apple") {
@@ -100,6 +114,8 @@ export default function SignupScreen() {
   return (
     <AuthScaffold eyebrow={t("signup.eyebrow")} title={t("signup.title")}>
       <View style={{ gap: 14 }}>
+        <Text style={{ fontSize: 12.5, lineHeight: 18, color: colors.faint }}>{t("signup.whyAccount")}</Text>
+
         <TextField
           kind="email"
           label={t("field.email")}
@@ -130,13 +146,26 @@ export default function SignupScreen() {
         />
 
         {formNotice ? (
-          <Text
-            accessibilityLiveRegion="polite"
-            accessibilityRole="alert"
-            style={{ fontSize: 12.5, lineHeight: 18, color: colors.notice, textAlign: "center", paddingHorizontal: 4 }}
-          >
-            {formNotice}
-          </Text>
+          <View style={{ gap: 6 }}>
+            <Text
+              accessibilityLiveRegion="polite"
+              accessibilityRole="alert"
+              style={{ fontSize: 12.5, lineHeight: 18, color: colors.notice, textAlign: "center", paddingHorizontal: 4 }}
+            >
+              {formNotice}
+            </Text>
+            {showToLogin ? (
+              <Pressable
+                onPress={goToLogin}
+                accessibilityRole="button"
+                style={{ minHeight: 44, justifyContent: "center" }}
+              >
+                <Text style={{ fontSize: 12.5, fontWeight: "600", color: colors.accent, textAlign: "center" }}>
+                  {t("signup.toLoginAction")}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         ) : null}
 
         <Button label={t("signup.submit")} onPress={handleSignup} loading={loading} />
@@ -161,8 +190,8 @@ export default function SignupScreen() {
       <OrDivider label={t("or")} />
 
       <ProviderButtons
-        appleLabel={t("signup.appleButton")}
         googleLabel={t("signup.googleButton")}
+        appleButtonType="signUp"
         onApple={() => handleOAuth("apple")}
         onGoogle={() => handleOAuth("google")}
         pending={oauth}
@@ -182,9 +211,16 @@ export default function SignupScreen() {
         <Pressable
           onPress={enterAppForDev}
           accessibilityRole="button"
-          style={{ minHeight: 44, justifyContent: "center", marginTop: 4 }}
+          style={{
+            minHeight: 44,
+            justifyContent: "center",
+            marginTop: 12,
+            borderTopWidth: 1,
+            borderStyle: "dashed",
+            borderColor: colors.stroke,
+          }}
         >
-          <Text style={{ fontSize: 12.5, color: colors.faint, textAlign: "center" }}>Dev: skip into app →</Text>
+          <Text style={{ fontSize: 12, color: colors.faint, textAlign: "center" }}>[DEV] skip into app →</Text>
         </Pressable>
       ) : null}
     </AuthScaffold>

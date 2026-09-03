@@ -1,30 +1,23 @@
 import { Platform, Pressable, Text, View, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as AppleAuthentication from "expo-apple-authentication";
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useThemeColors } from "../../hooks/useThemeColors";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const PRESS_EASE = Easing.bezier(0.23, 1, 0.32, 1);
+const BUTTON_HEIGHT = 54;
 
-// The two OAuth buttons render in the providers' own required look, not the
-// app palette — a user has to recognise them as the trusted Apple / Google
-// buttons (Apple's Sign in with Apple guidelines + App Store 4.8 expect the
-// real treatment, not a text label). Both kept dark so they still sit calmly
-// on the bedtime screen. Same 54pt pill + press-scale as the app's Button.
-function ProviderButton({
+// Google button: the providers' own look, not the app palette — a user has
+// to recognise it as the trusted Google button. Kept dark so it still sits
+// calmly on the bedtime screen. Same 54pt pill + press-scale as the app's
+// Button. (Apple has its own native component below — see ProviderButtons.)
+function GoogleButton({
   label,
-  glyph,
-  bg,
-  fg,
-  border,
   onPress,
   loading,
 }: {
   label: string;
-  glyph: keyof typeof Ionicons.glyphMap;
-  bg: string;
-  fg: string;
-  border?: string;
   onPress: () => void;
   loading?: boolean;
 }) {
@@ -44,26 +37,26 @@ function ProviderButton({
       accessibilityState={{ busy: !!loading }}
       style={[
         {
-          minHeight: 54,
+          minHeight: BUTTON_HEIGHT,
           borderRadius: 999,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
           gap: 10,
           paddingHorizontal: 24,
-          backgroundColor: bg,
-          borderWidth: border ? 1 : 0,
-          borderColor: border,
+          backgroundColor: "#131314",
+          borderWidth: 1,
+          borderColor: "#5f6368",
         },
         animatedStyle,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={fg} />
+        <ActivityIndicator color="#e3e3e3" />
       ) : (
         <>
-          <Ionicons name={glyph} size={19} color={fg} />
-          <Text style={{ fontSize: 15, fontWeight: "600", color: fg }}>{label}</Text>
+          <Ionicons name="logo-google" size={19} color="#e3e3e3" />
+          <Text style={{ fontSize: 15, fontWeight: "600", color: "#e3e3e3" }}>{label}</Text>
         </>
       )}
     </AnimatedPressable>
@@ -82,39 +75,58 @@ export function OrDivider({ label }: { label: string }) {
 }
 
 export function ProviderButtons({
-  appleLabel,
   googleLabel,
   onApple,
   onGoogle,
   pending,
+  appleButtonType = "signIn",
 }: {
-  appleLabel: string;
   googleLabel: string;
   onApple: () => void;
   onGoogle: () => void;
   pending?: "apple" | "google" | null;
+  /** Drives the native Apple button's own (OS-localised) label. */
+  appleButtonType?: "signIn" | "signUp";
 }) {
+  const colors = useThemeColors();
+  const applePending = pending === "apple";
+
   return (
     <View style={{ gap: 10 }}>
       {Platform.OS === "ios" ? (
-        <ProviderButton
-          label={appleLabel}
-          glyph="logo-apple"
-          bg="#000000"
-          fg="#ffffff"
-          onPress={onApple}
-          loading={pending === "apple"}
-        />
+        applePending ? (
+          // The native button has no busy state — swap in a matching
+          // disabled pill while the identity-token round-trip runs.
+          <View
+            accessibilityState={{ busy: true }}
+            style={{
+              minHeight: BUTTON_HEIGHT,
+              borderRadius: 999,
+              alignItems: "center",
+              justifyContent: "center",
+              borderWidth: 1,
+              borderColor: colors.stroke,
+            }}
+          >
+            <ActivityIndicator color={colors.muted} />
+          </View>
+        ) : (
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={
+              appleButtonType === "signUp"
+                ? AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP
+                : AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
+            }
+            // WHITE_OUTLINE = black fill, white logo + text + hairline —
+            // Apple's sanctioned treatment for dark UIs.
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE_OUTLINE}
+            cornerRadius={999}
+            style={{ width: "100%", height: BUTTON_HEIGHT }}
+            onPress={onApple}
+          />
+        )
       ) : null}
-      <ProviderButton
-        label={googleLabel}
-        glyph="logo-google"
-        bg="#131314"
-        fg="#e3e3e3"
-        border="#5f6368"
-        onPress={onGoogle}
-        loading={pending === "google"}
-      />
+      <GoogleButton label={googleLabel} onPress={onGoogle} loading={pending === "google"} />
     </View>
   );
 }

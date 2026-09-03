@@ -3,6 +3,7 @@ import { View, Text, Pressable, Linking, Platform } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { resendConfirmationEmail, authErrorKey } from "../../src/lib/auth";
+import { SUPPORT_EMAIL, openSupportEmail } from "../../src/lib/links";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { Button } from "../../src/components/ui/Button";
 import { AuthScaffold } from "../../src/components/auth/AuthScaffold";
@@ -17,6 +18,16 @@ export default function CheckEmailScreen() {
   const router = useRouter();
   const { email } = useLocalSearchParams<{ email?: string }>();
   const [status, setStatus] = useState<null | "sending" | "sent" | string>(null);
+  const [mailFailed, setMailFailed] = useState(false);
+  const [helpFallback, setHelpFallback] = useState<string | null>(null);
+
+  async function handleHelp() {
+    try {
+      await openSupportEmail();
+    } catch {
+      setHelpFallback(t("help.emailFallback", { email: SUPPORT_EMAIL }));
+    }
+  }
 
   async function handleResend() {
     if (!email) return;
@@ -25,45 +36,52 @@ export default function CheckEmailScreen() {
     setStatus(error ? t(authErrorKey(error)) : "sent");
   }
 
-  function openMail() {
-    // iOS: message:// opens Mail's inbox. Android: the APP_EMAIL category
-    // intent opens the default mail client's inbox (mailto: would start a
-    // new compose, which is wrong here).
-    const url =
-      Platform.OS === "ios"
-        ? "message://"
-        : "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_EMAIL;end";
-    Linking.openURL(url).catch(() => {});
+  async function openMail() {
+    setMailFailed(false);
+    // iOS: message:// jumps straight to Mail's inbox. Everywhere else, mailto:
+    // opens the default mail client (compose, but one back-tap from the
+    // inbox). RN's Linking can't fire a bare category intent from a URL
+    // string, so an intent:// here would just throw — hence the plain schemes.
+    const candidates = Platform.OS === "ios" ? ["message://", "mailto:"] : ["mailto:"];
+    for (const url of candidates) {
+      try {
+        if (await Linking.canOpenURL(url)) {
+          await Linking.openURL(url);
+          return;
+        }
+      } catch {
+        // try the next candidate
+      }
+    }
+    // No mail client answered — tell the user to switch apps themselves
+    // rather than leaving the tap silent.
+    setMailFailed(true);
   }
 
   return (
     <AuthScaffold eyebrow={t("checkEmail.eyebrow")} title={t("checkEmail.title")}>
       <View style={{ alignItems: "center", gap: 16, paddingVertical: 8 }}>
-        <View
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: 999,
-            backgroundColor: colors.glowSoft,
-            borderWidth: 1,
-            borderColor: colors.stroke,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <MailIcon size={26} color={colors.accent} strokeWidth={1.6} />
-        </View>
+        {/* Bare accent glyph — DESIGN.md keeps content icons out of tinted
+            chips; the welcome screen's hero icon is unchipped too. */}
+        <MailIcon size={40} color={colors.accent} strokeWidth={1.4} />
 
         <Text style={{ fontSize: 14, lineHeight: 21, color: colors.muted, textAlign: "center" }}>
           {email ? t("checkEmail.bodyWithAddress", { email }) : t("checkEmail.body")}
         </Text>
-        <Text className="font-lora-italic" style={{ fontSize: 14, color: colors.accent, textAlign: "center" }}>
+        {/* One warm line — kept plain, not Lora: the scaffold eyebrow already
+            spends this screen's one italic-serif moment. */}
+        <Text style={{ fontSize: 13.5, color: colors.accent, textAlign: "center" }}>
           {t("checkEmail.reassurance")}
         </Text>
       </View>
 
       <View style={{ gap: 10, marginTop: 20 }}>
         <Button label={t("checkEmail.openMail")} onPress={openMail} />
+        {mailFailed ? (
+          <Text accessibilityLiveRegion="polite" style={{ textAlign: "center", fontSize: 12.5, color: colors.notice }}>
+            {t("checkEmail.openMailFailed")}
+          </Text>
+        ) : null}
 
         <Pressable
           onPress={handleResend}
@@ -90,10 +108,23 @@ export default function CheckEmailScreen() {
       <Pressable
         onPress={() => router.replace("/(auth)")}
         accessibilityRole="link"
-        style={{ minHeight: 44, justifyContent: "center", marginTop: 16 }}
+        style={{ minHeight: 44, justifyContent: "center", marginTop: 20 }}
       >
         <Text style={{ textAlign: "center", fontSize: 13.5, color: colors.muted }}>{t("checkEmail.backToLogin")}</Text>
       </Pressable>
+
+      <Pressable
+        onPress={handleHelp}
+        accessibilityRole="link"
+        style={{ minHeight: 40, justifyContent: "center", marginTop: 2 }}
+      >
+        <Text style={{ textAlign: "center", fontSize: 12.5, color: colors.faint }}>{t("help.link")}</Text>
+      </Pressable>
+      {helpFallback ? (
+        <Text accessibilityLiveRegion="polite" style={{ textAlign: "center", fontSize: 12, color: colors.notice, marginTop: 4 }}>
+          {helpFallback}
+        </Text>
+      ) : null}
     </AuthScaffold>
   );
 }
