@@ -1,0 +1,25 @@
+{
+  "category": {
+    "rahatlatici": "Calming",
+    "muzik": "Music"
+  },
+  "subcategory": {
+    "yagmur": "Rain",
+    "deniz": "Ocean",
+    "dere": "Stream",
+    "gok_gurultusu": "Thunderstorm",
+    "kus_sesi": "Birdsong",
+    "orman": "Forest",
+    "ruzgar": "Wind",
+    "gece_bocekleri": "Night Insects",
+    "ates": "Fire",
+    "fon_makinesi": "Hair Dryer",
+    "beyaz_gurultu": "White Noise",
+    "kahverengi_gurultu": "Brown Noise",
+    "pembe_gurultu": "Pink Noise",
+    "kafe": "Café",
+    "piyano": "Piano",
+    "lofi": "Lo-fi",
+    "ambient": "Ambient"
+  }
+}

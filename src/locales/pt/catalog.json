@@ -1,0 +1,25 @@
+{
+  "category": {
+    "rahatlatici": "Relaxante",
+    "muzik": "Música"
+  },
+  "subcategory": {
+    "yagmur": "Chuva",
+    "deniz": "Mar",
+    "dere": "Riacho",
+    "gok_gurultusu": "Trovoada",
+    "kus_sesi": "Canto de pássaros",
+    "orman": "Floresta",
+    "ruzgar": "Vento",
+    "gece_bocekleri": "Insetos noturnos",
+    "ates": "Fogo",
+    "fon_makinesi": "Secador",
+    "beyaz_gurultu": "Ruído branco",
+    "kahverengi_gurultu": "Ruído castanho",
+    "pembe_gurultu": "Ruído rosa",
+    "kafe": "Café",
+    "piyano": "Piano",
+    "lofi": "Lo-fi",
+    "ambient": "Ambient"
+  }
+}

@@ -5,8 +5,11 @@ import { useTranslation } from "react-i18next";
 import type { Session } from "@supabase/supabase-js";
 import {
   signUpWithEmail,
+  linkEmailToAnonymousUser,
   signInWithApple,
+  linkAppleAccount,
   signInWithGoogle,
+  linkGoogleAccount,
   authErrorKey,
   MIN_PASSWORD,
 } from "../../src/lib/auth";
@@ -25,6 +28,14 @@ export default function SignupScreen() {
   const colors = useThemeColors();
   const router = useRouter();
   const passwordRef = useRef<TextInput>(null);
+
+  // A guest (paywall skip, or an anonymous purchase) already holds a real
+  // Supabase session, just an anonymous one — completing this form must link
+  // an email/password or an OAuth identity to that SAME user instead of
+  // signing up fresh, or their favorites, cooldown state, and subscription
+  // (all keyed by this user id) would be orphaned under the account they
+  // just left behind. See linkEmailToAnonymousUser's comment.
+  const isAnonymous = useUserStore((state) => state.session?.user.is_anonymous === true);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,13 +69,22 @@ export default function SignupScreen() {
     if (bad) return;
 
     setLoading(true);
-    const { error } = await signUpWithEmail(email, password);
+    const { error } = await (isAnonymous ? linkEmailToAnonymousUser(email, password) : signUpWithEmail(email, password));
     setLoading(false);
     if (error) {
       const key = authErrorKey(error);
       if (key === "error.alreadyRegistered") {
-        setFormNotice(t("error.alreadyRegistered"));
-        setShowToLogin(true);
+        if (isAnonymous) {
+          // Logging in here would swap the current (anonymous) session for
+          // that other, unrelated account — abandoning the favorites,
+          // cooldown state, and subscription tied to this one. There's no
+          // "go log in" recovery that doesn't lose something, so the only
+          // honest next step is a different email.
+          setEmailError(t("error.alreadyRegisteredGuest"));
+        } else {
+          setFormNotice(t("error.alreadyRegistered"));
+          setShowToLogin(true);
+        }
       } else if (key === "error.weakPassword") {
         setPasswordError(t("error.weakPassword"));
       } else {
@@ -72,7 +92,10 @@ export default function SignupScreen() {
       }
       return;
     }
-    router.replace({ pathname: "/(auth)/check-email", params: { email: email.trim() } });
+    router.replace({
+      pathname: "/(auth)/check-email",
+      params: { email: email.trim(), ...(isAnonymous ? { linking: "1" } : {}) },
+    });
   }
 
   function goToLogin() {
@@ -82,7 +105,13 @@ export default function SignupScreen() {
   async function handleOAuth(provider: "google" | "apple") {
     clearErrors();
     setOauth(provider);
-    const { error } = provider === "google" ? await signInWithGoogle() : await signInWithApple();
+    const { error } = isAnonymous
+      ? provider === "google"
+        ? await linkGoogleAccount()
+        : await linkAppleAccount()
+      : provider === "google"
+        ? await signInWithGoogle()
+        : await signInWithApple();
     setOauth(null);
     if (error) setFormNotice(t(authErrorKey(error)));
   }
@@ -114,7 +143,9 @@ export default function SignupScreen() {
   return (
     <AuthScaffold eyebrow={t("signup.eyebrow")} title={t("signup.title")}>
       <View style={{ gap: 14 }}>
-        <Text style={{ fontSize: 12.5, lineHeight: 18, color: colors.faint }}>{t("signup.whyAccount")}</Text>
+        <Text style={{ fontSize: 12.5, lineHeight: 18, color: colors.faint }}>
+          {t(isAnonymous ? "signup.whyAccountGuest" : "signup.whyAccount")}
+        </Text>
 
         <TextField
           kind="email"

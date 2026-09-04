@@ -119,12 +119,16 @@ export default function OnboardingPreviewScreen() {
       return;
     }
 
-    // New user: show the offer while intent is highest, then signup. push (not
-    // replace) so the paywall's modal presentation has a screen behind it; the
-    // paywall itself routes every exit forward to signup. Answers are saved
-    // after the session lands (useOnboardingHandoff); any purchase is attached
-    // there too.
-    router.push("/paywall?from=onboarding");
+    // New user: show the offer while intent is highest, then signup. replace
+    // (not push) drops the entire (onboarding) group from history along with
+    // it, so Android back from the paywall — and from signup after it, since
+    // paywall's own exit already uses replace — leaves the app instead of
+    // resurfacing the funnel. This used to be push, kept deliberately so the
+    // paywall's modal presentation had a screen behind it to slide up over;
+    // verify that transition still looks right after this change. Answers are
+    // saved after the session lands (useOnboardingHandoff); any purchase is
+    // attached there too.
+    router.replace("/paywall?from=onboarding");
   }, [player, router]);
 
   const loadFailed = !!previewTrack && loadChecked && !status.isLoaded;

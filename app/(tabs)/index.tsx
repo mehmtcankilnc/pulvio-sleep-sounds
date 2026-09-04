@@ -1,11 +1,20 @@
 import { useCallback, useMemo, useState } from "react";
 import type { JSX } from "react";
-import { View, Text, ScrollView, ActivityIndicator, Pressable, Image, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  Pressable,
+  Image,
+  StyleSheet,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import Animated from "react-native-reanimated";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useBottomTabBarHeight } from "expo-router/js-tabs";
+import { useUserStore } from "../../src/store/useUserStore";
 import { useTracks } from "../../src/hooks/useTracks";
 import { useFavorites } from "../../src/hooks/useFavorites";
 import { useContinueListening } from "../../src/hooks/useContinueListening";
@@ -13,11 +22,17 @@ import { usePlayerActions } from "../../src/hooks/usePlayerActions";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { usePressScale } from "../../src/hooks/usePressScale";
 import { categoryIcon } from "../../src/lib/categoryIcon";
+import { categoryLabel, subcategoryLabel } from "../../src/lib/catalogTaxonomy";
 import { GlowBackground } from "../../src/components/GlowBackground";
 import { centeredColumn } from "../../src/theme/layout";
 import { ScreenHeader } from "../../src/components/ScreenHeader";
+import { PremiumBadge } from "../../src/components/PremiumBadge";
 import { Button } from "../../src/components/ui/Button";
-import { ChevronRightIcon, MoonIcon, PlayIcon } from "../../src/components/icons";
+import {
+  ChevronRightIcon,
+  MoonIcon,
+  PlayIcon,
+} from "../../src/components/icons";
 import type { IconProps } from "../../src/components/icons";
 import type { Track } from "../../src/types";
 
@@ -26,40 +41,59 @@ import type { Track } from "../../src/types";
 const FAVORITES_RAIL_CAP = 6;
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 
-// Cap the rail at 5 real categories — enough to make the catalog's breadth
-// recognizable at a glance without reintroducing the 6-tile grid's
-// decision-overload problem (a critique finding). The trailing "all sounds"
-// card is the one remaining escape hatch to the full, unfiltered catalog.
-const MAX_RAIL_CATEGORIES = 5;
+// Cap the rail — enough to make the catalog's breadth recognizable at a
+// glance without reintroducing the 6-tile grid's decision-overload problem
+// (a critique finding). The header's "All categories" link is the escape
+// hatch to the unfiltered /sounds screen, which carries its own scrollable
+// category-chip row (app/categories.tsx was merged into it — a second
+// critique finding: the two screens did the same job one route apart).
+const MAX_RAIL_CATEGORIES = 8;
 const CARD_WIDTH = 136;
-const CARD_HEIGHT = 96;
+const CARD_HEIGHT = 108;
 
-type CategorySummary = { name: string; count: number; coverUrl?: string };
+type CategorySummary = {
+  category: string;
+  subcategory: string;
+  count: number;
+  coverUrl?: string;
+};
 
-function pickTonightTrack(tracks: Track[], excludeId: string | null): Track | null {
+// Free users only ever get offered tracks they can actually tap and hear —
+// recommending a locked one as the day's single headline pick turns the
+// primary CTA into a paywall dead-end instead of a listen. `eligible` falls
+// back to the full catalog only in the defensive case where a free user
+// somehow has zero free tracks (shouldn't happen, but never show nothing).
+function pickTonightTrack(
+  tracks: Track[],
+  excludeId: string | null,
+  isPremium: boolean,
+): Track | null {
   if (tracks.length === 0) return null;
-  const pool = excludeId ? tracks.filter((track) => track.id !== excludeId) : tracks;
-  const candidates = pool.length > 0 ? pool : tracks;
+  const eligible = isPremium ? tracks : tracks.filter((track) => !track.isPremiumOnly);
+  const base = eligible.length > 0 ? eligible : tracks;
+  const pool = excludeId
+    ? base.filter((track) => track.id !== excludeId)
+    : base;
+  const candidates = pool.length > 0 ? pool : base;
   const dayIndex = Math.floor(Date.now() / 86_400_000);
   return candidates[dayIndex % candidates.length];
 }
 
-// One representative image per category: the first track in that category
-// that actually has cover art (cover_url is optional per-track, so coverage
-// isn't guaranteed — cards fall back to the icon tile when none is found).
-function summarizeCategories(sections: { title: string; data: Track[] }[]): CategorySummary[] {
-  const grouped = new Map<string, { count: number; coverUrl?: string }>();
-  for (const section of sections) {
-    const category = section.title.split(" / ")[0] ?? section.title;
-    const existing = grouped.get(category) ?? { count: 0, coverUrl: undefined };
-    existing.count += section.data.length;
-    if (!existing.coverUrl) {
-      existing.coverUrl = section.data.find((track) => track.coverUrl)?.coverUrl;
-    }
-    grouped.set(category, existing);
-  }
-  return Array.from(grouped.entries()).map(([name, v]) => ({ name, count: v.count, coverUrl: v.coverUrl }));
+// One tile per subcategory (Rain, Ocean, Piano, ...) rather than the 2-item
+// top-level category — with 17 subcategories now in the catalog, "Calming" /
+// "Music" alone would be a useless rail. Sections already arrive in taxonomy
+// order from useTracks, so this preserves that order rather than resorting.
+function summarizeSubcategories(
+  sections: { category: string; subcategory: string; data: Track[] }[],
+): CategorySummary[] {
+  return sections.map((section) => ({
+    category: section.category,
+    subcategory: section.subcategory,
+    count: section.data.length,
+    coverUrl: section.data.find((track) => track.coverUrl)?.coverUrl,
+  }));
 }
 
 // A category card's own press-scale hook must be called unconditionally at
@@ -86,6 +120,13 @@ function CategoryCard({
   // chrome still on top of it.
   const [imageFailed, setImageFailed] = useState(false);
   const showPhoto = Boolean(coverUrl) && !imageFailed;
+  // The fallback tile doubles as the loading state: it's the base layer
+  // whenever there's a cover to fetch, and the photo — once its own network
+  // request resolves — crossfades in on top of it. Without this, a slow
+  // image request left the card showing nothing (its bare card background)
+  // until the photo popped in all at once.
+  const photoOpacity = useSharedValue(0);
+  const photoStyle = useAnimatedStyle(() => ({ opacity: photoOpacity.value }));
 
   return (
     <AnimatedPressable
@@ -106,38 +147,68 @@ function CategoryCard({
         press.animatedStyle,
       ]}
     >
+      {/* Same "no real artwork" fallback the mini-player dock already uses
+          (GlowBackground's artworkTile wash) — one shared, on-hue fallback
+          treatment instead of a bespoke flat tile, so the rail reads as one
+          grammar whether or not a given category has cover art yet. */}
+      <GlowBackground variant="artworkTile" style={StyleSheet.absoluteFill} />
       {showPhoto ? (
-        <>
+        <Animated.View style={[StyleSheet.absoluteFill, photoStyle]}>
           <Image
             source={{ uri: coverUrl }}
             resizeMode="cover"
             style={StyleSheet.absoluteFill}
+            onLoad={() => {
+              photoOpacity.value = withTiming(1, { duration: 220, easing: EASE_OUT });
+            }}
             onError={() => setImageFailed(true)}
           />
           {/* Ember tint (DESIGN.md's One Hue Rule): every photo gets pulled
               toward the app's single accent hue instead of showing its own
-              raw, arbitrary colors. */}
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: `${colors.button}52` }]} />
+              raw, arbitrary colors. Lighter than the label scrim below — this
+              one washes the whole photo, including the two-thirds of it that
+              carries no text, so it stays legible-but-visible rather than
+              looking like the photo itself got dimmed. */}
+          <View
+            style={[
+              StyleSheet.absoluteFill,
+              { backgroundColor: `${colors.button}30` },
+            ]}
+          />
           {/* Gradient scrim (never a blur, per the No-Blur rule) reaches full
-              opacity (locations 0.68-1) before the label's own vertical
+              opacity (locations 0.74-1) just before the label's own vertical
               position, so text contrast doesn't depend on the photo's local
-              brightness at all — not just "usually enough". */}
+              brightness at all — not just "usually enough". Tightened from
+              0.68 so the fully-opaque strip is only as tall as the label
+              actually needs, leaving more of the photo visible above it. */}
           <LinearGradient
             colors={["transparent", colors.bgDeep, colors.bgDeep]}
-            locations={[0.4, 0.68, 1]}
+            locations={[0.45, 0.74, 1]}
             style={StyleSheet.absoluteFill}
           />
-        </>
-      ) : (
-        // Same "no real artwork" fallback the mini-player dock already uses
-        // (GlowBackground's artworkTile wash) — one shared, on-hue fallback
-        // treatment instead of a bespoke flat tile, so the rail reads as one
-        // grammar whether or not a given category has cover art yet.
-        <GlowBackground variant="artworkTile" style={StyleSheet.absoluteFill} />
-      )}
-      <View style={{ position: "absolute", left: 10, right: 10, bottom: 10, flexDirection: "row", alignItems: "center", gap: 6 }}>
+        </Animated.View>
+      ) : null}
+      <View
+        style={{
+          position: "absolute",
+          left: 10,
+          right: 10,
+          bottom: 10,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 6,
+        }}
+      >
         <Icon size={16} color={colors.accent} strokeWidth={1.7} />
-        <Text numberOfLines={1} style={{ flex: 1, fontSize: 12.5, fontWeight: "700", color: colors.text }}>
+        <Text
+          numberOfLines={1}
+          style={{
+            flex: 1,
+            fontSize: 12.5,
+            fontWeight: "700",
+            color: colors.text,
+          }}
+        >
           {label}
         </Text>
       </View>
@@ -151,11 +222,29 @@ function CategoryCard({
 // is the worst spot on the screen for a nav action (behind a scroll, worst
 // thumb reach). For "All sounds" this also fully satisfies the product note
 // that it must not read as just another category: it isn't a card at all.
-function SectionHeader({ title, actionLabel, onAction }: { title: string; actionLabel: string; onAction: () => void }) {
+function SectionHeader({
+  title,
+  actionLabel,
+  onAction,
+}: {
+  title: string;
+  actionLabel: string;
+  onAction: () => void;
+}) {
   const colors = useThemeColors();
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-      <Text className="font-bold" style={{ fontSize: 15.5, color: colors.text }}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+      }}
+    >
+      <Text
+        className="font-bold"
+        style={{ fontSize: 15.5, color: colors.text }}
+      >
         {title}
       </Text>
       <Pressable
@@ -163,9 +252,19 @@ function SectionHeader({ title, actionLabel, onAction }: { title: string; action
         accessibilityRole="button"
         accessibilityLabel={actionLabel}
         hitSlop={8}
-        style={{ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 3, justifyContent: "flex-end" }}
+        style={{
+          minHeight: 44,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 3,
+          justifyContent: "flex-end",
+        }}
       >
-        <Text style={{ fontSize: 12.5, fontWeight: "600", color: colors.accent }}>{actionLabel}</Text>
+        <Text
+          style={{ fontSize: 12.5, fontWeight: "600", color: colors.accent }}
+        >
+          {actionLabel}
+        </Text>
         <ChevronRightIcon size={14} color={colors.accent} strokeWidth={1.7} />
       </Pressable>
     </View>
@@ -174,6 +273,7 @@ function SectionHeader({ title, actionLabel, onAction }: { title: string; action
 
 export default function ExploreScreen() {
   const { t } = useTranslation("home");
+  const { t: tCatalog } = useTranslation("catalog");
   const router = useRouter();
   const colors = useThemeColors();
   const tabBarHeight = useBottomTabBarHeight();
@@ -181,26 +281,34 @@ export default function ExploreScreen() {
   const { favoriteIds, refetch: refetchFavorites } = useFavorites();
   const continueListeningId = useContinueListening();
   const { loadAndPlay } = usePlayerActions();
+  const isPremium = useUserStore((state) => state.subscriptionStatus === "premium");
 
   // A like/unlike happens on Now Playing (its own useFavorites mount) —
   // refresh on focus so this section reflects it after navigating back.
   useFocusEffect(
     useCallback(() => {
       refetchFavorites();
-    }, [refetchFavorites])
+    }, [refetchFavorites]),
   );
 
-  const allTracks = useMemo(() => sections.flatMap((section) => section.data), [sections]);
+  const allTracks = useMemo(
+    () => sections.flatMap((section) => section.data),
+    [sections],
+  );
   const favoriteTracks = useMemo(
     () => allTracks.filter((track) => favoriteIds.has(track.id)),
-    [allTracks, favoriteIds]
+    [allTracks, favoriteIds],
   );
-  const continueTrack = allTracks.find((track) => track.id === continueListeningId) ?? null;
+  const continueTrack =
+    allTracks.find((track) => track.id === continueListeningId) ?? null;
   const tonightTrack = useMemo(
-    () => pickTonightTrack(allTracks, continueTrack?.id ?? null),
-    [allTracks, continueTrack]
+    () => pickTonightTrack(allTracks, continueTrack?.id ?? null, isPremium),
+    [allTracks, continueTrack, isPremium],
   );
-  const categories = useMemo(() => summarizeCategories(sections).slice(0, MAX_RAIL_CATEGORIES), [sections]);
+  const categories = useMemo(
+    () => summarizeSubcategories(sections).slice(0, MAX_RAIL_CATEGORIES),
+    [sections],
+  );
 
   const tonightPress = usePressScale();
   const continuePress = usePressScale();
@@ -212,7 +320,10 @@ export default function ExploreScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.bg }}>
+      <View
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: colors.bg }}
+      >
         <ActivityIndicator color={colors.button} />
       </View>
     );
@@ -220,7 +331,10 @@ export default function ExploreScreen() {
 
   if (error) {
     return (
-      <View className="flex-1 items-center justify-center px-6" style={{ backgroundColor: colors.bg }}>
+      <View
+        className="flex-1 items-center justify-center px-6"
+        style={{ backgroundColor: colors.bg }}
+      >
         <Text className="text-center mb-4" style={{ color: colors.text }}>
           {t("discover:loadError")}
         </Text>
@@ -231,21 +345,38 @@ export default function ExploreScreen() {
 
   if (allTracks.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.bg }}>
-        <Text style={{ color: colors.text, fontSize: 18 }}>{t("discover:empty")}</Text>
+      <View
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: colors.bg }}
+      >
+        <Text style={{ color: colors.text, fontSize: 18 }}>
+          {t("discover:empty")}
+        </Text>
       </View>
     );
   }
 
-  const TonightIcon = tonightTrack ? categoryIcon(tonightTrack.category, tonightTrack.subcategory) : MoonIcon;
+  const TonightIcon = tonightTrack
+    ? categoryIcon(tonightTrack.category, tonightTrack.subcategory)
+    : MoonIcon;
 
   return (
     <GlowBackground variant="pageWash" style={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ ...centeredColumn, paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
+        contentContainerStyle={{
+          ...centeredColumn,
+          paddingHorizontal: 20,
+          paddingTop: 32,
+          paddingBottom: tabBarHeight + 24,
+          gap: 16,
+        }}
       >
-        <ScreenHeader eyebrow={t("greetingEyebrow")} title={t("greetingTitle")} />
+        <ScreenHeader
+          eyebrow={t("greetingEyebrow")}
+          title={t("greetingTitle")}
+          trailing={<PremiumBadge />}
+        />
 
         {tonightTrack && (
           <AnimatedPressable
@@ -272,15 +403,30 @@ export default function ExploreScreen() {
               }}
             >
               <View style={{ gap: 8, alignItems: "flex-start", flexShrink: 1 }}>
-                <Text style={{ fontSize: 10.5, fontWeight: "700", letterSpacing: 1.5, color: colors.accent }}>
+                <Text
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: "700",
+                    letterSpacing: 1.5,
+                    color: colors.accent,
+                  }}
+                >
                   {t("tonightPickOverline")}
                 </Text>
                 <View style={{ gap: 3 }}>
-                  <Text numberOfLines={2} className="font-bold" style={{ fontSize: 19, color: colors.text }}>
+                  <Text
+                    numberOfLines={2}
+                    className="font-bold"
+                    style={{ fontSize: 19, color: colors.text }}
+                  >
                     {tonightTrack.title}
                   </Text>
-                  <Text numberOfLines={1} style={{ fontSize: 12.5, color: colors.muted }}>
-                    {tonightTrack.category} · {tonightTrack.subcategory}
+                  <Text
+                    numberOfLines={1}
+                    style={{ fontSize: 12.5, color: colors.muted }}
+                  >
+                    {categoryLabel(tCatalog, tonightTrack.category)} ·{" "}
+                    {subcategoryLabel(tCatalog, tonightTrack.subcategory)}
                   </Text>
                 </View>
                 <View
@@ -296,7 +442,15 @@ export default function ExploreScreen() {
                   }}
                 >
                   <PlayIcon size={15} color={colors.buttonText} />
-                  <Text style={{ fontSize: 13.5, fontWeight: "700", color: colors.buttonText }}>{t("playNowCta")}</Text>
+                  <Text
+                    style={{
+                      fontSize: 13.5,
+                      fontWeight: "700",
+                      color: colors.buttonText,
+                    }}
+                  >
+                    {t("playNowCta")}
+                  </Text>
                 </View>
               </View>
               <TonightIcon size={62} color={colors.accent} strokeWidth={1.1} />
@@ -312,7 +466,11 @@ export default function ExploreScreen() {
               onAction={() => router.push("/favorites")}
             />
             <View style={{ marginHorizontal: -20 }}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+              >
                 {favoriteTracks.slice(0, FAVORITES_RAIL_CAP).map((track) => (
                   <CategoryCard
                     key={track.id}
@@ -331,8 +489,8 @@ export default function ExploreScreen() {
         <View style={{ gap: 12 }}>
           <SectionHeader
             title={t("browseSoundsTitle")}
-            actionLabel={t("allSoundsChip")}
-            onAction={() => router.push("/discover")}
+            actionLabel={t("browseSoundsSeeAll")}
+            onAction={() => router.push("/sounds")}
           />
           <View style={{ marginHorizontal: -20 }}>
             <ScrollView
@@ -340,23 +498,34 @@ export default function ExploreScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
             >
-              {categories.map((category) => (
-                <CategoryCard
-                  key={category.name}
-                  icon={categoryIcon(category.name)}
-                  label={category.name}
-                  coverUrl={category.coverUrl}
-                  onPress={() => router.push({ pathname: "/discover", params: { category: category.name } })}
-                  accessibilityLabel={category.name}
-                />
-              ))}
+              {categories.map((category) => {
+                const label = subcategoryLabel(tCatalog, category.subcategory);
+                return (
+                  <CategoryCard
+                    key={category.subcategory}
+                    icon={categoryIcon(category.category, category.subcategory)}
+                    label={label}
+                    coverUrl={category.coverUrl}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/sounds",
+                        params: { subcategory: category.subcategory },
+                      })
+                    }
+                    accessibilityLabel={label}
+                  />
+                );
+              })}
             </ScrollView>
           </View>
         </View>
 
         {continueTrack && (
           <View style={{ gap: 12 }}>
-            <Text className="font-bold" style={{ fontSize: 15.5, color: colors.text }}>
+            <Text
+              className="font-bold"
+              style={{ fontSize: 15.5, color: colors.text }}
+            >
               {t("continueListeningTitle")}
             </Text>
             <AnimatedPressable
@@ -370,26 +539,74 @@ export default function ExploreScreen() {
                   backgroundColor: colors.card,
                   borderWidth: 1,
                   borderColor: colors.stroke,
-                  borderRadius: 16,
-                  padding: 11,
-                  paddingHorizontal: 12,
+                  borderRadius: 18,
+                  padding: 10,
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: 10,
-                  minHeight: 58,
+                  gap: 12,
+                  minHeight: 64,
                 },
                 continuePress.animatedStyle,
               ]}
             >
-              {(() => {
-                const Icon = categoryIcon(continueTrack.category, continueTrack.subcategory);
-                return <Icon size={20} color={colors.accent} strokeWidth={1.6} />;
-              })()}
+              {/* A soft glow tile behind the icon (same "artwork chip" idea
+                  as the category rail) instead of a bare glyph floating in
+                  the row — gives this card the same visual weight as
+                  Tonight's pick's own icon treatment, so it doesn't read as
+                  a settings row next to it. */}
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  backgroundColor: colors.glowSoft,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {(() => {
+                  const Icon = categoryIcon(
+                    continueTrack.category,
+                    continueTrack.subcategory,
+                  );
+                  return (
+                    <Icon size={21} color={colors.accent} strokeWidth={1.6} />
+                  );
+                })()}
+              </View>
               <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-                <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontSize: 13.5,
+                    fontWeight: "600",
+                    color: colors.text,
+                  }}
+                >
                   {continueTrack.title}
                 </Text>
-                <Text numberOfLines={1} style={{ fontSize: 11, color: colors.muted }}>{continueTrack.category}</Text>
+                <Text
+                  numberOfLines={1}
+                  style={{ fontSize: 11, color: colors.muted }}
+                >
+                  {subcategoryLabel(tCatalog, continueTrack.subcategory)}
+                </Text>
+              </View>
+              {/* Same solid-button play affordance Tonight's pick uses,
+                  scaled down — makes the tap target read as "resume"
+                  rather than "open a row", which the bare icon + chevron-
+                  less layout didn't otherwise signal. */}
+              <View
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 999,
+                  backgroundColor: colors.button,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <PlayIcon size={14} color={colors.buttonText} />
               </View>
             </AnimatedPressable>
           </View>

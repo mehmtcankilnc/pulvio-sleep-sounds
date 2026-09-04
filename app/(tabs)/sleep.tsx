@@ -13,8 +13,10 @@ import { useSleepTimerStore } from "../../src/store/useSleepTimerStore";
 import { armSleepTimer, type TimerOption } from "../../src/lib/player/sleepTimer";
 import { categoryIcon } from "../../src/lib/categoryIcon";
 import { GlowBackground } from "../../src/components/GlowBackground";
+import { TrackSectionHeader } from "../../src/components/TrackRow";
 import { centeredColumn } from "../../src/theme/layout";
 import { ScreenHeader } from "../../src/components/ScreenHeader";
+import { PremiumBadge } from "../../src/components/PremiumBadge";
 import { BottomSheet } from "../../src/components/BottomSheet";
 import { Toggle } from "../../src/components/ui/Toggle";
 import { SelectChip } from "../../src/components/ui/SelectChip";
@@ -415,6 +417,7 @@ export default function SleepScreen() {
   const tabBarHeight = useBottomTabBarHeight();
   const {
     schedule,
+    loading: scheduleLoading,
     setBedtime,
     setWakeTime,
     setPlayAtBedtimeEnabled,
@@ -490,13 +493,29 @@ export default function SleepScreen() {
     return t("bedtimeInHint", { time });
   }, [schedule.bedtimeHour, schedule.bedtimeMinute, now, t]);
 
+  // The toggles below bind straight to `schedule` fields, each with its own
+  // on-select animation (Toggle.tsx) meant for a tap the user just made.
+  // `schedule` starts at DEFAULT_SLEEP_SCHEDULE and only becomes the real
+  // persisted values once this fetch resolves — mounting the toggles before
+  // then let a defaulted-off switch play its own "turning on" animation the
+  // instant the real (already-on) value arrived, for a change the user never
+  // made. Holding the whole screen back on `scheduleLoading` guarantees the
+  // toggles are born already showing the truth, same as the rest of the app.
+  if (scheduleLoading) {
+    return (
+      <GlowBackground variant="pageWash" style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator color={colors.button} />
+      </GlowBackground>
+    );
+  }
+
   return (
     <GlowBackground variant="pageWash" style={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ ...centeredColumn, paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
       >
-        <ScreenHeader eyebrow={t("eyebrow")} title={t("title")} />
+        <ScreenHeader eyebrow={t("eyebrow")} title={t("title")} trailing={<PremiumBadge />} />
 
         <GlowBackground variant="heroCard" style={{ borderRadius: 24, borderWidth: 1, borderColor: colors.stroke, padding: 16, paddingBottom: 14, gap: 6 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -922,7 +941,7 @@ function BedtimeTrackPicker({
   selectedTrackId: string | null;
   onPick: (track: Track) => void;
 }) {
-  const { t } = useTranslation("sleep");
+  const { t, i18n } = useTranslation("sleep");
   const colors = useThemeColors();
   const { sections, loading, error, refetch } = useTracks();
 
@@ -942,7 +961,7 @@ function BedtimeTrackPicker({
       ) : error ? (
         // Was falling through to the empty-catalog copy on a fetch failure
         // (sections stays [] either way) — same error/retry pattern as
-        // app/discover.tsx for the same underlying useTracks() call.
+        // app/sounds.tsx for the same underlying useTracks() call.
         <View style={{ alignItems: "center", gap: 12, marginVertical: 24, paddingHorizontal: 20 }}>
           <Text style={{ textAlign: "center", color: colors.muted, fontSize: 13.5 }}>{t("discover:loadError", { error })}</Text>
           <Button label={t("common:retry")} variant="outline" onPress={refetch} />
@@ -952,16 +971,13 @@ function BedtimeTrackPicker({
       ) : (
         <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 14, paddingBottom: 24 }}>
           {sections.map((section) => (
-            // Mirrors app/discover.tsx's own section headers — same
+            // Mirrors app/sounds.tsx's own section headers — same
             // category/subcategory grouping the data already carries, just
-            // undone by flattening it before this redesign.
-            <View key={section.title} style={{ gap: 8, marginBottom: 18 }}>
-              {/* muted, matching DESIGN.md's own Overline role (accent or
-                  muted — never faint) and the same small-text contrast fix
-                  applied to row subtitles above. */}
-              <Text style={{ fontSize: 11, fontWeight: "700", letterSpacing: 1.3, color: colors.muted }}>
-                {section.title.replace(" / ", " · ").toUpperCase()}
-              </Text>
+            // undone by flattening it before this redesign. Shared
+            // TrackSectionHeader also fixes the label to real, localized
+            // words instead of the raw db slug (see its own comment).
+            <View key={`${section.category}/${section.subcategory}`} style={{ gap: 8, marginBottom: 18 }}>
+              <TrackSectionHeader category={section.category} subcategory={section.subcategory} language={i18n.language} />
               {section.data.map((track) => (
                 <TrackPickerRow
                   key={track.id}

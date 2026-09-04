@@ -198,8 +198,13 @@ export function Testimonials({ items }: { items: Testimonial[] }) {
       >
         {width > 0 ? (
           <Animated.View style={[{ flexDirection: "row", width: width * items.length }, rowStyle]}>
+            {/* Each slide is exactly one page wide (the drag/step math above
+                assumes that), so the gap between cards has to come from
+                padding inside the slide rather than a margin/gap on the row
+                — otherwise a swipe or the overscroll rubber-band shows two
+                cards butted edge-to-edge with nothing between them. */}
             {items.map((item) => (
-              <View key={item.author} style={{ width }}>
+              <View key={item.author} style={{ width, paddingHorizontal: 6 }}>
                 <ReviewCard item={item} />
               </View>
             ))}

@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
-import { GlowBackground } from "../../src/components/GlowBackground";
 import { OnboardingCta } from "../../src/components/OnboardingCta";
 import { FREQUENCY_KEYS, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
 import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
@@ -17,12 +16,15 @@ export default function OnboardingFrequencyScreen() {
   useMarkOnboardingStep(1);
   const funnelPad = useFunnelPadding({ hasStageHeader: true });
 
-  // Step 1 keeps its own opaque background so welcome -> frequency reads as a
-  // real page change, not a panel sliding over the same sky. It's the same
-  // pageWash the layout stage uses, so frequency -> step 2 still looks
-  // seamless (identical glow behind an identical glow).
+  // No background of its own — the layout (app/(onboarding)/_layout.tsx)
+  // already renders one continuous `pageWash` behind the header and every
+  // step, welcome's distinct `nightScene` included, so it's already sitting
+  // there the moment welcome unmounts. A second copy here (there used to be
+  // one) is an independently-measured GlowBackground instance layered over
+  // the first — the two don't register pixel-for-pixel, which showed up as
+  // a visible seam right where the shared header sits, only on this step.
   return (
-    <GlowBackground variant="pageWash" style={{ flex: 1, ...funnelPad, justifyContent: "space-between" }}>
+    <View style={{ flex: 1, ...funnelPad, justifyContent: "space-between" }}>
       <View style={{ gap: 22 }}>
         <View style={{ gap: 6 }}>
           <Text className="font-lora-italic" style={{ fontSize: 15, color: colors.accent }}>
@@ -81,6 +83,6 @@ export default function OnboardingFrequencyScreen() {
         disabled={frequency === null}
         onPress={() => router.push("/(onboarding)/quiz-struggles")}
       />
-    </GlowBackground>
+    </View>
   );
 }

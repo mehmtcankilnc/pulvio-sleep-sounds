@@ -5,8 +5,10 @@
   "retry": "Tekrar dene",
   "notNow": "Şimdi değil",
   "goPremium": "Premium'a Geç",
+  "premiumLabel": "Premium",
   "back": "Geri",
   "loading": "Yükleniyor",
   "showPassword": "Şifreyi göster",
-  "hidePassword": "Şifreyi gizle"
+  "hidePassword": "Şifreyi gizle",
+  "clear": "Temizle"
 }

@@ -1,8 +1,11 @@
 import { Pressable, Text, View } from "react-native";
 import Animated from "react-native-reanimated";
+import { useTranslation } from "react-i18next";
 import { useThemeColors } from "../hooks/useThemeColors";
 import { usePressScale } from "../hooks/usePressScale";
 import { categoryIcon } from "../lib/categoryIcon";
+import { categoryLabel, subcategoryLabel } from "../lib/catalogTaxonomy";
+import { LockIcon } from "./icons";
 import type { Track } from "../types";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -53,15 +56,33 @@ export function TrackRow({
           <Text style={{ fontSize: 11, color: colors.accent }}>{premiumLabel}</Text>
         ) : null}
       </View>
+      {/* Trailing lock is the row's own scannable free/premium tell — a
+          second, glance-only signal alongside the text label below the
+          title, without a colored chip/badge (DESIGN.md forbids those). */}
+      {track.isPremiumOnly ? <LockIcon size={15} color={colors.muted} strokeWidth={1.6} /> : null}
     </AnimatedPressable>
   );
 }
 
 // The catalog's category/subcategory section header — the DESIGN.md overline
-// (700 / 11px / +tracking / muted), with " / " tightened to " · ". Shared so
-// Explore and Favorites label their sections the same way.
-export function TrackSectionHeader({ title, language }: { title: string; language: string }) {
+// (700 / 11px / +tracking / muted). Labels come through the `catalog` i18n
+// namespace (never the raw `rahatlatici`/`beyaz_gurultu` db slugs) so this
+// reads as real words in every supported language, and .toLocaleUpperCase
+// gets the *translated* string — critical for Turkish, where uppercasing the
+// untranslated ascii slug "rahatlatici" via the tr locale produces the wrong
+// dotted "İ" (should be dotless "I": RAHATLATICI, not RAHATLATİCİ).
+export function TrackSectionHeader({
+  category,
+  subcategory,
+  language,
+}: {
+  category: string;
+  subcategory: string;
+  language: string;
+}) {
   const colors = useThemeColors();
+  const { t } = useTranslation("catalog");
+  const label = `${categoryLabel(t, category)} · ${subcategoryLabel(t, subcategory)}`;
   return (
     <Text
       accessibilityRole="header"
@@ -74,7 +95,7 @@ export function TrackSectionHeader({ title, language }: { title: string; languag
         paddingBottom: 8,
       }}
     >
-      {title.replace(" / ", " · ").toLocaleUpperCase(language)}
+      {label.toLocaleUpperCase(language)}
     </Text>
   );
 }

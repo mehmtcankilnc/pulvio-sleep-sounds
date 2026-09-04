@@ -1,0 +1,25 @@
+{
+  "category": {
+    "rahatlatici": "Apaisant",
+    "muzik": "Musique"
+  },
+  "subcategory": {
+    "yagmur": "Pluie",
+    "deniz": "Océan",
+    "dere": "Ruisseau",
+    "gok_gurultusu": "Orage",
+    "kus_sesi": "Chant d'oiseaux",
+    "orman": "Forêt",
+    "ruzgar": "Vent",
+    "gece_bocekleri": "Insectes nocturnes",
+    "ates": "Feu",
+    "fon_makinesi": "Sèche-cheveux",
+    "beyaz_gurultu": "Bruit blanc",
+    "kahverengi_gurultu": "Bruit brun",
+    "pembe_gurultu": "Bruit rose",
+    "kafe": "Café",
+    "piyano": "Piano",
+    "lofi": "Lo-fi",
+    "ambient": "Ambient"
+  }
+}

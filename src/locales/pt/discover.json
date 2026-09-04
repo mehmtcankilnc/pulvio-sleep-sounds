@@ -4,5 +4,18 @@
   "empty": "Nenhum som adicionado ainda",
   "emptyBody": "O catálogo está vazio no momento — volte em breve.",
   "premiumBadge": "Premium",
-  "clearFilterCta": "Mostrar todos os sons"
+  "clearFilterCta": "Mostrar todos os sons",
+  "allSoundsRow": "Todos os sons",
+  "allInCategoryRow": "Tudo: {{category}}",
+  "soundCount_one": "{{count}} som",
+  "soundCount_other": "{{count}} sons",
+  "searchPlaceholder": "Buscar sons",
+  "searchEmptyTitle": "Sem resultados",
+  "searchEmptyBody": "Nada corresponde a \"{{query}}\".",
+  "freeOnlyFilter": "Somente grátis",
+  "categoryUnavailableTitle": "Não disponível",
+  "categoryUnavailableBody": "\"{{category}}\" não está disponível no momento.",
+  "freeFilterEmptyTitle": "Nenhum som grátis aqui",
+  "freeFilterEmptyBody": "\"{{category}}\" é somente premium no momento.",
+  "freeFilterEmptyBodyAll": "Nada no plano grátis no momento."
 }

@@ -210,6 +210,11 @@ export default function SettingsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const tabBarHeight = useBottomTabBarHeight();
+  // A guest (paywall skip, or an anonymous purchase) holds a real session
+  // with no email/password behind it — signing out would abandon it for
+  // good, with no way back in, so that row is hidden for them entirely (see
+  // the ACCOUNT group below) in favor of a row that offers to link one.
+  const isAnonymous = useUserStore((state) => state.session?.user.is_anonymous === true);
   const subscriptionStatus = useUserStore((state) => state.subscriptionStatus);
   const setSubscriptionStatus = useUserStore((state) => state.setSubscriptionStatus);
   const setCooldownEndsAt = useUserStore((state) => state.setCooldownEndsAt);
@@ -402,6 +407,18 @@ export default function SettingsScreen() {
         </Group>
 
         <Group label={t("accountGroup")}>
+          {isAnonymous && (
+            <>
+              <Row
+                icon={SparklesIcon}
+                title={t("completeAccountTitle")}
+                subtitle={t("completeAccountSubtitle")}
+                trailing={<Chevron />}
+                onPress={() => router.push("/(auth)/signup")}
+              />
+              {!isPremium && <Hairline />}
+            </>
+          )}
           {!isPremium && (
             <>
               <Row
@@ -413,13 +430,15 @@ export default function SettingsScreen() {
                 trailing={isRestoring ? <ActivityIndicator size="small" color={colors.muted} /> : undefined}
                 onPress={isRestoring ? undefined : handleRestore}
               />
-              <Hairline />
+              {!isAnonymous && <Hairline />}
             </>
           )}
           {/* No chevron — sign-out opens a confirmation sheet, it doesn't
               navigate; the missing chevron also sets it apart from the
-              external ABOUT links below. */}
-          <Row icon={LogOutIcon} title={t("signOut")} onPress={() => setSignOutSheetOpen(true)} />
+              external ABOUT links below. Hidden for a guest: see isAnonymous
+              above — the row that replaces it (completeAccountTitle) is the
+              row this same tap should have led to anyway. */}
+          {!isAnonymous && <Row icon={LogOutIcon} title={t("signOut")} onPress={() => setSignOutSheetOpen(true)} />}
         </Group>
 
         <Group label={t("aboutGroup")}>

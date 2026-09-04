@@ -5,8 +5,10 @@
   "retry": "Tentar novamente",
   "notNow": "Agora não",
   "goPremium": "Assinar Premium",
+  "premiumLabel": "Premium",
   "back": "Voltar",
   "loading": "Carregando",
   "showPassword": "Mostrar senha",
-  "hidePassword": "Ocultar senha"
+  "hidePassword": "Ocultar senha",
+  "clear": "Limpar"
 }

@@ -76,7 +76,13 @@ export default function RootLayout() {
   // A recovery session legitimately sits in (auth) on the reset-password
   // screen — don't treat that as "stranded on login".
   const onResetPassword = inAuthGroup && segments[segments.length - 1] === "reset-password";
-  const strandedInAuth = inAuthGroup && !passwordRecovery;
+  // An anonymous session sitting in (auth) is the guest-upgrade flow (the
+  // paywall's post-purchase nudge, or "I already have an account" from
+  // welcome) deliberately linking signup/login to the SAME session instead
+  // of creating a new one (app/(auth)/signup.tsx) — not a stranded, fully
+  // authenticated user who has no reason to be there. Only a permanent
+  // session counts as stranded.
+  const strandedInAuth = inAuthGroup && !passwordRecovery && session?.user.is_anonymous !== true;
   const redirecting =
     ready && (passwordRecovery ? !onResetPassword : !session ? !settledForLoggedOut : strandedInAuth);
 
@@ -96,7 +102,11 @@ export default function RootLayout() {
     if (!session) {
       // First run (never been through the funnel) -> onboarding. Otherwise
       // -> login. Leave the user alone once they're on a settled route
-      // (auth, onboarding, or the funnel's paywall step).
+      // (auth, onboarding, or the funnel's paywall step). A guest who skipped
+      // signup (app/paywall.tsx's dismiss()) isn't `!session` at all by this
+      // point — they hold a real Supabase anonymous session — so they never
+      // reach this branch; they're just routed like anyone else with a
+      // session, one step down.
       if (!settledForLoggedOut) {
         router.replace(onboardingCompleted ? "/(auth)" : "/(onboarding)/welcome");
       }
@@ -175,7 +185,7 @@ function AppShell() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(onboarding)" />
-        <Stack.Screen name="discover" />
+        <Stack.Screen name="sounds" />
         <Stack.Screen name="favorites" />
         <Stack.Screen
           name="player"

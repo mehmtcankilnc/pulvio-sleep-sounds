@@ -26,6 +26,24 @@ export async function signUpWithEmail(email: string, password: string) {
   return { error };
 }
 
+// The anonymous-upgrade counterpart to signUpWithEmail: attaches an email +
+// password to the CURRENT (anonymous) session's user instead of creating a
+// new, disconnected one. Same auth.users.id throughout — every row keyed by
+// it (favorites, sleep_schedule, listening_sessions/cooldown, subscriptions)
+// is already this user's and needs no migration. Still confirmation-gated
+// (Supabase holds the email as pending until the link is tapped, exactly
+// like a fresh signup — check-email.tsx is reused as-is) and
+// `is_anonymous` only flips to false once that confirmation lands, at which
+// point the route guard's own strandedInAuth check moves them into (tabs).
+export async function linkEmailToAnonymousUser(email: string, password: string) {
+  const emailRedirectTo = AuthSession.makeRedirectUri({ scheme: "pulvio" });
+  const { error } = await supabase.auth.updateUser(
+    { email: email.trim(), password },
+    { emailRedirectTo }
+  );
+  return { error };
+}
+
 export async function signInWithEmail(email: string, password: string) {
   const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
   return { error };
@@ -47,6 +65,16 @@ export async function updatePassword(password: string) {
 
 export async function resendConfirmationEmail(email: string) {
   const { error } = await supabase.auth.resend({ type: "signup", email: email.trim() });
+  return { error };
+}
+
+// The linking counterpart to resendConfirmationEmail — the pending
+// confirmation from linkEmailToAnonymousUser is an "email_change" OTP, not a
+// "signup" one; resending with the wrong type either no-ops or errors on the
+// resend endpoint. check-email.tsx picks between the two by a `?linking=1`
+// param on the route.
+export async function resendEmailChangeConfirmation(email: string) {
+  const { error } = await supabase.auth.resend({ type: "email_change", email: email.trim() });
   return { error };
 }
 
@@ -134,12 +162,45 @@ export async function signInWithGoogle() {
   return { error: null };
 }
 
+// Same web flow as signInWithGoogle, but supabase.auth.linkIdentity attaches
+// the OAuth identity to the CURRENT (anonymous) session's user instead of
+// signing in to a separate one — see linkEmailToAnonymousUser's comment for
+// why that distinction matters. Once the exchange lands (exchangeCodeFromUrl,
+// same as any other OAuth return), `is_anonymous` flips to false immediately
+// — no email confirmation step, Google already vouches for the address.
+export async function linkGoogleAccount() {
+  const redirectUri = AuthSession.makeRedirectUri({ scheme: "pulvio" });
+
+  const { data, error } = await supabase.auth.linkIdentity({
+    provider: "google",
+    options: { redirectTo: redirectUri, skipBrowserRedirect: true },
+  });
+  if (error || !data?.url) {
+    return { error: error ?? new Error("Google için OAuth URL'i alınamadı") };
+  }
+
+  await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
+  return { error: null };
+}
+
 // Apple: the native system flow (iOS only — the button is gated to
 // Platform.OS === "ios"). App Store Guideline 4.8 + the Sign in with Apple
 // guidelines require the real system sheet, not a web OAuth page. A nonce
 // ties Apple's identity token to this request: Apple gets its SHA-256,
 // Supabase gets the raw value and re-hashes to compare.
 export async function signInWithApple() {
+  return appleIdentity((token, nonce) => supabase.auth.signInWithIdToken({ provider: "apple", token, nonce }));
+}
+
+// Same native Apple sheet as signInWithApple, but links the identity to the
+// current (anonymous) session's user — see linkGoogleAccount's comment.
+export async function linkAppleAccount() {
+  return appleIdentity((token, nonce) => supabase.auth.linkIdentity({ provider: "apple", token, nonce }));
+}
+
+async function appleIdentity(
+  exchange: (token: string, nonce: string) => Promise<{ error: AuthError | null }>
+) {
   try {
     const rawNonce = Crypto.randomUUID();
     const hashedNonce = await Crypto.digestStringAsync(
@@ -159,11 +220,7 @@ export async function signInWithApple() {
       return { error: new Error("Apple bir identity token döndürmedi") };
     }
 
-    const { error } = await supabase.auth.signInWithIdToken({
-      provider: "apple",
-      token: credential.identityToken,
-      nonce: rawNonce,
-    });
+    const { error } = await exchange(credential.identityToken, rawNonce);
     return { error };
   } catch (e) {
     // Tapping "Cancel" on the system sheet is not an error state.

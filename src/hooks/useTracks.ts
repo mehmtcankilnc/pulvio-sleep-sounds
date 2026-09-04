@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
+import i18n from "../lib/i18n";
 import { supabase } from "../lib/supabase";
+import { compareTracks } from "../lib/catalogTaxonomy";
+import { localizedTrackTitle } from "../lib/trackTitle";
 import type { Track } from "../types";
 
 export type TrackSection = {
-  title: string;
+  category: string;
+  subcategory: string;
   data: Track[];
 };
 
@@ -19,7 +23,7 @@ function mapRowToTrack(row: {
 }): Track {
   return {
     id: row.id,
-    title: row.title,
+    title: localizedTrackTitle(row.title, row.storage_url, i18n.language),
     category: row.category,
     subcategory: row.subcategory,
     durationSeconds: row.duration,
@@ -52,11 +56,13 @@ export function useTracks() {
     setLoading(true);
     setError(null);
 
+    // Unordered fetch — the deliberate browse order (taxonomy position, then
+    // free-before-premium, then title) is applied client-side below via
+    // compareTracks so it stays in one place shared with any other consumer,
+    // instead of duplicating it as a second `.order()` chain here.
     const { data, error: fetchError } = await supabase
       .from("tracks")
-      .select("id, title, category, subcategory, duration, storage_url, cover_url, is_premium_only")
-      .order("category")
-      .order("subcategory");
+      .select("id, title, category, subcategory, duration, storage_url, cover_url, is_premium_only");
 
     if (fetchError) {
       console.error("useTracks: failed to fetch tracks", fetchError);
@@ -66,20 +72,28 @@ export function useTracks() {
       return;
     }
 
-    const tracks = (data ?? []).map(mapRowToTrack);
-    const grouped = new Map<string, Track[]>();
+    const tracks = (data ?? []).map(mapRowToTrack).sort((a, b) => compareTracks(a, b, i18n.language));
+    const grouped = new Map<string, { category: string; subcategory: string; data: Track[] }>();
     for (const track of tracks) {
-      const key = `${track.category} / ${track.subcategory}`;
-      if (!grouped.has(key)) grouped.set(key, []);
-      grouped.get(key)!.push(track);
+      const key = `${track.category}/${track.subcategory}`;
+      if (!grouped.has(key)) grouped.set(key, { category: track.category, subcategory: track.subcategory, data: [] });
+      grouped.get(key)!.data.push(track);
     }
 
-    setSections(Array.from(grouped.entries()).map(([title, data]) => ({ title, data })));
+    setSections(Array.from(grouped.values()));
     setLoading(false);
   }
 
   useEffect(() => {
     fetchTracks();
+    // Titles, category/subcategory labels and the sort's locale-aware
+    // localeCompare all depend on the current language — re-run the fetch
+    // (cheap: 99 rows) whenever the user switches language in Settings so
+    // an already-mounted list doesn't keep showing the old language.
+    i18n.on("languageChanged", fetchTracks);
+    return () => {
+      i18n.off("languageChanged", fetchTracks);
+    };
   }, []);
 
   return { sections, loading, error, refetch: fetchTracks };

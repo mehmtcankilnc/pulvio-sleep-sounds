@@ -1,0 +1,25 @@
+{
+  "category": {
+    "rahatlatici": "Rahatlatıcı",
+    "muzik": "Müzik"
+  },
+  "subcategory": {
+    "yagmur": "Yağmur",
+    "deniz": "Deniz",
+    "dere": "Dere",
+    "gok_gurultusu": "Gök Gürültüsü",
+    "kus_sesi": "Kuş Sesi",
+    "orman": "Orman",
+    "ruzgar": "Rüzgâr",
+    "gece_bocekleri": "Gece Böcekleri",
+    "ates": "Ateş",
+    "fon_makinesi": "Fön Makinesi",
+    "beyaz_gurultu": "Beyaz Gürültü",
+    "kahverengi_gurultu": "Kahverengi Gürültü",
+    "pembe_gurultu": "Pembe Gürültü",
+    "kafe": "Kafe",
+    "piyano": "Piyano",
+    "lofi": "Lo-fi",
+    "ambient": "Ambient"
+  }
+}

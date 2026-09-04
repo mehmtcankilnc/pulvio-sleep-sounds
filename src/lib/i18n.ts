@@ -12,6 +12,8 @@ import trSettings from "../locales/tr/settings.json";
 import trPaywall from "../locales/tr/paywall.json";
 import trSleep from "../locales/tr/sleep.json";
 import trOnboarding from "../locales/tr/onboarding.json";
+import trCatalog from "../locales/tr/catalog.json";
+import trTracks from "../locales/tr/tracks.json";
 
 import enCommon from "../locales/en/common.json";
 import enAuth from "../locales/en/auth.json";
@@ -22,6 +24,8 @@ import enSettings from "../locales/en/settings.json";
 import enPaywall from "../locales/en/paywall.json";
 import enSleep from "../locales/en/sleep.json";
 import enOnboarding from "../locales/en/onboarding.json";
+import enCatalog from "../locales/en/catalog.json";
+import enTracks from "../locales/en/tracks.json";
 
 import deCommon from "../locales/de/common.json";
 import deAuth from "../locales/de/auth.json";
@@ -32,6 +36,8 @@ import deSettings from "../locales/de/settings.json";
 import dePaywall from "../locales/de/paywall.json";
 import deSleep from "../locales/de/sleep.json";
 import deOnboarding from "../locales/de/onboarding.json";
+import deCatalog from "../locales/de/catalog.json";
+import deTracks from "../locales/de/tracks.json";
 
 import frCommon from "../locales/fr/common.json";
 import frAuth from "../locales/fr/auth.json";
@@ -42,6 +48,8 @@ import frSettings from "../locales/fr/settings.json";
 import frPaywall from "../locales/fr/paywall.json";
 import frSleep from "../locales/fr/sleep.json";
 import frOnboarding from "../locales/fr/onboarding.json";
+import frCatalog from "../locales/fr/catalog.json";
+import frTracks from "../locales/fr/tracks.json";
 
 import esCommon from "../locales/es/common.json";
 import esAuth from "../locales/es/auth.json";
@@ -52,6 +60,8 @@ import esSettings from "../locales/es/settings.json";
 import esPaywall from "../locales/es/paywall.json";
 import esSleep from "../locales/es/sleep.json";
 import esOnboarding from "../locales/es/onboarding.json";
+import esCatalog from "../locales/es/catalog.json";
+import esTracks from "../locales/es/tracks.json";
 
 import ptCommon from "../locales/pt/common.json";
 import ptAuth from "../locales/pt/auth.json";
@@ -62,6 +72,8 @@ import ptSettings from "../locales/pt/settings.json";
 import ptPaywall from "../locales/pt/paywall.json";
 import ptSleep from "../locales/pt/sleep.json";
 import ptOnboarding from "../locales/pt/onboarding.json";
+import ptCatalog from "../locales/pt/catalog.json";
+import ptTracks from "../locales/pt/tracks.json";
 
 export const SUPPORTED_LANGUAGES = ["tr", "en", "de", "fr", "es", "pt"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
@@ -72,12 +84,12 @@ const LANGUAGE_STORAGE_KEY = "pulvio_language";
 // still falls back to en via fallbackLng below, which i18next does per-key
 // without erroring.
 const resources = {
-  tr: { common: trCommon, auth: trAuth, home: trHome, discover: trDiscover, player: trPlayer, settings: trSettings, paywall: trPaywall, sleep: trSleep, onboarding: trOnboarding },
-  en: { common: enCommon, auth: enAuth, home: enHome, discover: enDiscover, player: enPlayer, settings: enSettings, paywall: enPaywall, sleep: enSleep, onboarding: enOnboarding },
-  de: { common: deCommon, auth: deAuth, home: deHome, discover: deDiscover, player: dePlayer, settings: deSettings, paywall: dePaywall, sleep: deSleep, onboarding: deOnboarding },
-  fr: { common: frCommon, auth: frAuth, home: frHome, discover: frDiscover, player: frPlayer, settings: frSettings, paywall: frPaywall, sleep: frSleep, onboarding: frOnboarding },
-  es: { common: esCommon, auth: esAuth, home: esHome, discover: esDiscover, player: esPlayer, settings: esSettings, paywall: esPaywall, sleep: esSleep, onboarding: esOnboarding },
-  pt: { common: ptCommon, auth: ptAuth, home: ptHome, discover: ptDiscover, player: ptPlayer, settings: ptSettings, paywall: ptPaywall, sleep: ptSleep, onboarding: ptOnboarding },
+  tr: { common: trCommon, auth: trAuth, home: trHome, discover: trDiscover, player: trPlayer, settings: trSettings, paywall: trPaywall, sleep: trSleep, onboarding: trOnboarding, catalog: trCatalog, tracks: trTracks },
+  en: { common: enCommon, auth: enAuth, home: enHome, discover: enDiscover, player: enPlayer, settings: enSettings, paywall: enPaywall, sleep: enSleep, onboarding: enOnboarding, catalog: enCatalog, tracks: enTracks },
+  de: { common: deCommon, auth: deAuth, home: deHome, discover: deDiscover, player: dePlayer, settings: deSettings, paywall: dePaywall, sleep: deSleep, onboarding: deOnboarding, catalog: deCatalog, tracks: deTracks },
+  fr: { common: frCommon, auth: frAuth, home: frHome, discover: frDiscover, player: frPlayer, settings: frSettings, paywall: frPaywall, sleep: frSleep, onboarding: frOnboarding, catalog: frCatalog, tracks: frTracks },
+  es: { common: esCommon, auth: esAuth, home: esHome, discover: esDiscover, player: esPlayer, settings: esSettings, paywall: esPaywall, sleep: esSleep, onboarding: esOnboarding, catalog: esCatalog, tracks: esTracks },
+  pt: { common: ptCommon, auth: ptAuth, home: ptHome, discover: ptDiscover, player: ptPlayer, settings: ptSettings, paywall: ptPaywall, sleep: ptSleep, onboarding: ptOnboarding, catalog: ptCatalog, tracks: ptTracks },
 };
 
 function isSupportedLanguage(lang: string): lang is SupportedLanguage {
@@ -110,7 +122,7 @@ export async function initI18n(): Promise<SupportedLanguage> {
     resources,
     lng: initialLanguage,
     fallbackLng: "en",
-    ns: ["common", "auth", "home", "discover", "player", "settings", "paywall", "sleep", "onboarding"],
+    ns: ["common", "auth", "home", "discover", "player", "settings", "paywall", "sleep", "onboarding", "catalog", "tracks"],
     defaultNS: "common",
     interpolation: { escapeValue: false },
   });

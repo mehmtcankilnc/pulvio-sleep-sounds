@@ -38,7 +38,7 @@ export default function FavoritesScreen(): JSX.Element {
   const sections = useMemo(
     () =>
       allSections
-        .map((section) => ({ title: section.title, data: section.data.filter((track) => favoriteIds.has(track.id)) }))
+        .map((section) => ({ ...section, data: section.data.filter((track) => favoriteIds.has(track.id)) }))
         .filter((section) => section.data.length > 0),
     [allSections, favoriteIds]
   );
@@ -120,7 +120,7 @@ export default function FavoritesScreen(): JSX.Element {
             {t("favoritesEmptyBody")}
           </Text>
           <View style={{ marginTop: 2 }}>
-            <Button label={t("favoritesEmptyCta")} variant="outline" onPress={() => router.push("/discover")} />
+            <Button label={t("favoritesEmptyCta")} variant="outline" onPress={() => router.push("/sounds")} />
           </View>
         </View>
       ) : (
@@ -133,7 +133,7 @@ export default function FavoritesScreen(): JSX.Element {
           stickySectionHeadersEnabled={false}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
           renderSectionHeader={({ section }) => (
-            <TrackSectionHeader title={section.title} language={i18n.language} />
+            <TrackSectionHeader category={section.category} subcategory={section.subcategory} language={i18n.language} />
           )}
           renderItem={({ item }) => (
             <View style={{ marginBottom: 8 }}>

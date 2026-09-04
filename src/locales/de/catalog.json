@@ -1,0 +1,25 @@
+{
+  "category": {
+    "rahatlatici": "Beruhigend",
+    "muzik": "Musik"
+  },
+  "subcategory": {
+    "yagmur": "Regen",
+    "deniz": "Meer",
+    "dere": "Bach",
+    "gok_gurultusu": "Gewitter",
+    "kus_sesi": "Vogelgezwitscher",
+    "orman": "Wald",
+    "ruzgar": "Wind",
+    "gece_bocekleri": "Nachtinsekten",
+    "ates": "Feuer",
+    "fon_makinesi": "Föhn",
+    "beyaz_gurultu": "Weißes Rauschen",
+    "kahverengi_gurultu": "Braunes Rauschen",
+    "pembe_gurultu": "Rosa Rauschen",
+    "kafe": "Café",
+    "piyano": "Klavier",
+    "lofi": "Lo-fi",
+    "ambient": "Ambient"
+  }
+}

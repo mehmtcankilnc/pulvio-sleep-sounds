@@ -4,5 +4,18 @@
   "empty": "Henüz ses eklenmedi",
   "emptyBody": "Katalog şu an boş — birazdan tekrar bak.",
   "premiumBadge": "Premium",
-  "clearFilterCta": "Tüm sesleri göster"
+  "clearFilterCta": "Tüm sesleri göster",
+  "allSoundsRow": "Tüm sesler",
+  "allInCategoryRow": "Tüm {{category}}",
+  "soundCount_one": "{{count}} ses",
+  "soundCount_other": "{{count}} ses",
+  "searchPlaceholder": "Ses ara",
+  "searchEmptyTitle": "Sonuç yok",
+  "searchEmptyBody": "\"{{query}}\" ile eşleşen bir şey bulunamadı.",
+  "freeOnlyFilter": "Sadece ücretsiz",
+  "categoryUnavailableTitle": "Şu an yok",
+  "categoryUnavailableBody": "\"{{category}}\" şu an mevcut değil.",
+  "freeFilterEmptyTitle": "Burada ücretsiz ses yok",
+  "freeFilterEmptyBody": "\"{{category}}\" şu an yalnızca premium.",
+  "freeFilterEmptyBodyAll": "Şu an ücretsiz planda hiçbir şey yok."
 }

@@ -15,6 +15,7 @@ import type {
   PurchasesOffering,
   PurchasesPackage,
 } from "react-native-purchases";
+import Purchases from "react-native-purchases";
 import {
   getCurrentOffering,
   purchasePackage,
@@ -22,6 +23,7 @@ import {
   hasPriorPurchase,
 } from "../src/lib/revenuecat";
 import { resolveSubscriptionState } from "../src/lib/subscription";
+import { supabase } from "../src/lib/supabase";
 import {
   formatCurrency,
   monthlyEquivalentPrice,
@@ -44,6 +46,8 @@ import { usePlayerActions } from "../src/hooks/usePlayerActions";
 import { useThemeColors } from "../src/hooks/useThemeColors";
 import { GlowBackground } from "../src/components/GlowBackground";
 import { Testimonials } from "../src/components/PaywallTestimonials";
+import { BottomSheet } from "../src/components/BottomSheet";
+import { Button } from "../src/components/ui/Button";
 import {
   BellIcon,
   CheckIcon,
@@ -64,21 +68,13 @@ const BENEFIT_KEYS = [
 // attributable App Store / Play quotes (or a localized feed) before launch.
 // Empty this array and the whole testimonials block stops rendering.
 // PRODUCT.md principle 1: no invented social proof ships.
-const TESTIMONIALS: { quote: string; author: string }[] = [
-  {
-    quote:
-      "Zamanlayıcı bitmeden uyuyakalıyorum artık. İlk kez bir uygulama işe yaradı.",
-    author: "Elif · App Store",
-  },
-  {
-    quote: "Gece 3'te uyanınca açıyorum, 10 dakikada geri dalıyorum.",
-    author: "Deniz · Google Play",
-  },
-  {
-    quote: "Sesler gerçekten kaliteli, döngü fark edilmiyor. Buna değer.",
-    author: "Mert · App Store",
-  },
-];
+//
+// Translated (quote AND reviewer name — a German screen showing "Elif ·
+// App Store" read as a leftover placeholder, not a real review) in every
+// locale's paywall.json under testimonial1..3{Quote,Author}. Built here as
+// a memo (not a module-level constant) so it re-reads when the app language
+// changes instead of freezing at whatever was active on first mount.
+const TESTIMONIAL_KEYS = [1, 2, 3] as const;
 
 // Which packages get the two prominent cards; the rest go behind "Show other
 // plans". Driven by the RevenueCat offering's `metadata.primary` (an array of
@@ -130,6 +126,14 @@ export default function PaywallScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
+  const testimonials = useMemo(
+    () =>
+      TESTIMONIAL_KEYS.map((n) => ({
+        quote: t(`testimonial${n}Quote`),
+        author: t(`testimonial${n}Author`),
+      })),
+    [t, i18n.language],
+  );
   const setSubscriptionStatus = useUserStore(
     (state) => state.setSubscriptionStatus,
   );
@@ -170,11 +174,50 @@ export default function PaywallScreen() {
   // If the user dismisses the paywall in that window, a late "premium"
   // result must NOT yank them back / auto-play a track they walked away from.
   const dismissed = useRef(false);
+  // Shown after a successful purchase/restore on an anonymous session (the
+  // pre-auth funnel, or a guest who bought later from inside the app) — the
+  // entitlement is real and already applied, this only asks whether they
+  // want the account made permanent (an email + password) so it isn't lost
+  // if they switch devices, reinstall, or the anonymous session's refresh
+  // token is ever cleared.
+  const [guestPurchaseSheetOpen, setGuestPurchaseSheetOpen] = useState(false);
+  // Only true for the brief network round trip in dismiss()'s "skip without
+  // buying" path — establishing the anonymous session before it can hand off
+  // to (tabs).
+  const [enteringGuest, setEnteringGuest] = useState(false);
+
+  // A Supabase anonymous session (real auth.uid(), same cooldown/heartbeat
+  // RPCs, same RLS as any other user) rather than no session at all — that's
+  // what makes free-tier cooldown enforceable for someone who skipped
+  // signup; a sessionless guest is invisible to the backend and could never
+  // be rate-limited. Also logs RevenueCat into that id immediately (rather
+  // than waiting for useRevenueCatSync's effect to catch up on the next
+  // render) so a purchase made right after is tied to it from the start, not
+  // to a throwaway device-only RevenueCat id. No-ops (and returns true) if a
+  // session — anonymous or real — already exists.
+  async function ensureIdentifiedSession(): Promise<boolean> {
+    if (useUserStore.getState().session) return true;
+    const { data, error } = await supabase.auth.signInAnonymously();
+    if (error || !data.session) return false;
+    useUserStore.getState().setSession(data.session);
+    await Purchases.logIn(data.session.user.id).catch(() => {});
+    return true;
+  }
 
   function dismiss() {
     dismissed.current = true;
     if (fromOnboarding) {
-      router.replace("/(auth)/signup");
+      // Skipping without buying is a real product path now, not a dead end
+      // that used to force signup.
+      setEnteringGuest(true);
+      ensureIdentifiedSession().then((ok) => {
+        setEnteringGuest(false);
+        if (!ok) {
+          setError(t("guestEntryFailed"));
+          return;
+        }
+        router.replace("/(tabs)");
+      });
       return;
     }
     router.back();
@@ -273,29 +316,56 @@ export default function PaywallScreen() {
     if (resumeNow) retryLast();
   }
 
+  function signInNow() {
+    setGuestPurchaseSheetOpen(false);
+    router.replace("/(auth)/signup");
+  }
+
+  function continueAsGuest() {
+    setGuestPurchaseSheetOpen(false);
+    if (fromOnboarding) {
+      // preview.tsx replaced itself with this screen (see its own comment on
+      // why) — there's nothing behind this one to "go back" to, so this is
+      // the one exit that still needs an explicit destination rather than
+      // applyPremiumAndExit's router.back().
+      router.replace("/(tabs)");
+      return;
+    }
+    applyPremiumAndExit();
+  }
+
   async function handlePurchase() {
     if (!selectedPackage) return;
     setPurchasing(true);
     setError(null);
     setNotice(null);
     try {
-      await purchasePackage(selectedPackage);
-
-      if (fromOnboarding) {
-        // Anonymous purchase — the entitlement is confirmed after signup,
-        // when Purchases.logIn() aliases it to the real account and the
-        // backend webhook lands. Polling an anonymous user's status here
-        // would just time out.
-        router.replace("/(auth)/signup");
+      // Establish (or reuse) a real backend identity BEFORE the purchase —
+      // not after — so RevenueCat's app_user_id is the eventual account from
+      // the very first receipt, and the entitlement poll below (which needs
+      // a session to scope the backend's get_user_status RPC by) has one to
+      // work with regardless of whether this is the pre-auth funnel or an
+      // already-anonymous guest buying later from inside the app.
+      const identified = await ensureIdentifiedSession();
+      if (!identified) {
+        setError(t("guestEntryFailed"));
         return;
       }
+
+      await purchasePackage(selectedPackage);
 
       setConfirming(true);
       for (let attempt = 0; attempt < 5; attempt++) {
         await new Promise((resolve) => setTimeout(resolve, 1500));
         const state = await resolveSubscriptionState();
         if (state?.plan === "premium") {
-          applyPremiumAndExit();
+          if (useUserStore.getState().session?.user.is_anonymous) {
+            setSubscriptionStatus("premium");
+            setCooldownEndsAt(state.cooldownEndsAt);
+            setGuestPurchaseSheetOpen(true);
+          } else {
+            applyPremiumAndExit();
+          }
           return;
         }
       }
@@ -328,18 +398,23 @@ export default function PaywallScreen() {
     setError(null);
     setNotice(null);
     try {
-      await restorePurchases();
-
-      if (fromOnboarding) {
-        // No account yet to attach an entitlement to — the restore aliases
-        // on signup, same as an anonymous purchase does.
-        router.replace("/(auth)/signup");
+      const identified = await ensureIdentifiedSession();
+      if (!identified) {
+        setError(t("guestEntryFailed"));
         return;
       }
 
+      await restorePurchases();
+
       const state = await resolveSubscriptionState();
       if (state?.plan === "premium") {
-        applyPremiumAndExit();
+        if (useUserStore.getState().session?.user.is_anonymous) {
+          setSubscriptionStatus("premium");
+          setCooldownEndsAt(state.cooldownEndsAt);
+          setGuestPurchaseSheetOpen(true);
+        } else {
+          applyPremiumAndExit();
+        }
         return;
       }
       // Not a failure — nothing to restore is a normal answer.
@@ -642,6 +717,7 @@ export default function PaywallScreen() {
       {/* Fixed close — sits above the scroll area, never scrolls away. */}
       <Pressable
         onPress={dismiss}
+        disabled={enteringGuest}
         hitSlop={10}
         accessibilityRole="button"
         accessibilityLabel={t("common:close")}
@@ -656,7 +732,15 @@ export default function PaywallScreen() {
           justifyContent: "center",
         }}
       >
-        <XIcon size={16} color={colors.faint} strokeWidth={1.6} />
+        {/* Establishing the anonymous session (see ensureIdentifiedSession)
+            is a real network round trip — without this, a slow connection
+            let a second tap fire dismiss() twice, or made the close button
+            look unresponsive with nothing on screen explaining why. */}
+        {enteringGuest ? (
+          <ActivityIndicator size="small" color={colors.faint} />
+        ) : (
+          <XIcon size={16} color={colors.faint} strokeWidth={1.6} />
+        )}
       </Pressable>
 
       {/* Scrollable top: pitch + benefits + reviews + (trial timeline). */}
@@ -807,13 +891,13 @@ export default function PaywallScreen() {
             the feature list and let reviews close. */}
         {trialActive ? (
           <>
-            <Testimonials items={TESTIMONIALS} />
+            <Testimonials items={testimonials} />
             {benefitsBlock}
           </>
         ) : (
           <>
             {benefitsBlock}
-            <Testimonials items={TESTIMONIALS} />
+            <Testimonials items={testimonials} />
           </>
         )}
       </ScrollView>
@@ -1010,9 +1094,12 @@ export default function PaywallScreen() {
         <View
           style={{
             flexDirection: "row",
+            flexWrap: "wrap",
             justifyContent: "center",
             alignItems: "center",
-            gap: 12,
+            rowGap: 4,
+            columnGap: 10,
+            paddingHorizontal: 12,
           }}
         >
           <Pressable
@@ -1068,6 +1155,46 @@ export default function PaywallScreen() {
           )}
         </View>
       </View>
+
+      <GuestPurchaseSheet
+        visible={guestPurchaseSheetOpen}
+        onSignIn={signInNow}
+        onLater={continueAsGuest}
+      />
     </GlowBackground>
+  );
+}
+
+// The entitlement is already applied at this point (applyGuestPremiumAndPrompt
+// ran before this opens) — this is purely about whether to attach it to an
+// account now or later, never a blocker in front of the purchase itself.
+// No close/backdrop-dismiss: the two buttons already cover "yes" and "not
+// now", so a third silent way out would just be an unlabeled third choice.
+function GuestPurchaseSheet({
+  visible,
+  onSignIn,
+  onLater,
+}: {
+  visible: boolean;
+  onSignIn: () => void;
+  onLater: () => void;
+}) {
+  const { t } = useTranslation("paywall");
+  const colors = useThemeColors();
+  return (
+    <BottomSheet visible={visible} onClose={onLater} style={{ borderWidth: 1, borderColor: colors.stroke, padding: 20, gap: 16 }}>
+      <View style={{ gap: 6 }} accessible accessibilityLiveRegion="polite">
+        <Text className="font-bold" style={{ fontSize: 16, color: colors.text }}>
+          {t("guestPurchaseTitle")}
+        </Text>
+        <Text style={{ fontSize: 13.5, color: colors.muted, lineHeight: 19 }}>
+          {t("guestPurchaseMessage")}
+        </Text>
+      </View>
+      <View style={{ gap: 8 }}>
+        <Button label={t("guestPurchaseSignInCta")} onPress={onSignIn} />
+        <Button label={t("guestPurchaseLaterCta")} variant="outline" onPress={onLater} />
+      </View>
+    </BottomSheet>
   );
 }

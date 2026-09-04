@@ -10,6 +10,42 @@ export function MoonIcon({ size = 22, color = "#f2b48c" }: IconProps) {
   return <Ionicons name="moon-outline" size={size} color={color} />;
 }
 
+export function LockIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="lock-closed-outline" size={size} color={color} />;
+}
+
+export function SearchIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="search-outline" size={size} color={color} />;
+}
+
+export function ThunderstormIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="thunderstorm-outline" size={size} color={color} />;
+}
+
+export function LeafIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="leaf-outline" size={size} color={color} />;
+}
+
+export function CafeIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="cafe-outline" size={size} color={color} />;
+}
+
+export function BugIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="bug-outline" size={size} color={color} />;
+}
+
+export function BirdsongIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="musical-note-outline" size={size} color={color} />;
+}
+
+export function RadioIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="radio-outline" size={size} color={color} />;
+}
+
+export function FanIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="sync-outline" size={size} color={color} />;
+}
+
 export function CloudRainIcon({ size = 22, color = "#f2b48c" }: IconProps) {
   return <Ionicons name="rainy-outline" size={size} color={color} />;
 }

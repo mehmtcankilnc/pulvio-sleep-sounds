@@ -10,6 +10,11 @@ const ONBOARDING_DONE_KEY = "pulvio.onboarding.completed.v1";
 type UserState = {
   // undefined: session henüz yüklenmedi, null: giriş yok, Session: giriş var.
   // Route guard (app/_layout.tsx) bu üç durumu ayırt ederek yönlendirme yapar.
+  // A Supabase anonymous session (signInAnonymously — see app/paywall.tsx)
+  // is a real, non-null Session here, `session.user.is_anonymous === true` —
+  // it's what lets a guest skip signup while still having a real backend
+  // identity (auth.uid()) for cooldown enforcement, favorites, etc. to key
+  // off, same as any other user.
   session: Session | null | undefined;
   userId: string | null;
   subscriptionStatus: SubscriptionStatus;

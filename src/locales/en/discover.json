@@ -4,5 +4,18 @@
   "empty": "No sounds added yet",
   "emptyBody": "The catalog is empty right now — check back soon.",
   "premiumBadge": "Premium",
-  "clearFilterCta": "Show all sounds"
+  "clearFilterCta": "Show all sounds",
+  "allSoundsRow": "All sounds",
+  "allInCategoryRow": "All {{category}}",
+  "soundCount_one": "{{count}} sound",
+  "soundCount_other": "{{count}} sounds",
+  "searchPlaceholder": "Search sounds",
+  "searchEmptyTitle": "No matches",
+  "searchEmptyBody": "Nothing matches \"{{query}}\".",
+  "freeOnlyFilter": "Free only",
+  "categoryUnavailableTitle": "Not available",
+  "categoryUnavailableBody": "\"{{category}}\" isn't available right now.",
+  "freeFilterEmptyTitle": "No free sounds here",
+  "freeFilterEmptyBody": "\"{{category}}\" is premium-only right now.",
+  "freeFilterEmptyBodyAll": "Nothing in the free tier right now."
 }
