@@ -14,6 +14,7 @@
   "limitBody": "Ton écoute gratuite fait une courte pause.",
   "limitCountdown": "L’écoute gratuite revient dans {{time}}",
   "limitCta": "Passer à Premium, écoute illimitée",
+  "freeLimitHint": "L'écoute gratuite dure 3 minutes, puis une pause de 3 heures avant de pouvoir rejouer.",
   "premiumOnlyTitle": "Ce son est réservé aux membres Premium",
   "premiumOnlySubtitle": "Tu dois passer à Premium pour écouter ce son",
   "premiumReassure": "Il t'attendra une fois que tu seras Premium.",

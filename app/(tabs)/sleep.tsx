@@ -7,11 +7,15 @@ import Svg, { Circle, Path } from "react-native-svg";
 import DatePicker from "react-native-date-picker";
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withSequence, withTiming } from "react-native-reanimated";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
+import { useRouter } from "expo-router";
 import { useSleepSchedule } from "../../src/hooks/useSleepSchedule";
 import { useTracks } from "../../src/hooks/useTracks";
+import { useDebouncedValue } from "../../src/hooks/useDebouncedValue";
 import { useSleepTimerStore } from "../../src/store/useSleepTimerStore";
+import { useUserStore } from "../../src/store/useUserStore";
 import { armSleepTimer, type TimerOption } from "../../src/lib/player/sleepTimer";
 import { categoryIcon } from "../../src/lib/categoryIcon";
+import { categoryLabel } from "../../src/lib/catalogTaxonomy";
 import { GlowBackground } from "../../src/components/GlowBackground";
 import { TrackSectionHeader } from "../../src/components/TrackRow";
 import { centeredColumn } from "../../src/theme/layout";
@@ -20,8 +24,9 @@ import { PremiumBadge } from "../../src/components/PremiumBadge";
 import { BottomSheet } from "../../src/components/BottomSheet";
 import { Toggle } from "../../src/components/ui/Toggle";
 import { SelectChip } from "../../src/components/ui/SelectChip";
+import { SearchField } from "../../src/components/ui/SearchField";
 import { Button } from "../../src/components/ui/Button";
-import { ChevronRightIcon, CheckIcon, CloudRainIcon, MinusIcon, MoonIcon, PlusIcon, TimerIcon, WindIcon, XIcon } from "../../src/components/icons";
+import { ChevronRightIcon, CheckIcon, CloudRainIcon, LockIcon, MinusIcon, MoonIcon, PlusIcon, TimerIcon, WindIcon, XIcon } from "../../src/components/icons";
 import type { IconProps } from "../../src/components/icons";
 import type { Track } from "../../src/types";
 
@@ -880,14 +885,21 @@ function AdjustScheduleModal({
 // accent-tinted fill (not just a border swap) so the currently-armed sound
 // reads as selected at a glance while scrolling past it, not only when
 // stopped directly on it.
+//
+// A track this user can't actually play (premium, no subscription) renders
+// locked rather than selectable: this row only ever *saves a preference*, it
+// never attempts playback, so nothing here would otherwise catch that
+// mismatch until the notification fires at bedtime and silently fails.
 function TrackPickerRow({
   track,
   selected,
+  locked,
   onPress,
   premiumLabel,
 }: {
   track: Track;
   selected: boolean;
+  locked: boolean;
   onPress: () => void;
   premiumLabel: string;
 }) {
@@ -901,7 +913,7 @@ function TrackPickerRow({
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
       accessibilityRole="button"
-      accessibilityLabel={track.title}
+      accessibilityLabel={locked ? `${track.title}, ${premiumLabel}` : track.title}
       accessibilityState={{ selected }}
       style={[
         {
@@ -914,6 +926,7 @@ function TrackPickerRow({
           borderWidth: 1,
           borderColor: selected ? colors.button : colors.stroke,
           borderRadius: 16,
+          opacity: locked ? 0.6 : 1,
         },
         press.style,
       ]}
@@ -925,7 +938,11 @@ function TrackPickerRow({
         </Text>
         {track.isPremiumOnly && <Text style={{ fontSize: 11, color: colors.accent }}>{premiumLabel}</Text>}
       </View>
-      {selected && <CheckIcon size={17} color={colors.button} strokeWidth={2} />}
+      {locked ? (
+        <LockIcon size={15} color={colors.muted} strokeWidth={1.6} />
+      ) : (
+        selected && <CheckIcon size={17} color={colors.button} strokeWidth={2} />
+      )}
     </AnimatedPressable>
   );
 }
@@ -943,7 +960,40 @@ function BedtimeTrackPicker({
 }) {
   const { t, i18n } = useTranslation("sleep");
   const colors = useThemeColors();
+  const router = useRouter();
   const { sections, loading, error, refetch } = useTracks();
+  const isPremium = useUserStore((state) => state.subscriptionStatus === "premium");
+  const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query, 250);
+
+  // Reset on every open so a search left over from a previous visit doesn't
+  // silently hide tracks the next time this sheet appears.
+  useEffect(() => {
+    if (visible) setQuery("");
+  }, [visible]);
+
+  const trimmedQuery = debouncedQuery.trim();
+  const normalize = (value: string) => value.toLocaleLowerCase(i18n.language);
+  const filteredSections = useMemo(() => {
+    if (!trimmedQuery) return sections;
+    const needle = normalize(trimmedQuery);
+    return sections
+      .map((section) => ({ ...section, data: section.data.filter((track) => normalize(track.title).includes(needle)) }))
+      .filter((section) => section.data.length > 0);
+  }, [sections, trimmedQuery, i18n.language]);
+
+  function handlePick(track: Track) {
+    // Tapping a locked track sends the user straight to the paywall (same
+    // "/paywall?resume=1" destination Now Playing uses for a denied premium
+    // track) instead of quietly saving a selection that will only surface as
+    // a failure once the bedtime notification actually tries to play it.
+    if (track.isPremiumOnly && !isPremium) {
+      onClose();
+      router.push("/paywall?resume=1");
+      return;
+    }
+    onPick(track);
+  }
 
   return (
     <BottomSheet visible={visible} onClose={onClose} style={{ maxHeight: "75%", paddingTop: 16 }}>
@@ -954,6 +1004,14 @@ function BedtimeTrackPicker({
         <Pressable onPress={onClose} accessibilityRole="button" hitSlop={8}>
           <XIcon size={20} color={colors.faint} strokeWidth={1.7} />
         </Pressable>
+      </View>
+      <View style={{ paddingHorizontal: 20, paddingBottom: 12 }}>
+        <SearchField
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t("discover:searchPlaceholder")}
+          accessibilityLabel={t("discover:searchPlaceholder")}
+        />
       </View>
       <Hairline />
       {loading ? (
@@ -968,9 +1026,11 @@ function BedtimeTrackPicker({
         </View>
       ) : sections.length === 0 ? (
         <Text style={{ textAlign: "center", color: colors.muted, fontSize: 13.5, marginVertical: 24 }}>{t("discover:empty")}</Text>
+      ) : filteredSections.length === 0 ? (
+        <Text style={{ textAlign: "center", color: colors.muted, fontSize: 13.5, marginVertical: 24 }}>{t("discover:empty")}</Text>
       ) : (
         <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 14, paddingBottom: 24 }}>
-          {sections.map((section) => (
+          {filteredSections.map((section) => (
             // Mirrors app/sounds.tsx's own section headers — same
             // category/subcategory grouping the data already carries, just
             // undone by flattening it before this redesign. Shared
@@ -983,7 +1043,8 @@ function BedtimeTrackPicker({
                   key={track.id}
                   track={track}
                   selected={track.id === selectedTrackId}
-                  onPress={() => onPick(track)}
+                  locked={track.isPremiumOnly && !isPremium}
+                  onPress={() => handlePick(track)}
                   premiumLabel={t("discover:premiumBadge")}
                 />
               ))}

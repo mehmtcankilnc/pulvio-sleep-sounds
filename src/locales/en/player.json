@@ -14,6 +14,7 @@
   "limitBody": "Your free listening is taking a short break.",
   "limitCountdown": "Free listening returns in {{time}}",
   "limitCta": "Go Premium, Listen Unlimited",
+  "freeLimitHint": "Free listening is 3 minutes, then a 3-hour break before you can play again.",
   "premiumOnlyTitle": "This sound is for premium members only",
   "premiumOnlySubtitle": "You need to go Premium to listen to this sound",
   "premiumReassure": "It will be waiting for you once you're Premium.",

@@ -58,7 +58,7 @@ import {
 } from "../src/components/icons";
 
 const BENEFIT_KEYS = [
-  "benefitMixes",
+  "benefitUnlimitedTime",
   "benefitLibrary",
   "benefitFadeOut",
   "benefitNewSounds",

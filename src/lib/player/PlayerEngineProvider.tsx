@@ -53,9 +53,12 @@ export function PlayerEngineProvider() {
       setElapsed(status.currentTime);
       setDuration(status.duration);
 
-      // Track finished playing to the end on its own (no loop configured) —
-      // clear it so the mini-player/tab bar don't keep showing a stale
-      // "now playing" row indefinitely.
+      // The player loops every track (engine.ts), so this shouldn't fire
+      // during normal playback — repeat-one keeps ExoPlayer/AVPlayer from
+      // ever reaching a true "ended" state. Kept as a defensive fallback (a
+      // load error or an unexpected state) so a track that DOES fully stop
+      // clears itself instead of leaving a stale "now playing" row in the
+      // mini-player/tab bar indefinitely.
       if (status.didJustFinish) {
         stopAndReset();
       }

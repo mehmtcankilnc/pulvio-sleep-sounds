@@ -14,6 +14,7 @@
   "limitBody": "Ücretsiz dinleme hakkın kısa bir mola verdi.",
   "limitCountdown": "Ücretsiz dinleme {{time}} sonra geri geliyor",
   "limitCta": "Premium'a Geç, Sınırsız Dinle",
+  "freeLimitHint": "Ücretsiz katmanda 3 dakika dinleyebilirsin, sonra 3 saatlik bir mola veriyoruz.",
   "premiumOnlyTitle": "Bu ses premium üyelere özel",
   "premiumOnlySubtitle": "Bu sesi dinlemek için Premium'a geçmen gerekiyor",
   "premiumReassure": "Premium'a geçince bu ses seni bekliyor olacak.",

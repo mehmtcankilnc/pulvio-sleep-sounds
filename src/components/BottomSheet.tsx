@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Modal, Pressable, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   Easing,
@@ -76,22 +76,32 @@ export function BottomSheet({
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={onClose}>
-      <View style={{ flex: 1, justifyContent: "flex-end" }}>
-        <Animated.View style={[{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)" }, backdropStyle]}>
-          <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityRole="button" />
-        </Animated.View>
-        <Animated.View
-          onLayout={handleLayout}
-          style={[
-            { backgroundColor: colors.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24 },
-            sheetStyle,
-            style,
-            { paddingBottom: callerPadBottom + insets.bottom },
-          ]}
-        >
-          {children}
-        </Animated.View>
-      </View>
+      {/* RN's Modal renders in its own native window, which Android's
+          windowSoftInputMode="adjustResize" (see AndroidManifest.xml) does
+          NOT reach into — without this, a sheet short enough to sit above
+          the keyboard (e.g. a search result list narrowed to 1-2 rows)
+          still gets covered by it instead of shifting up. "height" (not
+          "padding") on Android because "padding" only grows the padded
+          view's box, which does nothing for content already anchored via
+          `justifyContent: "flex-end"` below it. */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <View style={{ flex: 1, justifyContent: "flex-end" }}>
+          <Animated.View style={[{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)" }, backdropStyle]}>
+            <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityRole="button" />
+          </Animated.View>
+          <Animated.View
+            onLayout={handleLayout}
+            style={[
+              { backgroundColor: colors.bg, borderTopLeftRadius: 24, borderTopRightRadius: 24 },
+              sheetStyle,
+              style,
+              { paddingBottom: callerPadBottom + insets.bottom },
+            ]}
+          >
+            {children}
+          </Animated.View>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

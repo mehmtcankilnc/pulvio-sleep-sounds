@@ -187,6 +187,7 @@ function AppShell() {
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="sounds" />
         <Stack.Screen name="favorites" />
+        <Stack.Screen name="account" />
         <Stack.Screen
           name="player"
           options={{

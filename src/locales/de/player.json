@@ -14,6 +14,7 @@
   "limitBody": "Deine kostenlose Hörzeit macht kurz Pause.",
   "limitCountdown": "Kostenloses Hören ist in {{time}} zurück",
   "limitCta": "Premium holen, unbegrenzt hören",
+  "freeLimitHint": "Kostenloses Hören sind 3 Minuten, danach 3 Stunden Pause, bevor es weitergeht.",
   "premiumOnlyTitle": "Dieser Sound ist nur für Premium-Mitglieder",
   "premiumOnlySubtitle": "Du brauchst Premium, um diesen Sound zu hören",
   "premiumReassure": "Mit Premium wartet dieser Sound auf dich.",

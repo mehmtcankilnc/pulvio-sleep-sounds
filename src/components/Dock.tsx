@@ -10,6 +10,7 @@ import { usePlayerStore } from "../store/usePlayerStore";
 import { usePlayerActions } from "../hooks/usePlayerActions";
 import { useThemeColors } from "../hooks/useThemeColors";
 import { categoryIcon } from "../lib/categoryIcon";
+import { categoryLabel } from "../lib/catalogTaxonomy";
 import { GlowBackground } from "./GlowBackground";
 import { PauseIcon, PlayIcon, XIcon, CompassIcon, MoonIcon, SettingsIcon } from "./icons";
 import type { IconProps } from "./icons";
@@ -70,6 +71,7 @@ const EXIT_DURATION = 160; // system's own response to a user action (stop/dismi
 // interaction instead of unmounting.
 export function Dock({ state, descriptors, navigation }: BottomTabBarProps) {
   const { t } = useTranslation("player");
+  const { t: tCatalog } = useTranslation("catalog");
   const router = useRouter();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
@@ -139,7 +141,7 @@ export function Dock({ state, descriptors, navigation }: BottomTabBarProps) {
                   {displayTrack.title}
                 </Text>
                 <Text numberOfLines={1} style={{ fontSize: 11, color: colors.muted }}>
-                  {displayTrack.category}
+                  {categoryLabel(tCatalog, displayTrack.category)}
                 </Text>
               </View>
               <Pressable

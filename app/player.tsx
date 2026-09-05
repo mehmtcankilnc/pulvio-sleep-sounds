@@ -276,6 +276,42 @@ const AutoArmHint = memo(function AutoArmHint() {
   );
 });
 
+// One-time disclosure of the free tier's 3-minute/3-hour cooldown rule — see
+// freeLimitDisclosure.ts for why this needed to exist (it was previously
+// only ever discovered by hitting it). Same shape as AutoArmHint just above:
+// shows once per install, then never again. A beat longer on screen (8s vs
+// AutoArmHint's 5s) since there's more to read and it matters more.
+const FreeLimitHint = memo(function FreeLimitHint() {
+  const { t } = useTranslation("player");
+  const colors = useThemeColors();
+  const hint = usePlayerStore((state) => state.freeLimitHint);
+  const setFreeLimitHint = usePlayerStore((state) => state.setFreeLimitHint);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!hint) {
+      setVisible(false);
+      return;
+    }
+    setVisible(true);
+    const id = setTimeout(() => {
+      setVisible(false);
+      setFreeLimitHint(false);
+    }, 8000);
+    return () => clearTimeout(id);
+  }, [hint, setFreeLimitHint]);
+
+  if (!hint || !visible) return null;
+  return (
+    <Text
+      accessibilityLiveRegion="polite"
+      style={{ fontSize: T_CAPTION, color: colors.muted, textAlign: "center", paddingHorizontal: 12 }}
+    >
+      {t("freeLimitHint")}
+    </Text>
+  );
+});
+
 // Owns the elapsed/duration subscription (updates several times a second while
 // playing). Hidden entirely for short loops.
 const PlaybackProgress = memo(function PlaybackProgress() {
@@ -635,6 +671,7 @@ export default function PlayerScreen() {
           <PlaybackProgress />
 
           <View style={{ alignItems: "center", gap: 9 }}>
+            <FreeLimitHint />
             <AutoArmHint />
             <TimerChips />
             <TimerStatusLine />

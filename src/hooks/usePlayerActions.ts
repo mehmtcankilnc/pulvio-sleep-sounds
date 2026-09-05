@@ -3,6 +3,7 @@ import { usePlayerStore } from "../store/usePlayerStore";
 import { useUserStore } from "../store/useUserStore";
 import { startPlayback } from "../lib/playback";
 import { armSleepTimerAuto, cancelSleepTimer, fadeOutAndPause } from "../lib/player/sleepTimer";
+import { maybeDiscloseFreeLimit } from "../lib/freeLimitDisclosure";
 import { useSleepTimerStore } from "../store/useSleepTimerStore";
 import { getPlayer, setLockScreenTrack, clearLockScreenTrack } from "../lib/player/engine";
 import type { PlaybackDenyReason } from "../types/playback";
@@ -68,6 +69,9 @@ export function usePlayerActions() {
       setDenyReason(null);
       setCurrentTrack(track);
       setSessionId(result.session_id);
+      // One-time "here's the rule" hint for a free session — see
+      // freeLimitDisclosure.ts for why this needed to exist at all.
+      if (result.plan === "free") maybeDiscloseFreeLimit();
       // Arm the sleep timer against THIS track with whatever option is
       // currently selected (persisted default "45m"), so Now Playing shows a
       // live countdown + depleting ring from the first second instead of a

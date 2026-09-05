@@ -10,6 +10,13 @@ let player: AudioPlayer | null = null;
 export function getPlayer(): AudioPlayer {
   if (!player) {
     player = createAudioPlayer(null, { updateInterval: 1000 });
+    // Every sound in this catalog is an ambient loop/track meant to run
+    // continuously through the night, not a single-play clip — without
+    // this, a track hitting its natural end fires `didJustFinish` and
+    // PlayerEngineProvider tears the whole session down (see its own
+    // comment). `replace()` swaps the source on this same instance, so
+    // setting it once here covers every track for the app's lifetime.
+    player.loop = true;
   }
   return player;
 }

@@ -42,6 +42,7 @@ import {
   ShieldIcon,
   SparklesIcon,
   TrashIcon,
+  UserIcon,
   XIcon,
 } from "../../src/components/icons";
 import type { IconProps } from "../../src/components/icons";
@@ -215,6 +216,7 @@ export default function SettingsScreen() {
   // good, with no way back in, so that row is hidden for them entirely (see
   // the ACCOUNT group below) in favor of a row that offers to link one.
   const isAnonymous = useUserStore((state) => state.session?.user.is_anonymous === true);
+  const accountEmail = useUserStore((state) => state.session?.user.email);
   const subscriptionStatus = useUserStore((state) => state.subscriptionStatus);
   const setSubscriptionStatus = useUserStore((state) => state.setSubscriptionStatus);
   const setCooldownEndsAt = useUserStore((state) => state.setCooldownEndsAt);
@@ -407,6 +409,22 @@ export default function SettingsScreen() {
         </Group>
 
         <Group label={t("accountGroup")}>
+          {/* A guest (no email/password behind the session) has nothing this
+              row could show or edit — completeAccountTitle below is the row
+              that actually applies to them, and leads here indirectly once
+              they've added real credentials. */}
+          {!isAnonymous && (
+            <>
+              <Row
+                icon={UserIcon}
+                title={t("accountRowTitle")}
+                subtitle={accountEmail ?? undefined}
+                trailing={<Chevron />}
+                onPress={() => router.push("/account")}
+              />
+              <Hairline />
+            </>
+          )}
           {isAnonymous && (
             <>
               <Row

@@ -21,6 +21,10 @@ type PlayerState = {
   // Faz 5: backend'in playback'i reddetme sebebi — UI'ın "Premium'a Geç" CTA'sını
   // mı yoksa cooldown geri sayımını mı göstereceğini ayırt etmek için.
   denyReason: PlaybackDenyReason | null;
+  // One-time disclosure that this is a free (cooldown-limited) session — see
+  // src/lib/freeLimitDisclosure.ts. Same "flag it, a screen shows it once,
+  // then it clears itself" shape as useSleepTimerStore's autoArmHint.
+  freeLimitHint: boolean;
   setCurrentTrack: (track: Track | null) => void;
   setIsPlaying: (isPlaying: boolean) => void;
   setIsBuffering: (isBuffering: boolean) => void;
@@ -30,6 +34,7 @@ type PlayerState = {
   setError: (error: string | null) => void;
   setSessionId: (sessionId: string | null) => void;
   setDenyReason: (reason: PlaybackDenyReason | null) => void;
+  setFreeLimitHint: (value: boolean) => void;
   reset: () => void;
 };
 
@@ -43,6 +48,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   error: null,
   sessionId: null,
   denyReason: null,
+  freeLimitHint: false,
   setCurrentTrack: (track) => set({ currentTrack: track }),
   setIsPlaying: (isPlaying) => set({ isPlaying }),
   setIsBuffering: (isBuffering) => set({ isBuffering }),
@@ -52,6 +58,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   setError: (error) => set({ error }),
   setSessionId: (sessionId) => set({ sessionId }),
   setDenyReason: (reason) => set({ denyReason: reason }),
+  setFreeLimitHint: (freeLimitHint) => set({ freeLimitHint }),
   reset: () =>
     set({
       currentTrack: null,
