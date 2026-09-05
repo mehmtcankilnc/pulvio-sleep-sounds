@@ -150,6 +150,71 @@ long-exposure smoothness, moody minimalist album-cover art, subtle film grain.
 
 ---
 
+## araçlar (2026-09-05 — kataloğa eklendi, bkz. pulvio-audio-sourcing belleği)
+
+Aynı ortak stil çerçevesi ve negatif prompt geçerli. Slug'lar `scripts/catalog.mjs`
+ile birebir eşleşiyor (önceki taslak "araba"/"ucak" isimleriydi, gerçek
+taksonomide `arac_ici`/`ucak_kabin` oldu — bu bölüm o değişikliğe göre
+güncellendi).
+
+### otobus — Otobüs
+```
+Interior of a dim, empty city bus at night, warm amber overhead light glowing
+above rows of empty seats, motion-blurred streetlights streaking past the
+windows, quiet and rhythmic framing, no people, moody minimalist album-cover
+photograph, subtle film grain.
+```
+
+### arac_ici — Araç İçi
+```
+Interior of a car at night seen from the back seat, warm dashboard light glow,
+motion-blurred amber streetlights streaking past the windows, rain droplets on
+the glass, quiet and enclosed framing, no people, moody minimalist album-cover
+photograph, subtle film grain.
+```
+
+### tren — Tren
+```
+Interior of a dim, empty overnight train car, warm amber reading-light glow
+above a single empty seat, motion-blurred dark landscape streaking past the
+window, quiet and rhythmic framing, no people, moody minimalist album-cover
+photograph, subtle film grain.
+```
+
+### ucak_kabin — Uçak Kabini
+```
+Interior of a dim airplane cabin at night, warm reading-light glow from a
+single overhead lamp, a round window showing a faint amber horizon glow against
+deep blue-black sky outside, quiet and still, no people, moody minimalist
+album-cover photograph, subtle film grain.
+```
+
+## asmr (2026-09-05 — kataloğa eklendi, insan sesi/fısıltı İÇERMEYEN mekanik
+tetikleyicilerle sınırlı — bkz. pulvio-audio-sourcing belleği)
+
+Önceki taslakta "firca"/"kagit"/"mikrofon" vardı; gerçek kaynak taramasında bu
+üçü için yeterli/uzun Pixabay kaydı bulunamadı, yerine `tiklama` (kutu/yüzey
+tıklaması) ve `klavye` (mekanik klavye) geldi. Aynı "no people, no hands"
+kuralı geçerli — nesnenin dokusu/yüzeyi ön planda, tıklayan el görünmüyor.
+
+### tiklama — Tıklama
+```
+Extreme macro close-up of a cardboard box's corrugated edge and textured
+surface in a dark room, one warm raking side-light revealing fine paper
+texture and deep shadow, no people, no hands, moody minimalist album-cover
+photograph, shallow depth of field, subtle film grain.
+```
+
+### klavye — Klavye
+```
+Close-up of mechanical keyboard keycaps under a single warm desk-lamp glow in
+an otherwise dark room, shallow depth of field, dust particles visible in the
+light beam, no people, no hands, moody minimalist album-cover photograph,
+subtle film grain.
+```
+
+---
+
 ## Sonraki adım
 
 Üretilen görselleri indirip Supabase Storage'daki `covers` bucket'ına (ör. `covers/<subcategory>.jpg`) yükle — bana haber ver, `tracks.cover_url` alanlarını dolduran bir migration/script yazarım (ses dosyalarında yaptığımız gibi).

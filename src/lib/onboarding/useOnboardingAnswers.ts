@@ -16,7 +16,7 @@ export type VoicePreference = "withVoice" | "noVoice" | "either";
 export const FREQUENCY_KEYS: SleepFrequency[] = ["mostNights", "fewNights", "nowAndThen", "comesAndGoes"];
 export const VOICE_KEYS: VoicePreference[] = ["withVoice", "noVoice", "either"];
 export const STRUGGLE_KEYS = ["racingThoughts", "stressTension", "noiseAround", "irregularSchedule", "wakingAtNight"] as const;
-export const SOUND_KEYS = ["rainThunder", "oceanWaves", "whiteNoise", "asmr", "pianoAmbient", "fireplace"] as const;
+export const SOUND_KEYS = ["rainThunder", "oceanWaves", "whiteNoise", "asmr", "pianoAmbient", "fireplace", "vehicles"] as const;
 
 const STORAGE_KEY = "pulvio.onboarding.answers.v1";
 

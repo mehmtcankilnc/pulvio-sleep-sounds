@@ -3,15 +3,26 @@
 // `node scripts/upload-audio.mjs --sql` ise 0016 migration'ını üretmek için kullanır.
 //
 // Alan sırası: [pixabayId, subcategory, title, isPremiumOnly, durationSec, pixabaySlug]
-// - category: MUSIC_SUBCATS içindeyse "muzik", değilse "rahatlatici"
+// - category: CATEGORY_SUBCATS'te subcategory'nin ait olduğu üst grup,
+//   eşleşme yoksa "rahatlatici" (varsayılan/en büyük grup)
 // - storage yolu: tracks/<subcategory>/<pixabayId>.mp3
 // - source_url:
-//     rahatlatici -> https://pixabay.com/sound-effects/<slug>/
-//     muzik       -> https://pixabay.com/<slug>/   (slug zaten "music/..." ile başlar)
+//     rahatlatici/araclar/asmr -> https://pixabay.com/sound-effects/<slug>/
+//     muzik                    -> https://pixabay.com/<slug>/   (slug zaten "music/..." ile başlar)
 // Yerel dosya adları "<uploader>-<...>-<pixabayId>.mp3" biçiminde; eşleştirme
 // yalnızca sondaki sayıya (pixabayId) göre yapılır, isim önemli değil.
 
-export const MUSIC_SUBCATS = new Set(["piyano", "lofi", "ambient"]);
+// 2026-09-05: "araclar" (otobus/arac_ici/tren/ucak_kabin) ve "asmr"
+// (tiklama/klavye — insan sesi/fısıltı İÇERMEYEN mekanik tetikleyiciler)
+// üst kategorileri eklendi, bkz. pulvio-audio-sourcing belleği (Faz 8 taraması).
+export const CATEGORY_SUBCATS = {
+  muzik: new Set(["piyano", "lofi", "ambient"]),
+  araclar: new Set(["otobus", "arac_ici", "tren", "ucak_kabin"]),
+  asmr: new Set(["tiklama", "klavye"]),
+};
+
+// Geriye dönük uyumluluk (başka bir yerden import edilmiş olabilir).
+export const MUSIC_SUBCATS = CATEGORY_SUBCATS.muzik;
 
 export const LICENSE_TYPE = "Pixabay Content License";
 
@@ -148,10 +159,48 @@ export const CATALOG = [
   [590396, "ambient", "Uyku Müziği 4", true, 415, "music/ambient-sleep-music-590396"],
   [586417, "ambient", "Uyku Müziği 5", true, 434, "music/ambient-sleep-music-586417"],
   [586414, "ambient", "Rahatlatıcı Uyku 2", true, 326, "music/ambient-relaxing-sleep-586414"],
+
+  // ── araclar / otobus ───────────────────────────────────────────────────
+  [325676, "otobus", "Otobüs İçi", false, 127, "sound-effects/film-special-effects-rail-bus-interior-ambience-325676"],
+  [52489, "otobus", "Otobüs İçi 2", false, 374, "sound-effects/city-bus-interior-52489"],
+  [50852, "otobus", "Otoyolda Otobüs", true, 244, "sound-effects/city-bus-interior-highway-2-50852"],
+  [18073, "otobus", "Şehir Otobüsü", true, 283, "sound-effects/city-bus-interior-stadtbus-18073"],
+  [48519, "otobus", "Banliyö Otobüsü", true, 433, "sound-effects/city-suburb-bus-48519"],
+  [445523, "otobus", "Uzun Yol Otobüsü", true, 458, "sound-effects/city-tamil-nadu-bus-inside-soundque-field-recording-445523"],
+
+  // ── araclar / arac_ici (sürüş/otoyol/motor uğultusu) ────────────────────
+  [51388, "arac_ici", "Araba İçi Sürüş", false, 286, "sound-effects/city-car-driving-interior-perspective-51388"],
+  [339218, "arac_ici", "Şehirde Sürüş", true, 131, "sound-effects/film-special-effects-interior-car-driving-through-city-with-road-noise-and-engine-hum-339218"],
+  [53122, "arac_ici", "Yolculuk Başlangıcı", true, 516, "sound-effects/city-interior-car-start-and-depart-53122"],
+  [16666, "arac_ici", "Yolculuk Başlangıcı 2", true, 402, "sound-effects/city-interior-car-start-and-departure-16666"],
+  [18350, "arac_ici", "Kısa Yolculuk", true, 308, "sound-effects/city-short-drive-interior-18350"],
+  [17809, "arac_ici", "Araba İçi Sürüş 2", true, 251, "sound-effects/technology-driving-car-interior-17809"],
+
+  // ── araclar / tren ───────────────────────────────────────────────────────
+  [169418, "tren", "Eski Tren İçi", false, 121, "sound-effects/film-special-effects-inside-old-train-169418"],
+  [17869, "tren", "Şehir Treni", true, 256, "sound-effects/city-train-17869"],
+  [50499, "tren", "Tren", true, 223, "sound-effects/city-train-50499"],
+
+  // ── araclar / ucak_kabin ─────────────────────────────────────────────────
+  [22955, "ucak_kabin", "Uçak Kabini", false, 90, "sound-effects/technology-airplane-atmos-22955"],
+  [50622, "ucak_kabin", "Uçak Kabini 2", true, 231, "sound-effects/city-airplane-small-inflight-cabin-bahamas-180218-50622"],
+  [129404, "ucak_kabin", "Uçak Kabini 3", true, 120, "sound-effects/film-special-effects-aircraft-cabin-sound-129404"],
+
+  // ── asmr / tiklama (kutu/yüzey tıklama, insan sesi yok) ─────────────────
+  [294287, "tiklama", "Karton Kutu Tıklaması", false, 423, "sound-effects/film-special-effects-cardboard-box-tapping-asmr-294287"],
+  [294295, "tiklama", "Plastik Tıklama", true, 603, "sound-effects/film-special-effects-plastic-tapping-asmr-294295"],
+  [294290, "tiklama", "Plastik Kutu Tıklaması", true, 602, "sound-effects/film-special-effects-plastic-container-tapping-asmr-294290"],
+  [294288, "tiklama", "Kurdele Kutusu Tıklaması", true, 602, "sound-effects/film-special-effects-ribbon-box-tapping-asmr-294288"],
+  [294285, "tiklama", "Peluş Anahtarlık Tıklaması", true, 604, "sound-effects/film-special-effects-plush-keychain-taps-asmr-294285"],
+
+  // ── asmr / klavye (mekanik klavye yazımı, insan sesi yok) ───────────────
+  [18347, "klavye", "Klavye Yazımı", false, 308, "sound-effects/technology-typing-18347"],
+  [23537, "klavye", "Mekanik Klavye", true, 107, "sound-effects/technology-mechanical-keyboard-23537"],
 ];
 
 export function entryFor([id, subcategory, title, premium, duration, slug]) {
-  const category = MUSIC_SUBCATS.has(subcategory) ? "muzik" : "rahatlatici";
+  const category =
+    Object.entries(CATEGORY_SUBCATS).find(([, set]) => set.has(subcategory))?.[0] ?? "rahatlatici";
   return {
     id,
     category,

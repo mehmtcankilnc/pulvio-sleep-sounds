@@ -5,18 +5,23 @@ import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { OnboardingCta } from "../../src/components/OnboardingCta";
-import { CheckIcon, CloudRainIcon, FlameIcon, MicIcon, MusicIcon, WavesIcon, WindIcon } from "../../src/components/icons";
+import { BusIcon, CheckIcon, CloudRainIcon, FingerTapIcon, FlameIcon, MusicIcon, WavesIcon, WindIcon } from "../../src/components/icons";
 import type { IconProps } from "../../src/components/icons";
 import { SOUND_KEYS, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
 import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
 
+// "asmr" used to point at MicIcon (spoken/whispered ASMR) before the catalog
+// had any real ASMR content. The tracks that actually shipped (bkz.
+// pulvio-audio-sourcing belleği) are non-vocal mechanical triggers — tapping
+// and keyboard typing — so FingerTapIcon reads truer than a microphone.
 const SOUND_ICONS: Record<(typeof SOUND_KEYS)[number], (props: IconProps) => JSX.Element> = {
   rainThunder: CloudRainIcon,
   oceanWaves: WavesIcon,
   whiteNoise: WindIcon,
-  asmr: MicIcon,
+  asmr: FingerTapIcon,
   pianoAmbient: MusicIcon,
   fireplace: FlameIcon,
+  vehicles: BusIcon,
 };
 
 export default function QuizSoundsScreen() {

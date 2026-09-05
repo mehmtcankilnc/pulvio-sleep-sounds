@@ -30,7 +30,6 @@ import { PremiumBadge } from "../../src/components/PremiumBadge";
 import { Button } from "../../src/components/ui/Button";
 import {
   ChevronRightIcon,
-  MoonIcon,
   PlayIcon,
 } from "../../src/components/icons";
 import type { IconProps } from "../../src/components/icons";
@@ -216,6 +215,55 @@ function CategoryCard({
   );
 }
 
+const TONIGHT_ART_SIZE = 72;
+
+// The tonight-pick hero's right-side visual — was a bare category icon
+// (same glyph for e.g. all 6 subcategories under "rahatlatici" that share
+// one icon), now the category's own cover photo so the hero reads as
+// "this specific sound" rather than a generic bucket. Falls back to the
+// category icon (same as before) when there's no cover yet or the image
+// fails to load — mirrors CategoryCard's photo/fallback pattern above,
+// minus the label overlay (the hero already shows the title as text).
+function TonightArt({ track }: { track: Track }) {
+  const colors = useThemeColors();
+  const [imageFailed, setImageFailed] = useState(false);
+  const showPhoto = Boolean(track.coverUrl) && !imageFailed;
+  const photoOpacity = useSharedValue(0);
+  const photoStyle = useAnimatedStyle(() => ({ opacity: photoOpacity.value }));
+  const Icon = categoryIcon(track.category, track.subcategory);
+
+  return (
+    <View
+      style={{
+        width: TONIGHT_ART_SIZE,
+        height: TONIGHT_ART_SIZE,
+        borderRadius: 18,
+        overflow: "hidden",
+      }}
+    >
+      <GlowBackground variant="artworkTile" style={StyleSheet.absoluteFill} />
+      {showPhoto ? (
+        <Animated.View style={[StyleSheet.absoluteFill, photoStyle]}>
+          <Image
+            source={{ uri: track.coverUrl }}
+            resizeMode="cover"
+            style={StyleSheet.absoluteFill}
+            onLoad={() => {
+              photoOpacity.value = withTiming(1, { duration: 220, easing: EASE_OUT });
+            }}
+            onError={() => setImageFailed(true)}
+          />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: `${colors.button}30` }]} />
+        </Animated.View>
+      ) : (
+        <View style={[StyleSheet.absoluteFill, { alignItems: "center", justifyContent: "center" }]}>
+          <Icon size={34} color={colors.accent} strokeWidth={1.1} />
+        </View>
+      )}
+    </View>
+  );
+}
+
 // Every horizontal-rail section (Browse sounds, Favorites) opens with this:
 // a bold title and a right-aligned text link to the full view. The link
 // lives in the header, never at the end of the rail — the rail's far edge
@@ -356,10 +404,6 @@ export default function ExploreScreen() {
     );
   }
 
-  const TonightIcon = tonightTrack
-    ? categoryIcon(tonightTrack.category, tonightTrack.subcategory)
-    : MoonIcon;
-
   return (
     <GlowBackground variant="pageWash" style={{ flex: 1 }}>
       <ScrollView
@@ -453,7 +497,7 @@ export default function ExploreScreen() {
                   </Text>
                 </View>
               </View>
-              <TonightIcon size={62} color={colors.accent} strokeWidth={1.1} />
+              <TonightArt track={tonightTrack} />
             </GlowBackground>
           </AnimatedPressable>
         )}

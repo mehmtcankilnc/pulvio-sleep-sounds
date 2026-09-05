@@ -1,6 +1,8 @@
 {
   "category": {
     "rahatlatici": "Beruhigend",
+    "araclar": "Fahrzeuge",
+    "asmr": "ASMR",
     "muzik": "Musik"
   },
   "subcategory": {
@@ -18,6 +20,12 @@
     "kahverengi_gurultu": "Braunes Rauschen",
     "pembe_gurultu": "Rosa Rauschen",
     "kafe": "Café",
+    "otobus": "Bus",
+    "arac_ici": "Autoinnenraum",
+    "tren": "Zug",
+    "ucak_kabin": "Flugzeugkabine",
+    "tiklama": "Klopfen",
+    "klavye": "Tastatur",
     "piyano": "Klavier",
     "lofi": "Lo-fi",
     "ambient": "Ambient"

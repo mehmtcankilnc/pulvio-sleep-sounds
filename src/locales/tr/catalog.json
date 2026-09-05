@@ -1,6 +1,8 @@
 {
   "category": {
     "rahatlatici": "Rahatlatıcı",
+    "araclar": "Araçlar",
+    "asmr": "ASMR",
     "muzik": "Müzik"
   },
   "subcategory": {
@@ -18,6 +20,12 @@
     "kahverengi_gurultu": "Kahverengi Gürültü",
     "pembe_gurultu": "Pembe Gürültü",
     "kafe": "Kafe",
+    "otobus": "Otobüs",
+    "arac_ici": "Araç İçi",
+    "tren": "Tren",
+    "ucak_kabin": "Uçak Kabini",
+    "tiklama": "Tıklama",
+    "klavye": "Klavye",
     "piyano": "Piyano",
     "lofi": "Lo-fi",
     "ambient": "Ambient"

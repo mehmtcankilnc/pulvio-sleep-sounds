@@ -356,6 +356,37 @@ export default function SettingsScreen() {
       >
         <ScreenHeader eyebrow={t("screenEyebrow")} title={t("screenTitle")} />
 
+        {/* Guest (anonymous session) — promoted from a plain settings row to
+            its own highlighted card, first thing under the header: a guest is
+            one uninstall/device-loss away from losing everything with no way
+            back in, which is a bigger stakes moment than the membership
+            upsell below it. Accent-tinted background + accent border (vs the
+            neutral `colors.card`/`colors.stroke` used everywhere else on this
+            screen) is what actually makes it read as "more urgent than a
+            list row" — copy stays factual (completeAccountSubtitle), no fake
+            urgency per PRODUCT.md. */}
+        {isAnonymous && (
+          <View
+            style={{
+              backgroundColor: colors.glowSoft,
+              borderWidth: 1.5,
+              borderColor: colors.accent,
+              borderRadius: 20,
+              padding: 16,
+              gap: 14,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <SparklesIcon size={20} color={colors.accent} strokeWidth={1.6} />
+              <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+                <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>{t("completeAccountTitle")}</Text>
+                <Text style={{ fontSize: 12, color: colors.muted }}>{t("completeAccountSubtitle")}</Text>
+              </View>
+            </View>
+            <Button label={t("completeAccountCta")} onPress={() => router.push("/(auth)/signup")} />
+          </View>
+        )}
+
         {/* Membership — the app's one monetization surface, and it carries
             exactly one CTA: Go Premium for free, Manage subscription for
             premium (so the plan and its controls sit together). No fake
@@ -408,11 +439,16 @@ export default function SettingsScreen() {
           />
         </Group>
 
+        {/* Empty (and hidden) for a guest who has already gone premium: the
+            account row is guest-only-hidden, restorePurchases is
+            premium-only-hidden, and sign-out is guest-only-hidden too — all
+            three conditions land on this one combination at once. */}
+        {(!isAnonymous || !isPremium) && (
         <Group label={t("accountGroup")}>
           {/* A guest (no email/password behind the session) has nothing this
-              row could show or edit — completeAccountTitle below is the row
-              that actually applies to them, and leads here indirectly once
-              they've added real credentials. */}
+              row could show or edit — the highlighted card above the
+              Membership card (isAnonymous) is the CTA that applies to them,
+              and leads here indirectly once they've added real credentials. */}
           {!isAnonymous && (
             <>
               <Row
@@ -423,18 +459,6 @@ export default function SettingsScreen() {
                 onPress={() => router.push("/account")}
               />
               <Hairline />
-            </>
-          )}
-          {isAnonymous && (
-            <>
-              <Row
-                icon={SparklesIcon}
-                title={t("completeAccountTitle")}
-                subtitle={t("completeAccountSubtitle")}
-                trailing={<Chevron />}
-                onPress={() => router.push("/(auth)/signup")}
-              />
-              {!isPremium && <Hairline />}
             </>
           )}
           {!isPremium && (
@@ -458,6 +482,7 @@ export default function SettingsScreen() {
               row this same tap should have led to anyway. */}
           {!isAnonymous && <Row icon={LogOutIcon} title={t("signOut")} onPress={() => setSignOutSheetOpen(true)} />}
         </Group>
+        )}
 
         <Group label={t("aboutGroup")}>
           {LEGAL_LINKS_READY && (

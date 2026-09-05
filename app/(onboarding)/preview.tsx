@@ -14,6 +14,7 @@ import { EqBarsIcon, MoonIcon } from "../../src/components/icons";
 import { useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
 import { saveOnboardingAnswers } from "../../src/lib/onboarding/saveAnswers";
 import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
+import { categoryLabel, subcategoryLabel } from "../../src/lib/catalogTaxonomy";
 
 const MIN_LISTEN_SECONDS = 4; // hear the sound before the choice unlocks
 const LOAD_GRACE_SECONDS = 6; // if it hasn't loaded by now, surface trouble + let the user move on
@@ -24,6 +25,7 @@ const LOAD_GRACE_SECONDS = 6; // if it hasn't loaded by now, surface trouble + l
 // when they tap Continue, or steps back to re-pick.
 export default function OnboardingPreviewScreen() {
   const { t } = useTranslation("onboarding");
+  const { t: tCatalog } = useTranslation("catalog");
   const router = useRouter();
   const colors = useThemeColors();
   useMarkOnboardingStep(7);
@@ -166,7 +168,9 @@ export default function OnboardingPreviewScreen() {
           {previewTrack ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 7 }}>
               <EqBarsIcon size={14} color={colors.accent} />
-              <Text style={{ fontSize: 12.5, color: colors.muted }}>{previewTrack.category}</Text>
+              <Text style={{ fontSize: 12.5, color: colors.muted }}>
+                {categoryLabel(tCatalog, previewTrack.category)} · {subcategoryLabel(tCatalog, previewTrack.subcategory)}
+              </Text>
             </View>
           ) : null}
           {loadFailed ? (

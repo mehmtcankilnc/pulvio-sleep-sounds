@@ -2,11 +2,21 @@ import type { Track } from "../../types";
 import type { SleepFrequency, VoicePreference } from "./useOnboardingAnswers";
 
 // Designed stub. The MATCHING LOGIC here is real and deterministic; what is
-// stubbed is the signal it runs on — plain keyword hits against the track's
-// title / category / subcategory, not a curated mood/tag taxonomy. When the
-// catalog gains real tags, replace the body of `recommendPlan` with a query;
-// the signature and the "always 2-3 real, playable tracks" guarantee stay.
-
+// stubbed is the signal it runs on — direct subcategory weighting, not a
+// curated mood/tag taxonomy. When the catalog gains real tags, replace the
+// body of `recommendPlan` with a query; the signature and the "always 2-3
+// real, playable tracks" guarantee stay.
+//
+// 2026-09-05: previously matched English keywords ("rain", "ocean", "piano",
+// ...) against `track.title` — but title is localized (src/lib/trackTitle.ts)
+// and for Turkish (the DB source-of-truth language, and this app's primary
+// locale) it never contained those English words, so almost every match was
+// a coincidence (e.g. the literal subcategory slug "ambient" happening to
+// equal the English keyword "ambient"). Matching directly against
+// `track.subcategory` — a stable, language-independent id from
+// scripts/catalog.mjs — fixes that for every locale and is also how the new
+// araclar/asmr subcategories (bkz. pulvio-audio-sourcing belleği) get wired
+// into the "asmr" sound-preference answer below.
 export type PlanAnswers = {
   frequency: SleepFrequency | null;
   struggles: string[];
@@ -17,36 +27,32 @@ export type PlanAnswers = {
 const MIN_RESULTS = 2;
 const MAX_RESULTS = 3;
 
-// Struggle / sound answer key -> words we hope to see in a track's metadata.
-const KEYWORDS: Record<string, string[]> = {
-  racingThoughts: ["calm", "quiet", "mind", "drone", "ambient", "meditat"],
-  stressTension: ["calm", "soft", "warm", "ambient", "piano", "breath"],
-  noiseAround: ["white noise", "brown noise", "pink noise", "noise", "fan", "static", "rain"],
-  irregularSchedule: ["deep", "night", "sleep", "ambient"],
-  wakingAtNight: ["deep", "continuous", "steady", "drone", "night"],
-  rainThunder: ["rain", "thunder", "storm", "downpour"],
-  oceanWaves: ["ocean", "wave", "sea", "shore", "surf"],
-  whiteNoise: ["white noise", "brown noise", "pink noise", "noise", "fan", "static", "hum"],
-  asmr: ["asmr", "whisper", "tapping", "brush"],
-  pianoAmbient: ["piano", "ambient", "keys", "felt", "pad"],
-  fireplace: ["fire", "fireplace", "campfire", "crackle", "hearth", "wood"],
+// Struggle / sound answer key -> subcategory slugs it should favor.
+const SUBCATEGORY_WEIGHTS: Record<string, string[]> = {
+  racingThoughts: ["ambient", "lofi", "piyano"],
+  stressTension: ["piyano", "ambient", "kafe"],
+  noiseAround: ["beyaz_gurultu", "kahverengi_gurultu", "pembe_gurultu", "fon_makinesi"],
+  irregularSchedule: ["ambient", "lofi", "beyaz_gurultu"],
+  wakingAtNight: ["kahverengi_gurultu", "beyaz_gurultu", "ates"],
+  rainThunder: ["yagmur", "gok_gurultusu"],
+  oceanWaves: ["deniz", "dere"],
+  whiteNoise: ["beyaz_gurultu", "kahverengi_gurultu", "pembe_gurultu"],
+  // Real ASMR content is non-vocal mechanical triggers (tapping, keyboard
+  // typing) — no whispered/spoken tracks exist in the catalog.
+  asmr: ["tiklama", "klavye"],
+  pianoAmbient: ["piyano", "ambient"],
+  fireplace: ["ates"],
+  vehicles: ["otobus", "arac_ici", "tren", "ucak_kabin"],
 };
 
-const VOICE_WORDS = ["story", "voice", "narrat", "spoken", "tale", "asmr", "whisper"];
-
-function haystack(track: Track): string {
-  return `${track.title} ${track.category} ${track.subcategory}`.toLowerCase();
-}
-
-function scoreTrack(track: Track, wantedWords: string[], voice: VoicePreference | null): number {
-  const hay = haystack(track);
-  let score = 0;
-  for (const word of wantedWords) {
-    if (hay.includes(word)) score += 2;
-  }
-  const hasVoice = VOICE_WORDS.some((w) => hay.includes(w));
-  if (voice === "withVoice" && hasVoice) score += 3;
-  if (voice === "noVoice" && hasVoice) score -= 4;
+// The catalog has no narrated/spoken tracks at all (bkz. pulvio-audio-sourcing
+// belleği) — "asmr" is the closest thing to a non-silent, presence-carrying
+// sound, so it's what withVoice/noVoice nudges toward or away from.
+function scoreTrack(track: Track, wantedSubcats: string[], voice: VoicePreference | null): number {
+  let score = wantedSubcats.includes(track.subcategory) ? 2 : 0;
+  const isAsmr = track.category === "asmr";
+  if (voice === "withVoice" && isAsmr) score += 3;
+  if (voice === "noVoice" && isAsmr) score -= 4;
   return score;
 }
 
@@ -60,10 +66,10 @@ function scoreTrack(track: Track, wantedWords: string[], voice: VoicePreference 
 export function recommendPlan(answers: PlanAnswers, catalog: Track[]): Track[] {
   if (catalog.length === 0) return [];
 
-  const wantedWords = [...answers.sounds, ...answers.struggles].flatMap((key) => KEYWORDS[key] ?? []);
+  const wantedSubcats = [...answers.sounds, ...answers.struggles].flatMap((key) => SUBCATEGORY_WEIGHTS[key] ?? []);
 
   const ranked = catalog
-    .map((track) => ({ track, score: scoreTrack(track, wantedWords, answers.voice) }))
+    .map((track) => ({ track, score: scoreTrack(track, wantedSubcats, answers.voice) }))
     .sort((a, b) => b.score - a.score);
 
   const picked: Track[] = [];

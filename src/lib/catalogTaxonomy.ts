@@ -7,7 +7,7 @@ import type { Track } from "../types";
 // random (uuid) order. This mirrors scripts/catalog.mjs's narrative order
 // (calming sounds first, water → weather → nature → noise → café, then
 // music) so Explore/Discover read as a deliberate sequence, not a shuffle.
-export const CATEGORY_ORDER = ["rahatlatici", "muzik"] as const;
+export const CATEGORY_ORDER = ["rahatlatici", "araclar", "asmr", "muzik"] as const;
 
 export const SUBCATEGORY_ORDER = [
   "yagmur",
@@ -24,6 +24,12 @@ export const SUBCATEGORY_ORDER = [
   "kahverengi_gurultu",
   "pembe_gurultu",
   "kafe",
+  "otobus",
+  "arac_ici",
+  "tren",
+  "ucak_kabin",
+  "tiklama",
+  "klavye",
   "piyano",
   "lofi",
   "ambient",

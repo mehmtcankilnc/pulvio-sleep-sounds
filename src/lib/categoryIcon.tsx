@@ -14,6 +14,12 @@ import {
   CafeIcon,
   MusicIcon,
   MoonIcon,
+  BusIcon,
+  CarIcon,
+  TrainIcon,
+  AirplaneIcon,
+  FingerTapIcon,
+  KeypadIcon,
 } from "../components/icons";
 
 // Explicit id -> icon table, one entry per SUBCATEGORY_ORDER member (see
@@ -41,6 +47,12 @@ const SUBCATEGORY_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   kahverengi_gurultu: RadioIcon,
   pembe_gurultu: RadioIcon,
   kafe: CafeIcon,
+  otobus: BusIcon,
+  arac_ici: CarIcon,
+  tren: TrainIcon,
+  ucak_kabin: AirplaneIcon,
+  tiklama: FingerTapIcon,
+  klavye: KeypadIcon,
   piyano: MusicIcon,
   lofi: MusicIcon,
   ambient: MusicIcon,
@@ -49,6 +61,8 @@ const SUBCATEGORY_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
 const CATEGORY_FALLBACK: Array<[RegExp, (props: IconProps) => JSX.Element]> = [
   [/muzik|müzik|music/i, MusicIcon],
   [/rahatlatici|rahatlatıcı|calming/i, WavesIcon],
+  [/araclar|araçlar|vehicles/i, CarIcon],
+  [/asmr/i, FingerTapIcon],
 ];
 
 export function categoryIcon(category: string, subcategory?: string): (props: IconProps) => JSX.Element {

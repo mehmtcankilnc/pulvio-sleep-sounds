@@ -1,6 +1,8 @@
 {
   "category": {
     "rahatlatici": "Relaxante",
+    "araclar": "Veículos",
+    "asmr": "ASMR",
     "muzik": "Música"
   },
   "subcategory": {
@@ -18,6 +20,12 @@
     "kahverengi_gurultu": "Ruído castanho",
     "pembe_gurultu": "Ruído rosa",
     "kafe": "Café",
+    "otobus": "Ônibus",
+    "arac_ici": "Interior do carro",
+    "tren": "Trem",
+    "ucak_kabin": "Cabine do avião",
+    "tiklama": "Batidas",
+    "klavye": "Teclado",
     "piyano": "Piano",
     "lofi": "Lo-fi",
     "ambient": "Ambient"

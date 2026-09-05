@@ -10,6 +10,7 @@ import { OnboardingHeader } from "../../src/components/OnboardingHeader";
 import { OnboardingCta } from "../../src/components/OnboardingCta";
 import { MoonIcon, WindIcon } from "../../src/components/icons";
 import { categoryIcon } from "../../src/lib/categoryIcon";
+import { categoryLabel, subcategoryLabel } from "../../src/lib/catalogTaxonomy";
 import { formatBedtime, useMarkOnboardingStep, useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
 import { recommendPlan } from "../../src/lib/onboarding/recommend";
 import { useFunnelPadding } from "../../src/lib/onboarding/useFunnelPadding";
@@ -125,6 +126,7 @@ export default function PlanReadyScreen() {
 
 function TrackChoice({ track, selected, onPress }: { track: Track; selected: boolean; onPress: () => void }) {
   const colors = useThemeColors();
+  const { t: tCatalog } = useTranslation("catalog");
   const Icon = categoryIcon(track.category, track.subcategory);
   return (
     <Pressable
@@ -146,7 +148,9 @@ function TrackChoice({ track, selected, onPress }: { track: Track; selected: boo
       <Icon size={20} color={colors.accent} strokeWidth={1.6} />
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={{ fontSize: 14.5, fontWeight: "600", color: colors.text }}>{track.title}</Text>
-        <Text style={{ fontSize: 11.5, color: colors.faint }}>{track.subcategory || track.category}</Text>
+        <Text style={{ fontSize: 11.5, color: colors.faint }}>
+          {track.subcategory ? subcategoryLabel(tCatalog, track.subcategory) : categoryLabel(tCatalog, track.category)}
+        </Text>
       </View>
       <View
         style={{

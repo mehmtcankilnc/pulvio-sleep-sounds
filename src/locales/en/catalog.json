@@ -1,6 +1,8 @@
 {
   "category": {
     "rahatlatici": "Calming",
+    "araclar": "Vehicles",
+    "asmr": "ASMR",
     "muzik": "Music"
   },
   "subcategory": {
@@ -18,6 +20,12 @@
     "kahverengi_gurultu": "Brown Noise",
     "pembe_gurultu": "Pink Noise",
     "kafe": "Café",
+    "otobus": "Bus",
+    "arac_ici": "Car Interior",
+    "tren": "Train",
+    "ucak_kabin": "Airplane Cabin",
+    "tiklama": "Tapping",
+    "klavye": "Keyboard",
     "piyano": "Piano",
     "lofi": "Lo-fi",
     "ambient": "Ambient"

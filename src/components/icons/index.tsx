@@ -70,6 +70,30 @@ export function FlameIcon({ size = 22, color = "#f2b48c" }: IconProps) {
   return <Ionicons name="flame-outline" size={size} color={color} />;
 }
 
+export function BusIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="bus-outline" size={size} color={color} />;
+}
+
+export function CarIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="car-outline" size={size} color={color} />;
+}
+
+export function TrainIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="train-outline" size={size} color={color} />;
+}
+
+export function AirplaneIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="airplane-outline" size={size} color={color} />;
+}
+
+export function FingerTapIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="finger-print-outline" size={size} color={color} />;
+}
+
+export function KeypadIcon({ size = 22, color = "#f2b48c" }: IconProps) {
+  return <Ionicons name="keypad-outline" size={size} color={color} />;
+}
+
 export function CompassIcon({ size = 21, color = "#85716f" }: IconProps) {
   return <Ionicons name="compass-outline" size={size} color={color} />;
 }
