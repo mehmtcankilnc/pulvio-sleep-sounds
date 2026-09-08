@@ -158,7 +158,6 @@ function useOnboardingHandoff() {
           frequency: answers.frequency,
           struggles: answers.struggles,
           sounds: answers.sounds,
-          voice: answers.voice,
           bedtimeHour: answers.bedtimeHour,
           bedtimeMinute: answers.bedtimeMinute,
           reminderOn: answers.reminderOn,

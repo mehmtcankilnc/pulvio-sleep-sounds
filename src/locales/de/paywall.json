@@ -62,5 +62,6 @@
   "purchaseFailed": "Kauf konnte nicht abgeschlossen werden",
   "confirmingSub": "Abonnement wird bestätigt…",
   "purchaseReceivedTitle": "Zahlung erhalten",
-  "purchaseReceivedMessage": "Deine Zahlung ist eingegangen, Premium wird in wenigen Minuten aktiv."
+  "purchaseReceivedMessage": "Deine Zahlung war erfolgreich. Premium wird in wenigen Minuten aktiv – tippe auf „Erneut prüfen“, um es jetzt zu versuchen.",
+  "purchaseRecheckCta": "Erneut prüfen"
 }

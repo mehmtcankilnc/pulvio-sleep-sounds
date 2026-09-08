@@ -14,6 +14,7 @@
   "limitBody": "Tu escucha gratis se toma un breve descanso.",
   "limitCountdown": "La escucha gratis vuelve en {{time}}",
   "limitCta": "Hazte Premium, escucha sin límites",
+  "cooldownBannerTitle": "Has agotado tu escucha gratuita",
   "freeLimitHint": "La escucha gratis dura 3 minutos, luego hay una pausa de 3 horas antes de poder volver a escuchar.",
   "premiumOnlyTitle": "Este sonido es solo para miembros Premium",
   "premiumOnlySubtitle": "Necesitas ser Premium para escuchar este sonido",

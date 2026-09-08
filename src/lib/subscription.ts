@@ -1,6 +1,21 @@
 import Purchases from "react-native-purchases";
 import { fetchUserStatus } from "./playback";
+import { supabase } from "./supabase";
 import { REVENUECAT_ENTITLEMENT_ID } from "./revenuecat";
+
+// Sunucuya "RevenueCat'e sor ve subscriptions'ı düzelt" dedirtir — webhook
+// gecikirse / satın alma anonim bir RC id'sine bağlandıysa (INITIAL_PURCHASE
+// eşlenemez) premium'un yine de aktifleşmesini sağlayan kurtarma yolu. Karar
+// yine server-trusted: fonksiyon RevenueCat REST API'sini secret key ile
+// okur (bkz. supabase/functions/refresh-subscription). Best-effort: hata
+// yutulur, çağıran sonrasında resolveSubscriptionState() ile kesin durumu alır.
+export async function refreshSubscriptionFromStore(): Promise<void> {
+  try {
+    await supabase.functions.invoke("refresh-subscription", { method: "POST" });
+  } catch {
+    // yut — bir sonraki resolveSubscriptionState() zaten gerçek durumu döndürür
+  }
+}
 
 export type SubscriptionState = {
   plan: "free" | "premium";

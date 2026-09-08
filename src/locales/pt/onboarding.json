@@ -10,7 +10,6 @@
   "back": "Voltar",
   "skip": "Pular perguntas",
   "continueCta": "Continuar",
-
   "frequencyEyebrow": "Para começar",
   "frequencyTitle": "Com que frequência é difícil pegar no sono?",
   "frequencySubtitle": "Isso nos ajuda a avaliar o quão suave deixar as coisas.",
@@ -18,7 +17,6 @@
   "frequency_fewNights": "Algumas noites por semana",
   "frequency_nowAndThen": "De vez em quando",
   "frequency_comesAndGoes": "Vai e volta",
-
   "struggleEyebrow": "Suas noites",
   "struggleTitle": "O que te mantém acordado à noite?",
   "chooseAllHint": "Escolha tudo o que se aplica.",
@@ -27,7 +25,6 @@
   "struggle_noiseAround": "Barulho ao meu redor",
   "struggle_irregularSchedule": "Horário irregular",
   "struggle_wakingAtNight": "Acordar durante a noite",
-
   "soundsEyebrow": "O que te acalma",
   "soundsTitle": "O que te ajuda a adormecer?",
   "soundsSubtitle": "Vamos usar isso para escolher seus primeiros sons.",
@@ -38,21 +35,9 @@
   "sound_pianoAmbient": "Piano e ambiente",
   "sound_fireplace": "Lareira",
   "sound_vehicles": "Sons de veículos",
-
-  "voiceEyebrow": "Questão de gosto",
-  "voiceTitle": "Com voz ou sem voz?",
-  "voiceSubtitle": "Em algumas noites uma história ajuda; em outras é melhor sem.",
-  "voice_withVoice": "Histórias para dormir com uma voz suave",
-  "voice_withVoice_hint": "Um narrador calmo para acompanhar até você adormecer",
-  "voice_noVoice": "Só ambiente, sem voz",
-  "voice_noVoice_hint": "Só som, nada para ouvir",
-  "voice_either": "Tanto faz",
-  "voice_either_hint": "Uma mistura dos dois, dependendo da noite",
-
   "bedtimeEyebrow": "Sua rotina",
   "bedtimeQuestion": "A que horas você costuma ir dormir?",
   "bedtimeSubtitle": "Seus sons estarão prontos e à sua espera.",
-
   "reminderEyebrow": "Antes de ir",
   "reminderTitle": "Quer um lembrete na hora de dormir?",
   "reminderSubtitle": "Um lembrete silencioso para começar a desacelerar.",
@@ -60,7 +45,6 @@
   "reminderYesHint": "Uma notificação gentil às {{time}}",
   "reminderNo": "Não, obrigado",
   "reminderNoHint": "Você pode ativar isso depois nas Configurações",
-
   "planEyebrow": "Feito para você",
   "planTitle": "Seu ritual para desacelerar está pronto",
   "planSubtitle": "Montado a partir das suas respostas — um lugar calmo para começar hoje à noite.",
@@ -73,7 +57,6 @@
   "planNoCatalog": "Hoje à noite vamos começar com algo calmo.",
   "planFootnote": "Você pode mudar seu plano quando quiser.",
   "hearItCta": "Ouvir",
-
   "previewNowPlaying": "Tocando agora",
   "previewReadyEyebrow": "Pronto para hoje à noite",
   "previewTrouble": "Tem um problema",

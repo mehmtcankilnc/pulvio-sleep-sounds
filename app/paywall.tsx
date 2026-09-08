@@ -4,7 +4,6 @@ import {
   Text,
   Pressable,
   ActivityIndicator,
-  Alert,
   ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,7 +21,7 @@ import {
   restorePurchases,
   hasPriorPurchase,
 } from "../src/lib/revenuecat";
-import { resolveSubscriptionState } from "../src/lib/subscription";
+import { resolveSubscriptionState, refreshSubscriptionFromStore } from "../src/lib/subscription";
 import { supabase } from "../src/lib/supabase";
 import {
   formatCurrency,
@@ -181,6 +180,12 @@ export default function PaywallScreen() {
   // if they switch devices, reinstall, or the anonymous session's refresh
   // token is ever cleared.
   const [guestPurchaseSheetOpen, setGuestPurchaseSheetOpen] = useState(false);
+  // Shown when the post-purchase entitlement poll times out — the payment went
+  // through (Google Play confirmed it) but the trusted status still reads free,
+  // usually a lagging webhook. Replaces a bare OS Alert with a themed sheet
+  // that can re-check on demand.
+  const [activatingSheetOpen, setActivatingSheetOpen] = useState(false);
+  const [rechecking, setRechecking] = useState(false);
   // Only true for the brief network round trip in dismiss()'s "skip without
   // buying" path — establishing the anonymous session before it can hand off
   // to (tabs).
@@ -196,7 +201,16 @@ export default function PaywallScreen() {
   // to a throwaway device-only RevenueCat id. No-ops (and returns true) if a
   // session — anonymous or real — already exists.
   async function ensureIdentifiedSession(): Promise<boolean> {
-    if (useUserStore.getState().session) return true;
+    const existing = useUserStore.getState().session;
+    if (existing) {
+      // A session already exists, but useRevenueCatSync's Purchases.logIn is
+      // fire-and-forget — if it hasn't landed, a purchase now would attach to
+      // the anonymous RevenueCat id and the INITIAL_PURCHASE webhook can't map
+      // it to a UUID (user pays, stays free). Force the identity here, before
+      // the receipt, and wait for it.
+      await Purchases.logIn(existing.user.id).catch(() => {});
+      return true;
+    }
     const { data, error } = await supabase.auth.signInAnonymously();
     if (error || !data.session) return false;
     useUserStore.getState().setSession(data.session);
@@ -355,8 +369,11 @@ export default function PaywallScreen() {
       await purchasePackage(selectedPackage);
 
       setConfirming(true);
+      // Don't wait only on the RevenueCat -> Supabase webhook (it lags, and an
+      // anon-id purchase never maps) — force a server-side re-sync from the
+      // RevenueCat API, then poll the trusted status.
+      await refreshSubscriptionFromStore();
       for (let attempt = 0; attempt < 5; attempt++) {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
         const state = await resolveSubscriptionState();
         if (state?.plan === "premium") {
           if (useUserStore.getState().session?.user.is_anonymous) {
@@ -368,11 +385,13 @@ export default function PaywallScreen() {
           }
           return;
         }
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        // Google Play -> RevenueCat can take a few seconds; re-sync once more
+        // partway through in case the first read was too early.
+        if (attempt === 1) await refreshSubscriptionFromStore();
       }
 
-      Alert.alert(t("purchaseReceivedTitle"), t("purchaseReceivedMessage"), [
-        { text: t("common:ok"), onPress: () => router.back() },
-      ]);
+      setActivatingSheetOpen(true);
     } catch (err) {
       // A deliberate cancel (RevenueCat's `userCancelled`) is not something to
       // tell the user about. Anything else gets ONE localized line — the store
@@ -405,6 +424,10 @@ export default function PaywallScreen() {
       }
 
       await restorePurchases();
+      // Restore re-attaches the receipt on the RevenueCat side; this pushes
+      // that through to our own subscriptions row before we read the trusted
+      // status (the webhook may never have mapped the original purchase).
+      await refreshSubscriptionFromStore();
 
       const state = await resolveSubscriptionState();
       if (state?.plan === "premium") {
@@ -423,6 +446,30 @@ export default function PaywallScreen() {
       setError(t("restoreFailed"));
     } finally {
       setRestoring(false);
+    }
+  }
+
+  // "Check again" from the activating sheet: re-sync from RevenueCat, read the
+  // trusted status, and either finish the purchase flow or leave the sheet up
+  // with its "still processing" copy.
+  async function handleRecheck() {
+    if (rechecking) return;
+    setRechecking(true);
+    try {
+      await refreshSubscriptionFromStore();
+      const state = await resolveSubscriptionState();
+      if (state?.plan === "premium") {
+        setActivatingSheetOpen(false);
+        if (useUserStore.getState().session?.user.is_anonymous) {
+          setSubscriptionStatus("premium");
+          setCooldownEndsAt(state.cooldownEndsAt);
+          setGuestPurchaseSheetOpen(true);
+        } else {
+          applyPremiumAndExit();
+        }
+      }
+    } finally {
+      setRechecking(false);
     }
   }
 
@@ -1161,7 +1208,60 @@ export default function PaywallScreen() {
         onSignIn={signInNow}
         onLater={continueAsGuest}
       />
+
+      <ActivatingSheet
+        visible={activatingSheetOpen}
+        rechecking={rechecking}
+        onRecheck={handleRecheck}
+        onClose={() => {
+          setActivatingSheetOpen(false);
+          if (!dismissed.current) router.back();
+        }}
+      />
     </GlowBackground>
+  );
+}
+
+// Payment went through but the trusted subscription status still reads free —
+// almost always a lagging RevenueCat -> Supabase webhook. The themed
+// equivalent of the old OS Alert, plus a "check again" that forces the
+// server-side re-sync so the user isn't left waiting on a background job.
+function ActivatingSheet({
+  visible,
+  rechecking,
+  onRecheck,
+  onClose,
+}: {
+  visible: boolean;
+  rechecking: boolean;
+  onRecheck: () => void;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation("paywall");
+  const colors = useThemeColors();
+  return (
+    <BottomSheet
+      visible={visible}
+      onClose={onClose}
+      style={{ borderWidth: 1, borderColor: colors.stroke, padding: 20, gap: 16 }}
+    >
+      <View style={{ gap: 6 }} accessible accessibilityLiveRegion="polite">
+        <Text className="font-bold" style={{ fontSize: 16, color: colors.text }}>
+          {t("purchaseReceivedTitle")}
+        </Text>
+        <Text style={{ fontSize: 13.5, color: colors.muted, lineHeight: 19 }}>
+          {t("purchaseReceivedMessage")}
+        </Text>
+      </View>
+      <View style={{ gap: 8 }}>
+        <Button
+          label={t("purchaseRecheckCta")}
+          onPress={onRecheck}
+          loading={rechecking}
+        />
+        <Button label={t("common:close")} variant="outline" onPress={onClose} />
+      </View>
+    </BottomSheet>
   );
 }
 

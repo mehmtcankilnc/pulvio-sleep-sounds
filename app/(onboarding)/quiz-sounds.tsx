@@ -86,7 +86,7 @@ export default function QuizSoundsScreen() {
       <OnboardingCta
         label={t("continueCta")}
         disabled={sounds.length === 0}
-        onPress={() => router.push("/(onboarding)/voice")}
+        onPress={() => router.push("/(onboarding)/bedtime")}
       />
     </View>
   );

@@ -10,7 +10,6 @@
   "back": "Geri",
   "skip": "Soruları atla",
   "continueCta": "Devam et",
-
   "frequencyEyebrow": "Başlarken",
   "frequencyTitle": "Uykuya dalmak ne sıklıkla zor?",
   "frequencySubtitle": "Ne kadar sakin ilerleyeceğimizi buna göre ayarlıyoruz.",
@@ -18,7 +17,6 @@
   "frequency_fewNights": "Haftada birkaç gece",
   "frequency_nowAndThen": "Ara sıra",
   "frequency_comesAndGoes": "Zaman zaman değişiyor",
-
   "struggleEyebrow": "Geceler",
   "struggleTitle": "Geceleri seni uyanık tutan ne?",
   "chooseAllHint": "Uygun olan tümünü seç.",
@@ -27,7 +25,6 @@
   "struggle_noiseAround": "Çevremdeki gürültü",
   "struggle_irregularSchedule": "Düzensiz uyku saatleri",
   "struggle_wakingAtNight": "Gece uyanmalar",
-
   "soundsEyebrow": "Seni ne rahatlatır",
   "soundsTitle": "Uykuya dalmana ne yardımcı olur?",
   "soundsSubtitle": "İlk seslerini bunlara göre seçeceğiz.",
@@ -38,21 +35,9 @@
   "sound_pianoAmbient": "Piyano ve Ambiyans",
   "sound_fireplace": "Şömine",
   "sound_vehicles": "Araç Sesleri",
-
-  "voiceEyebrow": "Bir zevk meselesi",
-  "voiceTitle": "Sesli mi, sessiz mi?",
-  "voiceSubtitle": "Bazı geceler bir hikâye iyi gelir; bazı geceler sessizlik daha iyi.",
-  "voice_withVoice": "Yumuşak sesli uyku hikâyeleri",
-  "voice_withVoice_hint": "Uykuya dalana kadar takip edeceğin sakin bir anlatıcı",
-  "voice_noVoice": "Yalnızca ambiyans, ses yok",
-  "voice_noVoice_hint": "Sadece ses, dinlenecek bir şey yok",
-  "voice_either": "İkisi de olur",
-  "voice_either_hint": "Geceye göre ikisinin karışımı",
-
   "bedtimeEyebrow": "Rutinin",
   "bedtimeQuestion": "Genelde saat kaçta yatıyorsun?",
   "bedtimeSubtitle": "Seslerin hazır ve seni bekliyor olacak.",
-
   "reminderEyebrow": "Gitmeden önce",
   "reminderTitle": "Uyku vakti hatırlatması ister misin?",
   "reminderSubtitle": "Yavaşlamaya başlaman için sessiz bir hatırlatma.",
@@ -60,7 +45,6 @@
   "reminderYesHint": "Saat {{time}}'te nazik bir bildirim",
   "reminderNo": "Gerek yok",
   "reminderNoHint": "Bunu daha sonra Ayarlar'dan açabilirsin",
-
   "planEyebrow": "Senin için",
   "planTitle": "Sakinleşme rutinin hazır",
   "planSubtitle": "Cevaplarından oluşturuldu — bu gece için sakin bir başlangıç.",
@@ -73,7 +57,6 @@
   "planNoCatalog": "Bu gece seni sakin bir sesle başlatacağız.",
   "planFootnote": "Planını istediğin zaman değiştirebilirsin.",
   "hearItCta": "Dinle",
-
   "previewNowPlaying": "Şimdi çalıyor",
   "previewReadyEyebrow": "Bu gece için hazır",
   "previewTrouble": "Bir sorun var",

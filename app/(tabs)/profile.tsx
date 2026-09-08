@@ -7,9 +7,10 @@ import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useBottomTabBarHeight } from "expo-router/js-tabs";
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import DatePicker from "react-native-date-picker";
 import { signOut, deleteAccount } from "../../src/lib/auth";
 import { useUserStore } from "../../src/store/useUserStore";
-import { useOnboardingAnswers } from "../../src/lib/onboarding/useOnboardingAnswers";
+import { useOnboardingAnswers, resolveOnboardingBedtime } from "../../src/lib/onboarding/useOnboardingAnswers";
 import { resolveSubscriptionState } from "../../src/lib/subscription";
 import { restorePurchases, getManagementUrl } from "../../src/lib/revenuecat";
 import {
@@ -224,6 +225,7 @@ export default function SettingsScreen() {
   const setLanguage = useUserStore((state) => state.setLanguage);
 
   const [bedtime, setBedtime] = useState<BedtimeReminderPreference>({ enabled: false, hour: 22, minute: 0 });
+  const [bedtimeSheetOpen, setBedtimeSheetOpen] = useState(false);
 
   const [languageSheetOpen, setLanguageSheetOpen] = useState(false);
   const [pendingLanguage, setPendingLanguage] = useState<SupportedLanguage | null>(null);
@@ -235,7 +237,11 @@ export default function SettingsScreen() {
   const [notice, setNotice] = useState<Notice | null>(null);
 
   useEffect(() => {
-    getBedtimeReminderPreference().then(setBedtime);
+    // Seed the time from the onboarding bedtime answer when the user hasn't
+    // set a reminder yet, instead of a bare 22:00.
+    resolveOnboardingBedtime().then((fallback) =>
+      getBedtimeReminderPreference(fallback ?? undefined).then(setBedtime),
+    );
   }, []);
 
   // RevenueCat'in cihaz-lokal customerInfo listener'ı iptal/expire gibi
@@ -254,6 +260,15 @@ export default function SettingsScreen() {
 
   async function handleToggleBedtime() {
     const next = { ...bedtime, enabled: !bedtime.enabled };
+    const granted = await setBedtimeReminder(next);
+    setBedtime(granted ? next : { ...next, enabled: false });
+    if (!granted) setNotice({ title: t("bedtimePermissionDeniedTitle"), message: t("bedtimePermissionDeniedMessage") });
+  }
+
+  // Time change from the picker sheet — reschedules the notification if the
+  // reminder is already on, otherwise just remembers the time for when it is.
+  async function handleChangeBedtimeTime(hour: number, minute: number) {
+    const next = { ...bedtime, hour, minute };
     const granted = await setBedtimeReminder(next);
     setBedtime(granted ? next : { ...next, enabled: false });
     if (!granted) setNotice({ title: t("bedtimePermissionDeniedTitle"), message: t("bedtimePermissionDeniedMessage") });
@@ -340,7 +355,7 @@ export default function SettingsScreen() {
   const bedtimeTime = `${bedtime.hour.toString().padStart(2, "0")}:${bedtime.minute.toString().padStart(2, "0")}`;
   const bedtimeStateLabel = bedtime.enabled
     ? t("bedtimeReminderOnSubtitle", { time: bedtimeTime })
-    : t("bedtimeReminderOffSubtitle");
+    : t("bedtimeReminderOffSubtitle", { time: bedtimeTime });
   const isPremium = subscriptionStatus === "premium";
   const version = Constants.expoConfig?.version ?? "";
 
@@ -421,12 +436,17 @@ export default function SettingsScreen() {
             icon={BellIcon}
             title={t("bedtimeTitle")}
             subtitle={bedtimeStateLabel}
+            onPress={() => setBedtimeSheetOpen(true)}
+            accessibilityLabel={`${t("bedtimeTitle")}, ${bedtimeStateLabel}. ${t("bedtimeSheetTitle")}`}
             trailing={
-              <Toggle
-                value={bedtime.enabled}
-                onValueChange={handleToggleBedtime}
-                accessibilityLabel={`${t("bedtimeTitle")}, ${bedtimeStateLabel}`}
-              />
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <ChevronRightIcon size={15} color={colors.faint} strokeWidth={1.7} />
+                <Toggle
+                  value={bedtime.enabled}
+                  onValueChange={handleToggleBedtime}
+                  accessibilityLabel={`${t("bedtimeTitle")}, ${bedtimeStateLabel}`}
+                />
+              </View>
             }
           />
           <Hairline />
@@ -545,8 +565,71 @@ export default function SettingsScreen() {
           if (!isDeleting) setDeleteSheetOpen(false);
         }}
       />
+      <BedtimeSheet
+        visible={bedtimeSheetOpen}
+        hour={bedtime.hour}
+        minute={bedtime.minute}
+        onSave={handleChangeBedtimeTime}
+        onClose={() => setBedtimeSheetOpen(false)}
+      />
       <NoticeSheet notice={notice} onClose={() => setNotice(null)} />
     </GlowBackground>
+  );
+}
+
+function bedtimeDate(hour: number, minute: number): Date {
+  const d = new Date();
+  d.setHours(hour, minute, 0, 0);
+  return d;
+}
+
+// Time picker for the bedtime reminder — the app's dark BottomSheet + the
+// same `react-native-date-picker` wheel the onboarding bedtime step and the
+// Sleep tab use. The pick is committed on "Done" (not per wheel-settle) so a
+// fast spin doesn't reschedule the notification on every tick.
+function BedtimeSheet({
+  visible,
+  hour,
+  minute,
+  onSave,
+  onClose,
+}: {
+  visible: boolean;
+  hour: number;
+  minute: number;
+  onSave: (hour: number, minute: number) => void;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation("settings");
+  const colors = useThemeColors();
+  const [value, setValue] = useState(() => bedtimeDate(hour, minute));
+
+  useEffect(() => {
+    if (visible) setValue(bedtimeDate(hour, minute));
+  }, [visible, hour, minute]);
+
+  return (
+    <BottomSheet
+      visible={visible}
+      onClose={onClose}
+      style={{ borderWidth: 1, borderColor: colors.stroke, paddingTop: 16, paddingBottom: 24 }}
+    >
+      <Text className="font-bold" style={{ fontSize: 16, color: colors.text, paddingHorizontal: 20, paddingBottom: 12 }}>
+        {t("bedtimeSheetTitle")}
+      </Text>
+      <View style={{ paddingHorizontal: 20, gap: 16 }}>
+        <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.stroke, borderRadius: 20, alignItems: "center", paddingVertical: 4 }}>
+          <DatePicker date={value} mode="time" theme="dark" dividerColor={colors.stroke} onDateChange={setValue} />
+        </View>
+        <Button
+          label={t("bedtimeSheetDoneCta")}
+          onPress={() => {
+            onSave(value.getHours(), value.getMinutes());
+            onClose();
+          }}
+        />
+      </View>
+    </BottomSheet>
   );
 }
 

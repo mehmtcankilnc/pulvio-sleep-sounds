@@ -11,10 +11,16 @@
 // daha yeni bir EXPIRATION'ın üzerine yazamaz (yaşanmış vaka).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { syncSubscriberFromRevenueCat } from "../_shared/revenuecatSync.ts";
 
 const REVENUECAT_WEBHOOK_SECRET = Deno.env.get("REVENUECAT_WEBHOOK_SECRET");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+// TRANSFER event'lerini işlemek için gerekli (bir satın alma anonim id'den
+// gerçek UUID'ye taşındığında entitlement/expiry event'te GELMEZ — RevenueCat
+// API'sinden okumak gerekir). Tanımlı değilse TRANSFER sadece loglanıp geçilir.
+const RC_SECRET_API_KEY = Deno.env.get("REVENUECAT_SECRET_API_KEY");
+const RC_ENTITLEMENT_ID = Deno.env.get("REVENUECAT_ENTITLEMENT_ID") ?? "premium";
 
 if (!REVENUECAT_WEBHOOK_SECRET || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error("revenuecat-webhook: eksik ortam değişkeni (secret/url/service-role-key)");
@@ -35,6 +41,9 @@ type RevenueCatEvent = {
   aliases?: string[] | null;
   expiration_at_ms: number | null;
   period_type: string | null;
+  // Yalnızca TRANSFER event'lerinde dolu — satın alma bu id'lere taşındı.
+  transferred_to?: string[] | null;
+  transferred_from?: string[] | null;
 };
 
 type RevenueCatWebhookPayload = {
@@ -116,6 +125,38 @@ Deno.serve(async (req) => {
   const event = payload?.event;
   if (!event?.type || !event?.id || typeof event.event_timestamp_ms !== "number") {
     return new Response("Malformed event", { status: 400 });
+  }
+
+  // TRANSFER: bir satın alma bir app_user_id'den başkalarına taşındı (tipik
+  // olarak $RCAnonymousID:… → gerçek UUID, SDK logIn/alias sonrası). Event
+  // entitlement/expiry taşımaz, bu yüzden hedef UUID'ler için RevenueCat
+  // API'sinden gerçek durumu okuyup yazıyoruz. Bu, INITIAL_PURCHASE'ı anonim
+  // id'de kaçırmış (eşlenemeyen) bir kullanıcının ödediği premium'a kavuşma
+  // yolu. Sıralama guard'ı burada yok — sync idempotent ve yalnızca grant eder.
+  if (event.type === "TRANSFER") {
+    if (!RC_SECRET_API_KEY) {
+      console.error("revenuecat-webhook: TRANSFER geldi ama REVENUECAT_SECRET_API_KEY yok", event.id);
+      return new Response("TRANSFER ignored (no secret api key)", { status: 200 });
+    }
+    const targets = [...new Set((event.transferred_to ?? []).filter(
+      (v): v is string => typeof v === "string" && UUID_RE.test(v),
+    ))];
+    if (targets.length === 0) {
+      return new Response("TRANSFER: no UUID target", { status: 200 });
+    }
+    try {
+      for (const uuid of targets) {
+        const r = await syncSubscriberFromRevenueCat(uuid, supabaseAdmin, {
+          secretApiKey: RC_SECRET_API_KEY,
+          entitlementId: RC_ENTITLEMENT_ID,
+        });
+        console.log("revenuecat-webhook: TRANSFER synced", JSON.stringify({ uuid, ...r }));
+      }
+      return new Response("OK", { status: 200 });
+    } catch (e) {
+      console.error("revenuecat-webhook: TRANSFER sync failed", e instanceof Error ? e.message : e);
+      return new Response("TRANSFER sync failed", { status: 500 });
+    }
   }
 
   const update = resolveUpdate(event);

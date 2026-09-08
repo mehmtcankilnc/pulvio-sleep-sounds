@@ -62,5 +62,6 @@
   "purchaseFailed": "Purchase couldn't be completed",
   "confirmingSub": "Confirming your subscription…",
   "purchaseReceivedTitle": "Payment received",
-  "purchaseReceivedMessage": "Your payment was received, premium will be active within a few minutes."
+  "purchaseReceivedMessage": "Your payment went through. Premium activates within a few minutes — tap check again to try now.",
+  "purchaseRecheckCta": "Check again"
 }

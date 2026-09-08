@@ -1,5 +1,5 @@
 import type { Track } from "../../types";
-import type { SleepFrequency, VoicePreference } from "./useOnboardingAnswers";
+import type { SleepFrequency } from "./useOnboardingAnswers";
 
 // Designed stub. The MATCHING LOGIC here is real and deterministic; what is
 // stubbed is the signal it runs on — direct subcategory weighting, not a
@@ -21,7 +21,6 @@ export type PlanAnswers = {
   frequency: SleepFrequency | null;
   struggles: string[];
   sounds: string[];
-  voice: VoicePreference | null;
 };
 
 const MIN_RESULTS = 2;
@@ -45,15 +44,8 @@ const SUBCATEGORY_WEIGHTS: Record<string, string[]> = {
   vehicles: ["otobus", "arac_ici", "tren", "ucak_kabin"],
 };
 
-// The catalog has no narrated/spoken tracks at all (bkz. pulvio-audio-sourcing
-// belleği) — "asmr" is the closest thing to a non-silent, presence-carrying
-// sound, so it's what withVoice/noVoice nudges toward or away from.
-function scoreTrack(track: Track, wantedSubcats: string[], voice: VoicePreference | null): number {
-  let score = wantedSubcats.includes(track.subcategory) ? 2 : 0;
-  const isAsmr = track.category === "asmr";
-  if (voice === "withVoice" && isAsmr) score += 3;
-  if (voice === "noVoice" && isAsmr) score -= 4;
-  return score;
+function scoreTrack(track: Track, wantedSubcats: string[]): number {
+  return wantedSubcats.includes(track.subcategory) ? 2 : 0;
 }
 
 /**
@@ -69,7 +61,7 @@ export function recommendPlan(answers: PlanAnswers, catalog: Track[]): Track[] {
   const wantedSubcats = [...answers.sounds, ...answers.struggles].flatMap((key) => SUBCATEGORY_WEIGHTS[key] ?? []);
 
   const ranked = catalog
-    .map((track) => ({ track, score: scoreTrack(track, wantedSubcats, answers.voice) }))
+    .map((track) => ({ track, score: scoreTrack(track, wantedSubcats) }))
     .sort((a, b) => b.score - a.score);
 
   const picked: Track[] = [];

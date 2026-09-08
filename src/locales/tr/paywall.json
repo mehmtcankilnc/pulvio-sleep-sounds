@@ -62,5 +62,6 @@
   "purchaseFailed": "Satın alma tamamlanamadı",
   "confirmingSub": "Aboneliğin doğrulanıyor…",
   "purchaseReceivedTitle": "İşlem alındı",
-  "purchaseReceivedMessage": "Ödemen alındı, birkaç dakika içinde premium aktif olacak."
+  "purchaseReceivedMessage": "Ödemen alındı. Premium birkaç dakika içinde aktifleşir — hemen denemek için tekrar kontrol et.",
+  "purchaseRecheckCta": "Tekrar kontrol et"
 }

@@ -28,7 +28,7 @@ export default function OnboardingPreviewScreen() {
   const { t: tCatalog } = useTranslation("catalog");
   const router = useRouter();
   const colors = useThemeColors();
-  useMarkOnboardingStep(7);
+  useMarkOnboardingStep(6);
   const funnelPad = useFunnelPadding();
 
   // Freeze the track for this screen's lifetime. The store is reset() after
@@ -108,7 +108,6 @@ export default function OnboardingPreviewScreen() {
         frequency: a.frequency,
         struggles: a.struggles,
         sounds: a.sounds,
-        voice: a.voice,
         bedtimeHour: a.bedtimeHour,
         bedtimeMinute: a.bedtimeMinute,
         reminderOn: a.reminderOn,

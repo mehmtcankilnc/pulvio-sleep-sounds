@@ -10,7 +10,6 @@
   "back": "Zurück",
   "skip": "Fragen überspringen",
   "continueCta": "Weiter",
-
   "frequencyEyebrow": "Zum Anfang",
   "frequencyTitle": "Wie oft fällt dir das Einschlafen schwer?",
   "frequencySubtitle": "So können wir einschätzen, wie sanft wir es angehen.",
@@ -18,7 +17,6 @@
   "frequency_fewNights": "Ein paar Nächte pro Woche",
   "frequency_nowAndThen": "Ab und zu",
   "frequency_comesAndGoes": "Mal so, mal so",
-
   "struggleEyebrow": "Deine Nächte",
   "struggleTitle": "Was hält dich nachts wach?",
   "chooseAllHint": "Wähle alles Zutreffende aus.",
@@ -27,7 +25,6 @@
   "struggle_noiseAround": "Lärm um mich herum",
   "struggle_irregularSchedule": "Unregelmäßiger Rhythmus",
   "struggle_wakingAtNight": "Nächtliches Aufwachen",
-
   "soundsEyebrow": "Was dich beruhigt",
   "soundsTitle": "Was hilft dir beim Wegdämmern?",
   "soundsSubtitle": "Damit wählen wir deine ersten Klänge aus.",
@@ -38,21 +35,9 @@
   "sound_pianoAmbient": "Klavier und Ambient",
   "sound_fireplace": "Kaminfeuer",
   "sound_vehicles": "Fahrzeuggeräusche",
-
-  "voiceEyebrow": "Geschmackssache",
-  "voiceTitle": "Mit Stimme oder ohne?",
-  "voiceSubtitle": "Manche Nächte hilft eine Geschichte; manche Nächte ist es ohne besser.",
-  "voice_withVoice": "Einschlafgeschichten mit sanfter Stimme",
-  "voice_withVoice_hint": "Eine ruhige Erzählstimme, der du folgst, bis du wegdämmerst",
-  "voice_noVoice": "Nur Ambient, keine Stimme",
-  "voice_noVoice_hint": "Nur Klang, nichts zum Zuhören",
-  "voice_either": "Beides ist in Ordnung",
-  "voice_either_hint": "Eine Mischung aus beidem, je nach Nacht",
-
   "bedtimeEyebrow": "Deine Routine",
   "bedtimeQuestion": "Wann gehst du normalerweise ins Bett?",
   "bedtimeSubtitle": "Deine Klänge sind dann bereit und warten auf dich.",
-
   "reminderEyebrow": "Bevor du gehst",
   "reminderTitle": "Möchtest du einen Zubettgeh-Hinweis?",
   "reminderSubtitle": "Eine leise Erinnerung, zur Ruhe zu kommen.",
@@ -60,7 +45,6 @@
   "reminderYesHint": "Eine sanfte Benachrichtigung um {{time}}",
   "reminderNo": "Nein danke",
   "reminderNoHint": "Du kannst das später in den Einstellungen aktivieren",
-
   "planEyebrow": "Für dich gemacht",
   "planTitle": "Dein Ausklang ist bereit",
   "planSubtitle": "Aus deinen Antworten erstellt — ein ruhiger Ort für heute Nacht.",
@@ -73,7 +57,6 @@
   "planNoCatalog": "Wir starten dich heute Nacht mit etwas Ruhigem.",
   "planFootnote": "Du kannst deinen Plan jederzeit ändern.",
   "hearItCta": "Anhören",
-
   "previewNowPlaying": "Spielt gerade",
   "previewReadyEyebrow": "Bereit für heute Nacht",
   "previewTrouble": "Es gibt ein Problem",

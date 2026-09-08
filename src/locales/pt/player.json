@@ -14,6 +14,7 @@
   "limitBody": "Sua escuta grátis está fazendo uma pausa rápida.",
   "limitCountdown": "A escuta grátis volta em {{time}}",
   "limitCta": "Assine o Premium, ouça sem limites",
+  "cooldownBannerTitle": "Você usou sua audição gratuita",
   "freeLimitHint": "A escuta grátis dura 3 minutos, depois há uma pausa de 3 horas antes de poder ouvir de novo.",
   "premiumOnlyTitle": "Este som é exclusivo para membros Premium",
   "premiumOnlySubtitle": "Você precisa assinar o Premium para ouvir este som",

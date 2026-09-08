@@ -24,13 +24,13 @@ export default function PlanReadyScreen() {
   const { sections, loading, error, refetch } = useTracks();
   const answers = useOnboardingAnswers();
   const setPreviewTrack = useOnboardingAnswers((s) => s.setPreviewTrack);
-  useMarkOnboardingStep(7);
+  useMarkOnboardingStep(6);
   const funnelPad = useFunnelPadding();
 
   const catalog = useMemo(() => sections.flatMap((s) => s.data), [sections]);
   const picks = useMemo(
-    () => recommendPlan({ frequency: answers.frequency, struggles: answers.struggles, sounds: answers.sounds, voice: answers.voice }, catalog),
-    [answers.frequency, answers.struggles, answers.sounds, answers.voice, catalog],
+    () => recommendPlan({ frequency: answers.frequency, struggles: answers.struggles, sounds: answers.sounds }, catalog),
+    [answers.frequency, answers.struggles, answers.sounds, catalog],
   );
 
   const [selectedId, setSelectedId] = useState<string | null>(null);

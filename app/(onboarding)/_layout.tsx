@@ -30,7 +30,6 @@ export default function OnboardingLayout() {
   const frequency = useOnboardingAnswers((s) => s.frequency);
   const struggles = useOnboardingAnswers((s) => s.struggles);
   const sounds = useOnboardingAnswers((s) => s.sounds);
-  const voice = useOnboardingAnswers((s) => s.voice);
 
   // Read any saved answers back before the first step renders, so an
   // interrupted funnel resumes instead of restarting.
@@ -52,7 +51,7 @@ export default function OnboardingLayout() {
           <OnboardingHeader
             step={info.step}
             totalSteps={TOTAL_STEPS}
-            answered={stepAnswered(info.step, { frequency, struggles, sounds, voice })}
+            answered={stepAnswered(info.step, { frequency, struggles, sounds })}
             onBack={() => router.back()}
             backLabel={t("back")}
             onSkip={info.skippable ? () => router.push("/(onboarding)/plan-ready") : undefined}

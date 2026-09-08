@@ -20,7 +20,7 @@ export default function OnboardingBedtimeScreen() {
   const colors = useThemeColors();
   const { bedtimeHour, bedtimeMinute, setBedtime } = useOnboardingAnswers();
   const [value, setValue] = useState(() => dateFrom(bedtimeHour, bedtimeMinute));
-  useMarkOnboardingStep(5);
+  useMarkOnboardingStep(4);
   const funnelPad = useFunnelPadding({ hasStageHeader: true });
 
   // Keep the wheel in sync with the store when it changes underneath us

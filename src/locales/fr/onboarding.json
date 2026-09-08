@@ -10,7 +10,6 @@
   "back": "Retour",
   "skip": "Passer les questions",
   "continueCta": "Continuer",
-
   "frequencyEyebrow": "Pour commencer",
   "frequencyTitle": "À quelle fréquence as-tu du mal à t'endormir ?",
   "frequencySubtitle": "Cela nous aide à doser la douceur.",
@@ -18,7 +17,6 @@
   "frequency_fewNights": "Quelques nuits par semaine",
   "frequency_nowAndThen": "De temps en temps",
   "frequency_comesAndGoes": "Ça va et ça vient",
-
   "struggleEyebrow": "Tes nuits",
   "struggleTitle": "Qu'est-ce qui te tient éveillé la nuit ?",
   "chooseAllHint": "Choisis tout ce qui s'applique.",
@@ -27,7 +25,6 @@
   "struggle_noiseAround": "Le bruit autour de moi",
   "struggle_irregularSchedule": "Horaires irréguliers",
   "struggle_wakingAtNight": "Réveils nocturnes",
-
   "soundsEyebrow": "Ce qui t'apaise",
   "soundsTitle": "Qu'est-ce qui t'aide à t'endormir ?",
   "soundsSubtitle": "Nous nous en servirons pour choisir tes premiers sons.",
@@ -38,21 +35,9 @@
   "sound_pianoAmbient": "Piano et ambiant",
   "sound_fireplace": "Feu de cheminée",
   "sound_vehicles": "Sons de véhicules",
-
-  "voiceEyebrow": "Une question de goût",
-  "voiceTitle": "Avec voix ou sans voix ?",
-  "voiceSubtitle": "Certaines nuits, une histoire aide ; d'autres, c'est mieux sans.",
-  "voice_withVoice": "Histoires pour dormir avec une voix douce",
-  "voice_withVoice_hint": "Un narrateur calme à suivre jusqu'à ce que tu t'endormes",
-  "voice_noVoice": "Ambiance pure, sans voix",
-  "voice_noVoice_hint": "Juste du son, rien à écouter",
-  "voice_either": "L'un ou l'autre me va",
-  "voice_either_hint": "Un mélange des deux, selon la nuit",
-
   "bedtimeEyebrow": "Ta routine",
   "bedtimeQuestion": "À quelle heure te couches-tu habituellement ?",
   "bedtimeSubtitle": "Tes sons seront prêts et t'attendront.",
-
   "reminderEyebrow": "Avant de partir",
   "reminderTitle": "Envie d'un petit rappel du coucher ?",
   "reminderSubtitle": "Un rappel discret pour commencer à ralentir.",
@@ -60,7 +45,6 @@
   "reminderYesHint": "Une notification douce à {{time}}",
   "reminderNo": "Non merci",
   "reminderNoHint": "Tu pourras l'activer plus tard dans les Réglages",
-
   "planEyebrow": "Fait pour toi",
   "planTitle": "Ton rituel du soir est prêt",
   "planSubtitle": "Créé à partir de tes réponses — un endroit calme pour commencer ce soir.",
@@ -73,7 +57,6 @@
   "planNoCatalog": "Ce soir, on te fera commencer avec quelque chose de calme.",
   "planFootnote": "Tu peux modifier ton plan à tout moment.",
   "hearItCta": "Écouter",
-
   "previewNowPlaying": "En cours de lecture",
   "previewReadyEyebrow": "Prêt pour ce soir",
   "previewTrouble": "Un souci",

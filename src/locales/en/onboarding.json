@@ -10,7 +10,6 @@
   "back": "Back",
   "skip": "Skip questions",
   "continueCta": "Continue",
-
   "frequencyEyebrow": "To begin",
   "frequencyTitle": "How often is falling asleep hard?",
   "frequencySubtitle": "It helps us judge how gentle to make things.",
@@ -18,7 +17,6 @@
   "frequency_fewNights": "A few nights a week",
   "frequency_nowAndThen": "Now and then",
   "frequency_comesAndGoes": "It comes and goes",
-
   "struggleEyebrow": "Your nights",
   "struggleTitle": "What keeps you up at night?",
   "chooseAllHint": "Choose all that apply.",
@@ -27,7 +25,6 @@
   "struggle_noiseAround": "Noise around me",
   "struggle_irregularSchedule": "Irregular schedule",
   "struggle_wakingAtNight": "Waking up at night",
-
   "soundsEyebrow": "What soothes you",
   "soundsTitle": "What helps you drift off?",
   "soundsSubtitle": "We'll use these to pick your first sounds.",
@@ -38,21 +35,9 @@
   "sound_pianoAmbient": "Piano and Ambient",
   "sound_fireplace": "Fireplace",
   "sound_vehicles": "Vehicle Sounds",
-
-  "voiceEyebrow": "A matter of taste",
-  "voiceTitle": "Voice, or no voice?",
-  "voiceSubtitle": "Some nights a story helps; some nights it's better without.",
-  "voice_withVoice": "Sleep stories with a soft voice",
-  "voice_withVoice_hint": "A calm narrator to follow until you fade",
-  "voice_noVoice": "Pure ambient, no voice",
-  "voice_noVoice_hint": "Just sound, nothing to listen to",
-  "voice_either": "Either is fine",
-  "voice_either_hint": "A mix of both, depending on the night",
-
   "bedtimeEyebrow": "Your routine",
   "bedtimeQuestion": "When do you usually go to bed?",
   "bedtimeSubtitle": "Your sounds will be ready and waiting.",
-
   "reminderEyebrow": "Before you go",
   "reminderTitle": "Want a bedtime nudge?",
   "reminderSubtitle": "A quiet reminder to start winding down.",
@@ -60,7 +45,6 @@
   "reminderYesHint": "A gentle notification at {{time}}",
   "reminderNo": "No thanks",
   "reminderNoHint": "You can turn this on later in Settings",
-
   "planEyebrow": "Made for you",
   "planTitle": "Your wind-down is ready",
   "planSubtitle": "Built from your answers — a calm place to start tonight.",
@@ -73,7 +57,6 @@
   "planNoCatalog": "We'll start you with something calm tonight.",
   "planFootnote": "You can change your plan any time.",
   "hearItCta": "Hear it",
-
   "previewNowPlaying": "Playing now",
   "previewReadyEyebrow": "Ready for tonight",
   "previewTrouble": "Having trouble",

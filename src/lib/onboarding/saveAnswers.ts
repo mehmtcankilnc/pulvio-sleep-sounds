@@ -4,7 +4,6 @@ type AnswersInput = {
   frequency: string | null;
   struggles: string[];
   sounds: string[];
-  voice: string | null;
   bedtimeHour: number;
   bedtimeMinute: number;
   reminderOn: boolean;
@@ -22,7 +21,6 @@ export async function saveOnboardingAnswers(userId: string, a: AnswersInput): Pr
       frequency: a.frequency,
       struggles: a.struggles,
       sounds: a.sounds,
-      voice: a.voice,
       bedtime_hour: a.bedtimeHour,
       bedtime_minute: a.bedtimeMinute,
       reminder_on: a.reminderOn,

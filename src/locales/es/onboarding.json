@@ -10,7 +10,6 @@
   "back": "Atrás",
   "skip": "Saltar preguntas",
   "continueCta": "Continuar",
-
   "frequencyEyebrow": "Para empezar",
   "frequencyTitle": "¿Con qué frecuencia te cuesta dormirte?",
   "frequencySubtitle": "Nos ayuda a decidir cuánta suavidad aplicar.",
@@ -18,7 +17,6 @@
   "frequency_fewNights": "Algunas noches por semana",
   "frequency_nowAndThen": "De vez en cuando",
   "frequency_comesAndGoes": "Va y viene",
-
   "struggleEyebrow": "Tus noches",
   "struggleTitle": "¿Qué te mantiene despierto por la noche?",
   "chooseAllHint": "Elige todo lo que corresponda.",
@@ -27,7 +25,6 @@
   "struggle_noiseAround": "Ruido a mi alrededor",
   "struggle_irregularSchedule": "Horario irregular",
   "struggle_wakingAtNight": "Despertarse por la noche",
-
   "soundsEyebrow": "Lo que te calma",
   "soundsTitle": "¿Qué te ayuda a quedarte dormido?",
   "soundsSubtitle": "Los usaremos para elegir tus primeros sonidos.",
@@ -38,21 +35,9 @@
   "sound_pianoAmbient": "Piano y ambiente",
   "sound_fireplace": "Chimenea",
   "sound_vehicles": "Sonidos de vehículos",
-
-  "voiceEyebrow": "Cuestión de gustos",
-  "voiceTitle": "¿Con voz o sin voz?",
-  "voiceSubtitle": "Algunas noches una historia ayuda; otras es mejor sin ella.",
-  "voice_withVoice": "Historias para dormir con una voz suave",
-  "voice_withVoice_hint": "Un narrador tranquilo al que seguir hasta que te duermas",
-  "voice_noVoice": "Solo ambiente, sin voz",
-  "voice_noVoice_hint": "Solo sonido, nada que escuchar",
-  "voice_either": "Cualquiera de las dos me vale",
-  "voice_either_hint": "Una mezcla de ambas, según la noche",
-
   "bedtimeEyebrow": "Tu rutina",
   "bedtimeQuestion": "¿A qué hora sueles acostarte?",
   "bedtimeSubtitle": "Tus sonidos estarán listos y esperándote.",
-
   "reminderEyebrow": "Antes de irte",
   "reminderTitle": "¿Quieres un aviso para ir a dormir?",
   "reminderSubtitle": "Un recordatorio silencioso para empezar a bajar el ritmo.",
@@ -60,7 +45,6 @@
   "reminderYesHint": "Una notificación suave a las {{time}}",
   "reminderNo": "No, gracias",
   "reminderNoHint": "Puedes activarlo más tarde en Ajustes",
-
   "planEyebrow": "Hecho para ti",
   "planTitle": "Tu rutina para desconectar está lista",
   "planSubtitle": "Creada a partir de tus respuestas: un lugar tranquilo para empezar esta noche.",
@@ -73,7 +57,6 @@
   "planNoCatalog": "Esta noche empezarás con algo tranquilo.",
   "planFootnote": "Puedes cambiar tu plan cuando quieras.",
   "hearItCta": "Escuchar",
-
   "previewNowPlaying": "Sonando ahora",
   "previewReadyEyebrow": "Listo para esta noche",
   "previewTrouble": "Hay un problema",

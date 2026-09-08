@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "../supabase";
 import type { Track } from "../../types";
 
 // Pre-auth funnel answers, persisted to AsyncStorage so a bedtime user who
@@ -11,21 +12,18 @@ import type { Track } from "../../types";
 // table. See docs/DRIFT_IMPLEMENTATION_PLAN.md §7-11.
 
 export type SleepFrequency = "mostNights" | "fewNights" | "nowAndThen" | "comesAndGoes";
-export type VoicePreference = "withVoice" | "noVoice" | "either";
 
 export const FREQUENCY_KEYS: SleepFrequency[] = ["mostNights", "fewNights", "nowAndThen", "comesAndGoes"];
-export const VOICE_KEYS: VoicePreference[] = ["withVoice", "noVoice", "either"];
 export const STRUGGLE_KEYS = ["racingThoughts", "stressTension", "noiseAround", "irregularSchedule", "wakingAtNight"] as const;
 export const SOUND_KEYS = ["rainThunder", "oceanWaves", "whiteNoise", "asmr", "pianoAmbient", "fireplace", "vehicles"] as const;
 
 const STORAGE_KEY = "pulvio.onboarding.answers.v1";
 
-// Route for each 1-based step, plus the reveal at index 6.
+// Route for each 1-based step, plus the reveal at index 5.
 const STEP_ROUTES = [
   "/(onboarding)/frequency",
   "/(onboarding)/quiz-struggles",
   "/(onboarding)/quiz-sounds",
-  "/(onboarding)/voice",
   "/(onboarding)/bedtime",
   "/(onboarding)/reminder",
   "/(onboarding)/plan-ready",
@@ -35,11 +33,10 @@ type OnboardingAnswersState = {
   frequency: SleepFrequency | null;
   struggles: string[];
   sounds: string[];
-  voice: VoicePreference | null;
   bedtimeHour: number;
   bedtimeMinute: number;
   reminderOn: boolean;
-  // Highest step the user has reached (0 = not started, 7 = reached the
+  // Highest step the user has reached (0 = not started, 6 = reached the
   // reveal). Drives resume routing from the welcome screen.
   furthestStep: number;
   // The track picked on plan-ready, about to play on preview. Transient —
@@ -52,7 +49,6 @@ type OnboardingAnswersState = {
   setFrequency: (value: SleepFrequency) => void;
   toggleStruggle: (key: string) => void;
   toggleSound: (key: string) => void;
-  setVoice: (value: VoicePreference) => void;
   setBedtime: (hour: number, minute: number) => void;
   setReminderOn: (value: boolean) => void;
   setPreviewTrack: (track: Track | null) => void;
@@ -64,7 +60,6 @@ const INITIAL = {
   frequency: null as SleepFrequency | null,
   struggles: [] as string[],
   sounds: [] as string[],
-  voice: null as VoicePreference | null,
   bedtimeHour: 23,
   bedtimeMinute: 0,
   reminderOn: true,
@@ -82,7 +77,6 @@ export const useOnboardingAnswers = create<OnboardingAnswersState>((set) => ({
   setFrequency: (frequency) => set({ frequency }),
   toggleStruggle: (key) => set((s) => ({ struggles: toggle(s.struggles, key) })),
   toggleSound: (key) => set((s) => ({ sounds: toggle(s.sounds, key) })),
-  setVoice: (voice) => set({ voice }),
   setBedtime: (bedtimeHour, bedtimeMinute) => set({ bedtimeHour, bedtimeMinute }),
   setReminderOn: (reminderOn) => set({ reminderOn }),
   setPreviewTrack: (previewTrack) => set({ previewTrack }),
@@ -102,7 +96,6 @@ useOnboardingAnswers.subscribe((state) => {
     frequency: state.frequency,
     struggles: state.struggles,
     sounds: state.sounds,
-    voice: state.voice,
     bedtimeHour: state.bedtimeHour,
     bedtimeMinute: state.bedtimeMinute,
     reminderOn: state.reminderOn,
@@ -123,7 +116,6 @@ export async function hydrateOnboardingAnswers(): Promise<void> {
         frequency: p.frequency ?? null,
         struggles: p.struggles ?? [],
         sounds: p.sounds ?? [],
-        voice: p.voice ?? null,
         bedtimeHour: p.bedtimeHour ?? 23,
         bedtimeMinute: p.bedtimeMinute ?? 0,
         reminderOn: p.reminderOn ?? true,
@@ -153,4 +145,44 @@ export function useMarkOnboardingStep(step: number): void {
 
 export function formatBedtime(hour: number, minute: number): string {
   return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+// The bedtime the user picked in the pre-auth funnel, resolved from wherever
+// it still lives: the in-memory store (funnel not handed off yet), the local
+// persisted answers (pre-handoff), or the account's onboarding_answers row
+// (post-handoff — useOnboardingHandoff clears the local copy after writing it
+// to the account). Used to pre-fill the Settings bedtime reminder instead of
+// a blank 22:00. Returns null when the user never answered the step.
+export async function resolveOnboardingBedtime(): Promise<{ hour: number; minute: number } | null> {
+  const live = useOnboardingAnswers.getState();
+  if (live.hydrated && live.furthestStep > 0) {
+    return { hour: live.bedtimeHour, minute: live.bedtimeMinute };
+  }
+  try {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const p = JSON.parse(raw) as Partial<typeof INITIAL>;
+      if (
+        typeof p.bedtimeHour === "number" &&
+        typeof p.bedtimeMinute === "number" &&
+        (p.furthestStep ?? 0) > 0
+      ) {
+        return { hour: p.bedtimeHour, minute: p.bedtimeMinute };
+      }
+    }
+  } catch {
+    // corrupt/unreadable — try the account copy
+  }
+  try {
+    const { data } = await supabase
+      .from("onboarding_answers")
+      .select("bedtime_hour, bedtime_minute")
+      .maybeSingle();
+    if (data && typeof data.bedtime_hour === "number" && typeof data.bedtime_minute === "number") {
+      return { hour: data.bedtime_hour, minute: data.bedtime_minute };
+    }
+  } catch {
+    // no row / offline — caller keeps its own default
+  }
+  return null;
 }

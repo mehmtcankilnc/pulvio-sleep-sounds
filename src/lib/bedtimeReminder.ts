@@ -15,14 +15,26 @@ export type BedtimeReminderPreference = {
 
 const DEFAULT_PREFERENCE: BedtimeReminderPreference = { enabled: false, hour: 22, minute: 0 };
 
-export async function getBedtimeReminderPreference(): Promise<BedtimeReminderPreference> {
+// `fallback` (when nothing is stored yet) lets the caller seed the time from
+// the user's onboarding bedtime answer instead of the bare 22:00 — see
+// resolveOnboardingBedtime(). `enabled` always starts false: pre-filling a
+// time is not the same as opting into notifications.
+export async function getBedtimeReminderPreference(
+  fallback?: { hour: number; minute: number }
+): Promise<BedtimeReminderPreference> {
   const stored = await AsyncStorage.getItem(STORAGE_KEY);
-  if (!stored) return DEFAULT_PREFERENCE;
-  try {
-    return JSON.parse(stored) as BedtimeReminderPreference;
-  } catch {
-    return DEFAULT_PREFERENCE;
+  if (stored) {
+    try {
+      return JSON.parse(stored) as BedtimeReminderPreference;
+    } catch {
+      // corrupt — fall through to the default
+    }
   }
+  return {
+    enabled: false,
+    hour: fallback?.hour ?? DEFAULT_PREFERENCE.hour,
+    minute: fallback?.minute ?? DEFAULT_PREFERENCE.minute,
+  };
 }
 
 // Ayarlar ekranındaki saat seçiciden çağrılır. İzin verilmezse tercih

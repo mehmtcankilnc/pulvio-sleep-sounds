@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { View, Text, Pressable, AccessibilityInfo, ActivityIndicator, useWindowDimensions } from "react-native";
+import { View, Text, Pressable, Image, StyleSheet, AccessibilityInfo, ActivityIndicator, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   Easing,
@@ -24,6 +24,7 @@ import { useCooldownCountdown } from "../src/hooks/useCooldownCountdown";
 import { useSleepCountdown } from "../src/hooks/useSleepCountdown";
 import { useThemeColors } from "../src/hooks/useThemeColors";
 import { categoryIcon } from "../src/lib/categoryIcon";
+import { categoryLabel, subcategoryLabel } from "../src/lib/catalogTaxonomy";
 import { formatClock } from "../src/lib/time";
 import { TIMER_OPTIONS, armSleepTimer } from "../src/lib/player/sleepTimer";
 import { GlowBackground, MoonRingOuter, MoonRingInner } from "../src/components/GlowBackground";
@@ -158,16 +159,34 @@ const TimerRing = memo(function TimerRing({ size }: { size: number }) {
 const MoonBreath = memo(function MoonBreath({
   size,
   Icon,
+  coverUrl,
   still = false,
 }: {
   size: number;
   Icon: (props: IconProps) => React.JSX.Element;
+  // The playing track's category cover art. When present it fills the inner
+  // ring (clipped to the circle) and the category glyph becomes just the
+  // fallback / still-loading layer behind it. `still` loading states never
+  // pass this — they stay on the plain moon glyph.
+  coverUrl?: string;
   // `still` = same moon, no breathe — used by the loading state so it reads
   // as the same screen as playback, just paused.
   still?: boolean;
 }) {
   const colors = useThemeColors();
   const breathe = useSharedValue(1);
+  const [imageFailed, setImageFailed] = useState(false);
+  const photoOpacity = useSharedValue(0);
+  const photoStyle = useAnimatedStyle(() => ({ opacity: photoOpacity.value }));
+  const showPhoto = Boolean(coverUrl) && !imageFailed;
+  const innerSize = size - 92;
+
+  // This memo is reused across track changes — reset the crossfade so the new
+  // cover fades in rather than snapping (or showing the previous one).
+  useEffect(() => {
+    photoOpacity.value = 0;
+    setImageFailed(false);
+  }, [coverUrl, photoOpacity]);
 
   useEffect(() => {
     if (still) return;
@@ -193,8 +212,26 @@ const MoonBreath = memo(function MoonBreath({
     >
       <TimerRing size={size} />
       <MoonRingOuter style={{ width: size - 22, height: size - 22 }}>
-        <MoonRingInner style={{ width: size - 92, height: size - 92 }}>
+        <MoonRingInner style={{ width: innerSize, height: innerSize }}>
+          {/* The glyph is always the base layer — it's the fallback and the
+              "cover still fetching" state; the photo crossfades in over it. */}
           <Icon size={52} color={colors.moon} />
+          {showPhoto && (
+            <Animated.View style={[StyleSheet.absoluteFill, photoStyle]}>
+              <Image
+                source={{ uri: coverUrl }}
+                resizeMode="cover"
+                style={{ width: innerSize, height: innerSize }}
+                onLoad={() => {
+                  photoOpacity.value = withTiming(1, { duration: 260, easing: EASE_OUT });
+                }}
+                onError={() => setImageFailed(true)}
+              />
+              {/* One Hue Rule — pull the photo toward the app accent, same
+                  tint the category rail and Tonight's pick already use. */}
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: `${colors.button}30` }]} />
+            </Animated.View>
+          )}
         </MoonRingInner>
       </MoonRingOuter>
     </Animated.View>
@@ -474,6 +511,7 @@ function WindDownTitle({ children }: { children: React.ReactNode }) {
 
 export default function PlayerScreen() {
   const { t, i18n } = useTranslation("player");
+  const { t: tCatalog } = useTranslation("catalog");
   const router = useRouter();
   const pathname = usePathname();
   const colors = useThemeColors();
@@ -648,22 +686,22 @@ export default function PlayerScreen() {
 
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 26 }}>
           <View style={{ width: moonStage, height: moonStage, alignItems: "center", justifyContent: "center" }}>
-            <MoonBreath size={moonStage} Icon={CategoryIcon} />
+            <MoonBreath size={moonStage} Icon={CategoryIcon} coverUrl={currentTrack.coverUrl} />
           </View>
 
           <View
             style={{ alignItems: "center", gap: 6 }}
             accessible
             accessibilityRole="header"
-            accessibilityLabel={`${t("nowPlayingAccessibilityLabel", { title: currentTrack.title })}. ${currentTrack.category}, ${currentTrack.subcategory}`}
+            accessibilityLabel={`${t("nowPlayingAccessibilityLabel", { title: currentTrack.title })}. ${categoryLabel(tCatalog, currentTrack.category)}, ${subcategoryLabel(tCatalog, currentTrack.subcategory)}`}
           >
             <Text style={{ fontSize: 11, fontWeight: "700", letterSpacing: 1.8, color: colors.accent }}>
-              {currentTrack.category.toLocaleUpperCase(i18n.language)}
+              {categoryLabel(tCatalog, currentTrack.category).toLocaleUpperCase(i18n.language)}
             </Text>
             <Text numberOfLines={2} style={{ fontSize: 24, fontWeight: "700", letterSpacing: -0.2, color: colors.text, textAlign: "center" }}>
               {currentTrack.title}
             </Text>
-            <Text style={{ fontSize: T_SECONDARY, color: colors.muted }}>{currentTrack.subcategory}</Text>
+            <Text style={{ fontSize: T_SECONDARY, color: colors.muted }}>{subcategoryLabel(tCatalog, currentTrack.subcategory)}</Text>
           </View>
         </View>
 

@@ -20,7 +20,7 @@ export default function OnboardingReminderScreen() {
   const colors = useThemeColors();
   const { bedtimeHour, bedtimeMinute, reminderOn, setReminderOn } = useOnboardingAnswers();
   const nudgeAt = reminderTime(bedtimeHour, bedtimeMinute);
-  useMarkOnboardingStep(6);
+  useMarkOnboardingStep(5);
   const funnelPad = useFunnelPadding({ hasStageHeader: true });
 
   const OPTIONS: Array<{ value: boolean; label: string; hint: string }> = [
