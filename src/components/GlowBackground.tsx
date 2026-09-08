@@ -79,12 +79,15 @@ export function GlowBackground({
   washes,
   style,
   children,
+  testID,
 }: {
   variant: Variant;
   /** Override the variant's default wash(es) — see DESIGN.html per-screen values. */
   washes?: Wash[];
   style?: ViewStyle;
   children?: React.ReactNode;
+  /** Stable target for QA / screenshot (Goldie) flows. */
+  testID?: string;
 }) {
   const spec = VARIANTS[variant];
   const activeWashes = washes ?? spec.washes;
@@ -97,7 +100,7 @@ export function GlowBackground({
   }
 
   return (
-    <View style={[{ overflow: "hidden" }, style]} onLayout={handleLayout}>
+    <View testID={testID} style={[{ overflow: "hidden" }, style]} onLayout={handleLayout}>
       <LinearGradient
         colors={gradientColors as [string, string, ...string[]]}
         locations={spec.baseLocations as [number, number, ...number[]] | undefined}

@@ -3,7 +3,7 @@ import type { AudioStatus } from "expo-audio";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import { getPlayer, configureAudioMode } from "./engine";
-import { restoreSleepTimerOption } from "./sleepTimer";
+import { restoreSleepTimerOption, pauseSleepTimer, resumeSleepTimer } from "./sleepTimer";
 import { usePlayerStore } from "../../store/usePlayerStore";
 import { useListeningHeartbeat } from "../../hooks/useListeningHeartbeat";
 import { usePlayerActions } from "../../hooks/usePlayerActions";
@@ -26,6 +26,17 @@ export function PlayerEngineProvider() {
     configureAudioMode();
     restoreSleepTimerOption();
   }, []);
+
+  // The sleep-timer countdown tracks *listening* time, not wall-clock — so it
+  // freezes when playback pauses (screen lock, notification control, the
+  // player's own pause) and resumes when playback does. Driven off the
+  // store's `isPlaying`, which every pause path funnels through via
+  // `playbackStatusUpdate` below.
+  const isPlaying = usePlayerStore((state) => state.isPlaying);
+  useEffect(() => {
+    if (isPlaying) resumeSleepTimer();
+    else pauseSleepTimer();
+  }, [isPlaying]);
 
   // Neither the bedtime-play nor quiet-wakeup notification (sleepNotifications.ts)
   // can auto-play audio in the background — they're tap-to-open. Only

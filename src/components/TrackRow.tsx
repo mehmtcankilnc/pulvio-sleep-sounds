@@ -3,6 +3,7 @@ import Animated from "react-native-reanimated";
 import { useTranslation } from "react-i18next";
 import { useThemeColors } from "../hooks/useThemeColors";
 import { usePressScale } from "../hooks/usePressScale";
+import { useUserStore } from "../store/useUserStore";
 import { categoryIcon } from "../lib/categoryIcon";
 import { categoryLabel, subcategoryLabel } from "../lib/catalogTaxonomy";
 import { LockIcon } from "./icons";
@@ -25,13 +26,19 @@ export function TrackRow({
   const colors = useThemeColors();
   const Icon = categoryIcon(track.category, track.subcategory);
   const press = usePressScale(0.98);
+  // The lock + "Premium" tell is a "you can't play this" signal — only true
+  // for a free user. A subscriber can play everything, so the gate markers
+  // are hidden for them (the row is then indistinguishable from a free one,
+  // which is the point).
+  const isSubscriber = useUserStore((state) => state.subscriptionStatus === "premium");
+  const gated = track.isPremiumOnly && !isSubscriber;
   return (
     <AnimatedPressable
       onPress={onPress}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
       accessibilityRole="button"
-      accessibilityLabel={track.isPremiumOnly ? `${track.title}, ${premiumLabel}` : track.title}
+      accessibilityLabel={gated ? `${track.title}, ${premiumLabel}` : track.title}
       style={[
         {
           flexDirection: "row",
@@ -52,14 +59,15 @@ export function TrackRow({
         <Text numberOfLines={1} style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
           {track.title}
         </Text>
-        {track.isPremiumOnly ? (
+        {gated ? (
           <Text style={{ fontSize: 11, color: colors.accent }}>{premiumLabel}</Text>
         ) : null}
       </View>
       {/* Trailing lock is the row's own scannable free/premium tell — a
           second, glance-only signal alongside the text label below the
-          title, without a colored chip/badge (DESIGN.md forbids those). */}
-      {track.isPremiumOnly ? <LockIcon size={15} color={colors.muted} strokeWidth={1.6} /> : null}
+          title, without a colored chip/badge (DESIGN.md forbids those).
+          Hidden for subscribers (see `gated` above). */}
+      {gated ? <LockIcon size={15} color={colors.muted} strokeWidth={1.6} /> : null}
     </AnimatedPressable>
   );
 }

@@ -25,6 +25,7 @@ export function SelectChip({
   accessibilityLabel,
   role = "button",
   icon,
+  testID,
 }: {
   label: string;
   selected: boolean;
@@ -33,6 +34,8 @@ export function SelectChip({
   fontSize?: number;
   paddingHorizontal?: number;
   accessibilityLabel?: string;
+  // Stable target for QA / screenshot (Goldie) flows — see docs/ASO_SCREENSHOTS.md.
+  testID?: string;
   // Every call site is a "pick one of N" chip except the free-only filter,
   // which is an independent on/off — role="switch" tells a screen reader
   // that difference instead of announcing identical button/selected
@@ -84,6 +87,7 @@ export function SelectChip({
   return (
     <Pressable
       onPress={handlePress}
+      testID={testID}
       hitSlop={{ top: verticalHitSlop, bottom: verticalHitSlop }}
       accessibilityRole={role}
       accessibilityLabel={accessibilityLabel ?? label}
@@ -108,10 +112,14 @@ export function SelectChip({
         {/* Guards against a cramped flex slot (Sleep tab's 4-up timer row)
             wrapping the label to a second line — the chip's fixed `height`
             doesn't grow with it, so a wrapped label just gets clipped/
-            overlapping instead of the row resizing to fit. */}
-        <Animated.Text numberOfLines={1} style={[{ fontSize, fontWeight: selected ? "700" : "600" }, textStyle]}>
-          {label}
-        </Animated.Text>
+            overlapping instead of the row resizing to fit. An empty label
+            (icon-only chip, e.g. the player's custom-timer button) skips the
+            node entirely so the row `gap` doesn't reserve phantom width. */}
+        {label !== "" && (
+          <Animated.Text numberOfLines={1} style={[{ fontSize, fontWeight: selected ? "700" : "600" }, textStyle]}>
+            {label}
+          </Animated.Text>
+        )}
       </Animated.View>
     </Pressable>
   );

@@ -1,0 +1,13 @@
+steps:
+  - echo: Fresh launch, land on Explore.
+  - launch: com.pulvio.app
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
+  - await: { idle: true }
+  - echo: Open "Tonight's pick" -> the player, which auto-arms the sleep timer (status line shows "Fades out in mm:ss").
+  - tap: { id: tonight-pick }
+  - await: { visible: { id: player-playpause } }
+  - await: { visible: { id: player-timer-status } }
+  # The player never settles (1 Hz countdown + breathing moon) and its
+  # SVG-heavy tree reads slowly — a fixed pause lets the first frame paint
+  # without gambling on an `idle` read that may error on this screen.
+  - wait: 1200

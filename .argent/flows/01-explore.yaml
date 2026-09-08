@@ -1,0 +1,6 @@
+steps:
+  - echo: Fresh launch, land on the Explore home with its personalized rows (Tonight's pick, Favorites, Browse sounds, Continue listening).
+  - launch: com.pulvio.app
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
+  - await: { visible: { id: tonight-pick } }
+  - await: { idle: true }

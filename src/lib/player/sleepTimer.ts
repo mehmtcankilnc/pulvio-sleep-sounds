@@ -1,17 +1,25 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getPlayer } from "./engine";
 import { useSleepTimerStore } from "../../store/useSleepTimerStore";
+import { usePlayerStore } from "../../store/usePlayerStore";
 
 const STORAGE_KEY = "pulvio_sleep_timer_option";
+// The armed schedule's wall-clock bounds, persisted alongside the option so a
+// countdown survives the JS runtime being killed while audio keeps playing in
+// the Android foreground service. `{ endsAt, startedAt }` epoch-ms, or absent
+// when idle / "∞". Restored (and re-armed) by restoreSleepTimerOption.
+const RUN_STATE_KEY = "pulvio_sleep_timer_run";
+// The persisted run state also carries `pausedRemainingMs` when playback was
+// paused mid-countdown, so a relaunch restores a frozen timer rather than one
+// that kept counting while nothing played.
 const AUTOARM_DISCLOSED_KEY = "pulvio_autoarm_disclosed";
 // Lazily hydrated cache of the AUTOARM_DISCLOSED_KEY flag.
 let autoArmDisclosed: boolean | null = null;
 
-// Now Playing's preset row (app/player.tsx) still reads this fixed list.
-// Sleep tab's routine row (app/(tabs)/sleep.tsx) has its own smaller preset
-// set plus a free-entry "custom" option — both funnel into the same
-// `TimerOption` shape below, so any "Nm" string works regardless of which
-// screen armed it.
+// The preset chips. Both Now Playing (app/player.tsx) and the Sleep tab's
+// routine row (app/(tabs)/sleep.tsx) render these plus a "custom" stepper —
+// all paths funnel into the same `TimerOption` shape below, so any "Nm"
+// string works regardless of which screen armed it.
 export const TIMER_OPTIONS = ["15m", "30m", "45m", "∞"] as const;
 export type TimerOption = `${number}m` | "∞";
 
@@ -51,10 +59,74 @@ function clearScheduled() {
   }
 }
 
+function persistRunState(endsAt: number | null, startedAt: number | null, pausedRemainingMs: number | null = null) {
+  if (endsAt == null || startedAt == null) {
+    AsyncStorage.removeItem(RUN_STATE_KEY).catch(() => {});
+    return;
+  }
+  AsyncStorage.setItem(RUN_STATE_KEY, JSON.stringify({ endsAt, startedAt, pausedRemainingMs })).catch(() => {});
+}
+
+// Freeze the countdown when playback pauses: drop the pending fade/stop and
+// stash the time that was left. No-op when nothing is armed, on "∞", after
+// the timer already fired, or when it's already frozen.
+export function pauseSleepTimer() {
+  const s = useSleepTimerStore.getState();
+  if (s.endsAt == null || s.option === "∞" || s.pausedRemainingMs != null || s.firedAt != null) return;
+  clearScheduled();
+  const remaining = Math.max(0, s.endsAt - Date.now());
+  s.pauseCountdown(remaining);
+  persistRunState(s.endsAt, s.startedAt, remaining);
+}
+
+// Resume a frozen countdown: re-anchor `endsAt` to now + the time that was
+// left (shifting `startedAt` by the same amount so the ring's span is
+// unchanged) and re-arm the fade/stop.
+export function resumeSleepTimer() {
+  const s = useSleepTimerStore.getState();
+  if (s.pausedRemainingMs == null || s.endsAt == null || s.startedAt == null) return;
+  const span = Math.max(0, s.endsAt - s.startedAt);
+  const newEndsAt = Date.now() + s.pausedRemainingMs;
+  const newStartedAt = newEndsAt - span;
+  s.resumeCountdown(newEndsAt, newStartedAt);
+  persistRunState(newEndsAt, newStartedAt);
+  scheduleStopAt(newEndsAt, newStartedAt);
+}
+
+// Schedules the fade + stop for a timer whose bounds are already known —
+// shared by a fresh arm and by restoreSleepTimerOption re-arming a timer that
+// was mid-countdown when the JS runtime died. `fadeEnabled` is still read at
+// fire time (see the module comment on it), not captured here.
+function scheduleStopAt(endsAt: number, startedAt: number) {
+  clearScheduled();
+  const now = Date.now();
+  const spanMs = Math.max(0, endsAt - startedAt);
+  const fadeDurationMs = Math.min(FADE_DURATION_MS, spanMs / 2);
+  const msUntilFadeStart = endsAt - fadeDurationMs - now;
+
+  if (endsAt <= now) {
+    // Elapsed while the app was dead — stop now and mark it fired so the UI
+    // shows "timer ended" rather than a stale live countdown.
+    stopImmediately();
+    return;
+  }
+  if (msUntilFadeStart <= 0) {
+    // Already inside the fade window: fade over whatever time is left.
+    if (fadeEnabled) runFade(endsAt - now);
+    else stopImmediately();
+    return;
+  }
+  stopTimeout = setTimeout(() => {
+    if (fadeEnabled) runFade(fadeDurationMs);
+    else stopImmediately();
+  }, msUntilFadeStart);
+}
+
 function stopImmediately() {
   const player = getPlayer();
   player.pause();
   player.volume = 1;
+  persistRunState(null, null);
   // Order matters: setOption clears firedAt, then markFired stamps it — so the
   // UI can distinguish "timer ran out and stopped playback" from "idle".
   useSleepTimerStore.getState().setOption(useSleepTimerStore.getState().option, null, null);
@@ -92,6 +164,7 @@ export function armSleepTimer(option: TimerOption) {
   AsyncStorage.setItem(STORAGE_KEY, option).catch(() => {});
 
   if (option === "∞") {
+    persistRunState(null, null);
     useSleepTimerStore.getState().setOption(option, null, null);
     return;
   }
@@ -100,18 +173,20 @@ export function armSleepTimer(option: TimerOption) {
   const startedAt = Date.now();
   const endsAt = startedAt + totalMs;
   useSleepTimerStore.getState().setOption(option, endsAt, startedAt);
+  persistRunState(endsAt, startedAt);
 
   // Fade starts FADE_DURATION_MS before the target mark so the last moment
   // of audio is the tail of the fade, not an abrupt cut. Always scheduled
-  // at this single point regardless of the fade toggle — `fadeEnabled` is
-  // read fresh when it actually fires (see the module comment above), so a
-  // toggle flipped mid-countdown still applies to this timer.
-  const fadeDurationMs = Math.min(FADE_DURATION_MS, totalMs / 2);
-  const msUntilFadeStart = Math.max(0, totalMs - fadeDurationMs);
-  stopTimeout = setTimeout(() => {
-    if (fadeEnabled) runFade(fadeDurationMs);
-    else stopImmediately();
-  }, msUntilFadeStart);
+  // regardless of the fade toggle — `fadeEnabled` is read fresh when it
+  // actually fires (see the module comment above), so a toggle flipped
+  // mid-countdown still applies to this timer.
+  scheduleStopAt(endsAt, startedAt);
+
+  // Arming while playback is paused (the user picked a preset on a paused
+  // player) should start the timer frozen too — it begins counting when
+  // they hit play, same as a timer that was armed while playing and then
+  // paused.
+  if (!usePlayerStore.getState().isPlaying) pauseSleepTimer();
 }
 
 // Same as armSleepTimer, but for the case where playback *silently* armed a
@@ -146,15 +221,59 @@ function discloseAutoArm(option: TimerOption) {
 // wrong track.
 export function cancelSleepTimer() {
   clearScheduled();
+  persistRunState(null, null);
   const { option } = useSleepTimerStore.getState();
   useSleepTimerStore.getState().setOption(option, null, null);
 }
 
 // Hydrates the persisted option once at app start (PlayerEngineProvider).
-// Never arms a schedule on its own — restoring the app shouldn't silently
-// start a countdown against nothing playing.
+// If a timed countdown was still running when the JS runtime was last killed
+// — which happens routinely on Android when the process is reaped while audio
+// keeps playing in the foreground service — its wall-clock bounds are restored
+// and the fade/stop is re-scheduled for the time that's actually left, so the
+// timer still fires (and Now Playing still shows a live countdown) instead of
+// silently going dead with the preset chip stuck "selected". An `endsAt`
+// already in the past stops playback now and shows the "timer ended" state.
 export async function restoreSleepTimerOption() {
-  const stored = await AsyncStorage.getItem(STORAGE_KEY);
+  const [stored, runRaw] = await Promise.all([
+    AsyncStorage.getItem(STORAGE_KEY),
+    AsyncStorage.getItem(RUN_STATE_KEY),
+  ]);
   const option = isTimerOption(stored ?? "") ? (stored as TimerOption) : "45m";
+
+  let endsAt: number | null = null;
+  let startedAt: number | null = null;
+  let pausedRemainingMs: number | null = null;
+  if (runRaw && option !== "∞") {
+    try {
+      const parsed = JSON.parse(runRaw) as { endsAt?: unknown; startedAt?: unknown; pausedRemainingMs?: unknown };
+      if (typeof parsed.endsAt === "number" && typeof parsed.startedAt === "number") {
+        endsAt = parsed.endsAt;
+        startedAt = parsed.startedAt;
+      }
+      if (typeof parsed.pausedRemainingMs === "number") pausedRemainingMs = parsed.pausedRemainingMs;
+    } catch {
+      // Corrupt value — fall through to the idle restore below.
+    }
+  }
+
+  if (endsAt != null && startedAt != null) {
+    if (pausedRemainingMs != null && pausedRemainingMs > 0) {
+      // Was paused when the runtime died — restore it frozen. The
+      // isPlaying effect in PlayerEngineProvider resumes it if audio is
+      // actually running again.
+      useSleepTimerStore.getState().setOption(option, endsAt, startedAt);
+      useSleepTimerStore.getState().pauseCountdown(pausedRemainingMs);
+      persistRunState(endsAt, startedAt, pausedRemainingMs);
+      return;
+    }
+    if (endsAt > Date.now()) {
+      useSleepTimerStore.getState().setOption(option, endsAt, startedAt);
+      scheduleStopAt(endsAt, startedAt);
+      return;
+    }
+  }
+
+  persistRunState(null, null);
   useSleepTimerStore.getState().setOption(option, null, null);
 }

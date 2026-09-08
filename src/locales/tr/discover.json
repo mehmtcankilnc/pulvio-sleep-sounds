@@ -1,5 +1,6 @@
 {
   "tabTitle": "Sesler",
+  "allCategoriesTitle": "Tüm kategoriler",
   "loadError": "Sesler yüklenemedi. Tekrar deneyin.",
   "empty": "Henüz ses eklenmedi",
   "emptyBody": "Katalog şu an boş — birazdan tekrar bak.",

@@ -1,5 +1,6 @@
 {
   "tabTitle": "Sons",
+  "allCategoriesTitle": "Todas as categorias",
   "loadError": "Não foi possível carregar os sons. Tente novamente.",
   "empty": "Nenhum som adicionado ainda",
   "emptyBody": "O catálogo está vazio no momento — volte em breve.",

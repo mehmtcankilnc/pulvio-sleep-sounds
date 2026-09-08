@@ -112,12 +112,13 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 // "emphasized ghost pill" recipe (glowSoft fill + accent-colored border,
 // the same treatment selected states use elsewhere) so the one pressable
 // thing on the card actually reads as pressable.
-function AdjustButton({ label, onPress }: { label: string; onPress: () => void }) {
+function AdjustButton({ label, onPress, testID }: { label: string; onPress: () => void; testID?: string }) {
   const colors = useThemeColors();
   const press = usePressScale(0.96, 150);
 
   return (
     <AnimatedPressable
+      testID={testID}
       onPress={onPress}
       onPressIn={press.onPressIn}
       onPressOut={press.onPressOut}
@@ -151,12 +152,15 @@ function RoutineRow({
   separateTrailing = false,
   trailingInPress = false,
   expanded,
+  testID,
 }: {
   icon: (props: IconProps) => JSX.Element;
   title: string;
   subtitle: string;
   trailing: React.ReactNode;
   onPress?: () => void;
+  // Stable target for QA / screenshot (Goldie) flows.
+  testID?: string;
   // Rows whose own `trailing` already carries a chevron (Sleep timer) skip
   // the row-level one below instead of showing two.
   showDisclosure?: boolean;
@@ -198,7 +202,7 @@ function RoutineRow({
   );
 
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 56, paddingVertical: 8, paddingHorizontal: 2 }}>
+    <View testID={testID} style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 56, paddingVertical: 8, paddingHorizontal: 2 }}>
       {onPress ? (
         <AnimatedPressable
           onPress={onPress}
@@ -517,12 +521,13 @@ export default function SleepScreen() {
   return (
     <GlowBackground variant="pageWash" style={{ flex: 1 }}>
       <ScrollView
+        testID="sleep-screen"
         style={{ flex: 1 }}
         contentContainerStyle={{ ...centeredColumn, paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
       >
         <ScreenHeader eyebrow={t("eyebrow")} title={t("title")} trailing={<PremiumBadge />} />
 
-        <GlowBackground variant="heroCard" style={{ borderRadius: 24, borderWidth: 1, borderColor: colors.stroke, padding: 16, paddingBottom: 14, gap: 6 }}>
+        <GlowBackground testID="sleep-schedule-card" variant="heroCard" style={{ borderRadius: 24, borderWidth: 1, borderColor: colors.stroke, padding: 16, paddingBottom: 14, gap: 6 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
             <Text style={{ fontSize: 10.5, fontWeight: "700", letterSpacing: 1.5, color: colors.accent }}>{t("scheduleOverline")}</Text>
             <Text style={{ fontSize: 12, color: colors.muted }}>{bedtimeInLabel}</Text>
@@ -535,7 +540,7 @@ export default function SleepScreen() {
               <Text style={{ fontSize: 17, fontWeight: "700", color: colors.text }}>{formatTime(schedule.bedtimeHour, schedule.bedtimeMinute)}</Text>
               <Text style={{ fontSize: 11, color: colors.muted }}>{t("bedtimeLabel")}</Text>
             </View>
-            <AdjustButton label={t("adjustCta")} onPress={() => setAdjustOpen(true)} />
+            <AdjustButton testID="sleep-adjust" label={t("adjustCta")} onPress={() => setAdjustOpen(true)} />
             <View style={{ gap: 1, alignItems: "flex-end" }}>
               <Text style={{ fontSize: 17, fontWeight: "700", color: colors.text }}>{formatTime(schedule.wakeHour, schedule.wakeMinute)}</Text>
               <Text style={{ fontSize: 11, color: colors.muted }}>{t("wakeUpLabel")}</Text>
@@ -549,6 +554,7 @@ export default function SleepScreen() {
           </Text>
           <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.stroke, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 }}>
             <RoutineRow
+              testID="sleep-play-at-bedtime"
               icon={CloudRainIcon}
               title={schedule.playAtBedtimeTrack ? t("playSceneRowTitleWithTrack", { title: schedule.playAtBedtimeTrack.title }) : t("playSceneRowTitleEmpty")}
               subtitle={t("playSceneRowSubtitle")}
@@ -574,6 +580,7 @@ export default function SleepScreen() {
             />
             <Hairline />
             <RoutineRow
+              testID="sleep-timer-row"
               icon={TimerIcon}
               title={t("sleepTimerRowTitle")}
               subtitle={timerOption === "∞" ? t("sleepTimerRowSubtitleOff") : t("sleepTimerRowSubtitle", { minutes: timerOption.replace("m", "") })}
@@ -667,18 +674,21 @@ export default function SleepScreen() {
             </AccordionReveal>
             <Hairline />
             <RoutineRow
+              testID="sleep-fade-out"
               icon={WindIcon}
               title={t("fadeOutRowTitle")}
               subtitle={t("fadeOutRowSubtitle")}
-              trailing={<Toggle value={schedule.fadeOutEnabled} onValueChange={() => setFadeOutEnabled(!schedule.fadeOutEnabled)} accessibilityLabel={t("fadeOutRowTitle")} />}
+              trailing={<Toggle testID="sleep-fade-out-toggle" value={schedule.fadeOutEnabled} onValueChange={() => setFadeOutEnabled(!schedule.fadeOutEnabled)} accessibilityLabel={t("fadeOutRowTitle")} />}
             />
             <Hairline />
             <RoutineRow
+              testID="sleep-quiet-wakeup"
               icon={MoonIcon}
               title={t("wakeRowTitle")}
               subtitle={t("wakeRowSubtitle", { time: formatTime(schedule.wakeHour, schedule.wakeMinute) })}
               trailing={
                 <Toggle
+                  testID="sleep-quiet-wakeup-toggle"
                   value={schedule.quietWakeupEnabled}
                   onValueChange={async () => {
                     warnIfPermissionDenied(await setQuietWakeupEnabled(!schedule.quietWakeupEnabled));

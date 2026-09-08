@@ -24,3 +24,19 @@ npm-debug.*
 
 plans
 .impeccable/critique/
+
+# Goldie / local capture output
+out/
+build/
+
+# Agent + editor tooling (argent init, assistants)
+.agents/
+.claude/skills/
+.claude/settings.json
+.codex/
+.gemini/
+.vscode/
+.mcp.json
+skills-lock.json
+.argent/config.json
+.argent/install.json

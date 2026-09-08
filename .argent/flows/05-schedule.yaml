@@ -1,0 +1,9 @@
+steps:
+  - echo: Fresh launch, land on Explore.
+  - launch: com.pulvio.app
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
+  - await: { idle: true }
+  - echo: Sleep tab -> the wind-down schedule card and tonight's routine.
+  - tap: { id: tab-sleep }
+  - await: { visible: { id: sleep-adjust } }
+  - await: { idle: true }

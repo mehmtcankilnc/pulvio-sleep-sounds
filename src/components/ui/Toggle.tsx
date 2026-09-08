@@ -19,7 +19,18 @@ const KNOB_TRAVEL = TRACK_WIDTH - KNOB_SIZE - TRACK_PADDING * 2;
 
 // DESIGN.md §7: track 44×26 r999 — on: `button` track, `moon` knob right;
 // off: rgba(255,255,255,0.09) track, `faint` knob left.
-export function Toggle({ value, onValueChange, accessibilityLabel }: { value: boolean; onValueChange: () => void; accessibilityLabel: string }) {
+export function Toggle({
+  value,
+  onValueChange,
+  accessibilityLabel,
+  testID,
+}: {
+  value: boolean;
+  onValueChange: () => void;
+  accessibilityLabel: string;
+  // Stable target for QA / screenshot (Goldie) flows.
+  testID?: string;
+}) {
   const colors = useThemeColors();
   const progress = useSharedValue(value ? 1 : 0);
   const knobX = useSharedValue(value ? KNOB_TRAVEL : 0);
@@ -54,6 +65,7 @@ export function Toggle({ value, onValueChange, accessibilityLabel }: { value: bo
   return (
     <Pressable
       onPress={handlePress}
+      testID={testID}
       hitSlop={8}
       accessibilityRole="switch"
       accessibilityState={{ checked: value }}

@@ -260,7 +260,7 @@ export default function SoundsScreen() {
       washes={[{ origin: { x: 12, y: -8 }, color: colors.glow, extent: 44 }]}
       style={{ flex: 1 }}
     >
-      <View style={{ flex: 1, ...centeredColumn }}>
+      <View testID="sounds-screen" style={{ flex: 1, ...centeredColumn }}>
         <View
           style={{
             flexDirection: "row",
@@ -331,6 +331,7 @@ export default function SoundsScreen() {
               {topChips.map((chip) => (
                 <SelectChip
                   key={chip.id ?? "all"}
+                  testID={chip.id ? `category-chip-${chip.id}` : "category-chip-all"}
                   label={chip.label}
                   selected={selectedCategory === chip.id}
                   onPress={() => selectCategory(chip.id)}
@@ -366,6 +367,7 @@ export default function SoundsScreen() {
                 {subChips.map((chip) => (
                   <SelectChip
                     key={chip.id ?? "all"}
+                    testID={chip.id ? `subcategory-chip-${chip.id}` : "subcategory-chip-all"}
                     label={chip.label}
                     selected={selectedSubcategory === chip.id}
                     onPress={() => setSelectedSubcategory(chip.id)}

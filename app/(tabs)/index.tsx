@@ -274,10 +274,12 @@ function SectionHeader({
   title,
   actionLabel,
   onAction,
+  actionTestID,
 }: {
   title: string;
   actionLabel: string;
   onAction: () => void;
+  actionTestID?: string;
 }) {
   const colors = useThemeColors();
   return (
@@ -297,6 +299,7 @@ function SectionHeader({
       </Text>
       <Pressable
         onPress={onAction}
+        testID={actionTestID}
         accessibilityRole="button"
         accessibilityLabel={actionLabel}
         hitSlop={8}
@@ -407,6 +410,7 @@ export default function ExploreScreen() {
   return (
     <GlowBackground variant="pageWash" style={{ flex: 1 }}>
       <ScrollView
+        testID="explore-screen"
         style={{ flex: 1 }}
         contentContainerStyle={{
           ...centeredColumn,
@@ -424,6 +428,7 @@ export default function ExploreScreen() {
 
         {tonightTrack && (
           <AnimatedPressable
+            testID="tonight-pick"
             onPress={() => play(tonightTrack)}
             onPressIn={tonightPress.onPressIn}
             onPressOut={tonightPress.onPressOut}
@@ -534,7 +539,8 @@ export default function ExploreScreen() {
           <SectionHeader
             title={t("browseSoundsTitle")}
             actionLabel={t("browseSoundsSeeAll")}
-            onAction={() => router.push("/sounds")}
+            onAction={() => router.push("/categories")}
+            actionTestID="browse-all-categories"
           />
           <View style={{ marginHorizontal: -20 }}>
             <ScrollView

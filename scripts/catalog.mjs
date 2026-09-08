@@ -35,7 +35,6 @@ export const CATALOG = [
   [437305, "yagmur", "Hafif Yağmur", true, 600, "sound-effects/nature-gentle-rain-01-437305"],
   [437318, "yagmur", "Hafif Yağmur 2", true, 420, "sound-effects/nature-gentle-rain-06-437318"],
   [190883, "yagmur", "Sağanak (İç Mekân)", true, 933, "sound-effects/nature-indoor-hard-rain-sound-190883"],
-  [113602, "yagmur", "Arabada Yağmur", true, 899, "sound-effects/nature-rain-inside-a-car-113602"],
   [331497, "yagmur", "Telifsiz Yağmur", true, 467, "sound-effects/nature-copyright-free-rain-sounds-331497"],
   [444804, "yagmur", "Lo-fi Yağmur", true, 242, "sound-effects/nature-lo-fi-rain-sounds-444804"],
 
@@ -169,6 +168,10 @@ export const CATALOG = [
   [445523, "otobus", "Uzun Yol Otobüsü", true, 458, "sound-effects/city-tamil-nadu-bus-inside-soundque-field-recording-445523"],
 
   // ── araclar / arac_ici (sürüş/otoyol/motor uğultusu) ────────────────────
+  // 113602: 0016'da yagmur olarak seed'lendi, 0022'de buraya taşındı. Ses
+  // dosyası R2'de HÂLÂ tracks/yagmur/113602.mp3 yolunda — 0016'yı yeniden
+  // üretirken storage yolunu yagmur olarak korumak gerekir.
+  [113602, "arac_ici", "Arabada Yağmur", true, 899, "sound-effects/nature-rain-inside-a-car-113602"],
   [51388, "arac_ici", "Araba İçi Sürüş", false, 286, "sound-effects/city-car-driving-interior-perspective-51388"],
   [339218, "arac_ici", "Şehirde Sürüş", true, 131, "sound-effects/film-special-effects-interior-car-driving-through-city-with-road-noise-and-engine-hum-339218"],
   [53122, "arac_ici", "Yolculuk Başlangıcı", true, 516, "sound-effects/city-interior-car-start-and-depart-53122"],

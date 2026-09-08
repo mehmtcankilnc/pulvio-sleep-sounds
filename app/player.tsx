@@ -26,12 +26,12 @@ import { useThemeColors } from "../src/hooks/useThemeColors";
 import { categoryIcon } from "../src/lib/categoryIcon";
 import { categoryLabel, subcategoryLabel } from "../src/lib/catalogTaxonomy";
 import { formatClock } from "../src/lib/time";
-import { TIMER_OPTIONS, armSleepTimer } from "../src/lib/player/sleepTimer";
+import { TIMER_OPTIONS, armSleepTimer, type TimerOption } from "../src/lib/player/sleepTimer";
 import { GlowBackground, MoonRingOuter, MoonRingInner } from "../src/components/GlowBackground";
 import { StarField } from "../src/components/StarField";
 import { Button } from "../src/components/ui/Button";
 import { SelectChip } from "../src/components/ui/SelectChip";
-import { ChevronDownIcon, HeartIcon, MoonIcon, PauseIcon, PlayIcon, type IconProps } from "../src/components/icons";
+import { CheckIcon, ChevronDownIcon, HeartIcon, MinusIcon, MoonIcon, PauseIcon, PlayIcon, PlusIcon, SlidersIcon, type IconProps } from "../src/components/icons";
 
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 const PRESS_TIMING = { duration: 150, easing: EASE_OUT, reduceMotion: ReduceMotion.System };
@@ -238,24 +238,147 @@ const MoonBreath = memo(function MoonBreath({
   );
 });
 
+// The custom stepper's range — mirrors the Sleep tab's routine row
+// (app/(tabs)/sleep.tsx) so a value armed on one screen reads back cleanly on
+// the other. Any "Nm" string is a valid TimerOption.
+const CUSTOM_TIMER_MIN = 5;
+const CUSTOM_TIMER_MAX = 180;
+const CUSTOM_TIMER_STEP = 5;
+const CUSTOM_TIMER_DEFAULT = 60;
+const clampCustomTimer = (minutes: number) =>
+  Math.min(CUSTOM_TIMER_MAX, Math.max(CUSTOM_TIMER_MIN, Math.round(minutes / CUSTOM_TIMER_STEP) * CUSTOM_TIMER_STEP));
+
+const TIMER_CHIP_HEIGHT = 38;
+// The whole timer row is pinned to this height so swapping the preset chips
+// for the custom stepper (which is taller) never reflows the column — that
+// reflow was pushing the moon/title block up and back down on every toggle.
+const TIMER_ROW_HEIGHT = 44;
+
 // Re-renders only when the picked option changes (rare) — kept off the 1 Hz
-// tick path so the four chips don't reconcile every second.
+// tick path so the chips don't reconcile every second. Four preset pills plus
+// one circular "custom" button: tapping it swaps the whole row for an inline
+// −/value/+/✓ stepper, and once a custom value is armed the button becomes a
+// selected pill showing it (e.g. "70m"). Every step arms the timer
+// immediately, so a value never sits half-adjusted with nothing scheduled
+// behind it (same contract as the Sleep tab). Sized to fit five items on one
+// line down to an SE-class width — no horizontal scroll.
 const TimerChips = memo(function TimerChips() {
   const { t } = useTranslation("player");
+  const { t: tSleep } = useTranslation("sleep");
+  const colors = useThemeColors();
   const selected = useSleepTimerStore((state) => state.option);
-  return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 9 }}>
+  const isPreset = (TIMER_OPTIONS as readonly string[]).includes(selected);
+  const customMinutes = isPreset ? null : parseInt(selected, 10);
+  const hasCustom = customMinutes != null && Number.isFinite(customMinutes);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(CUSTOM_TIMER_DEFAULT);
+
+  function openCustom() {
+    setDraft(hasCustom ? clampCustomTimer(customMinutes) : CUSTOM_TIMER_DEFAULT);
+    setEditing(true);
+  }
+  function stepTo(minutes: number) {
+    const clamped = clampCustomTimer(minutes);
+    setDraft(clamped);
+    armSleepTimer(`${clamped}m` as TimerOption);
+  }
+  function pickPreset(option: TimerOption) {
+    setEditing(false);
+    armSleepTimer(option);
+  }
+
+  const roundBtn = {
+    width: 34,
+    height: 34,
+    borderRadius: 999,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    backgroundColor: colors.bg,
+  };
+
+  const content = editing ? (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        height: TIMER_ROW_HEIGHT,
+        paddingHorizontal: 6,
+        borderRadius: 999,
+        borderWidth: 1,
+        borderColor: colors.button,
+        backgroundColor: colors.card,
+      }}
+    >
+      <Pressable
+        onPress={() => stepTo(draft - CUSTOM_TIMER_STEP)}
+        disabled={draft <= CUSTOM_TIMER_MIN}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={tSleep("sleepTimerCustomDecrementLabel")}
+        style={roundBtn}
+      >
+        <MinusIcon size={15} color={draft <= CUSTOM_TIMER_MIN ? colors.faint : colors.accent} />
+      </Pressable>
+      <Text style={{ minWidth: 64, textAlign: "center", fontSize: 13.5, fontWeight: "700", color: colors.text }}>
+        {tSleep("minutesShort", { count: draft })}
+      </Text>
+      <Pressable
+        onPress={() => stepTo(draft + CUSTOM_TIMER_STEP)}
+        disabled={draft >= CUSTOM_TIMER_MAX}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={tSleep("sleepTimerCustomIncrementLabel")}
+        style={roundBtn}
+      >
+        <PlusIcon size={15} color={draft >= CUSTOM_TIMER_MAX ? colors.faint : colors.accent} />
+      </Pressable>
+      <Pressable
+        onPress={() => {
+          armSleepTimer(`${draft}m` as TimerOption);
+          setEditing(false);
+        }}
+        hitSlop={6}
+        accessibilityRole="button"
+        accessibilityLabel={tSleep("sleepTimerCustomDoneLabel")}
+        style={[roundBtn, { backgroundColor: colors.button }]}
+      >
+        <CheckIcon size={15} color={colors.buttonText} />
+      </Pressable>
+    </View>
+  ) : (
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 }}>
       {TIMER_OPTIONS.map((option) => (
         <SelectChip
           key={option}
           label={option}
           selected={option === selected}
-          onPress={() => armSleepTimer(option)}
+          onPress={() => pickPreset(option)}
+          height={TIMER_CHIP_HEIGHT}
+          fontSize={12.5}
+          paddingHorizontal={13}
           accessibilityLabel={t("timerAccessibilityLabel", { option })}
         />
       ))}
+      <SelectChip
+        label={hasCustom ? `${customMinutes}m` : ""}
+        selected={hasCustom}
+        onPress={openCustom}
+        height={TIMER_CHIP_HEIGHT}
+        fontSize={12.5}
+        paddingHorizontal={hasCustom ? 12 : 11}
+        icon={<SlidersIcon size={15} color={hasCustom ? colors.buttonText : colors.muted} />}
+        accessibilityLabel={
+          hasCustom
+            ? t("timerAccessibilityLabel", { option: `${customMinutes}m` })
+            : tSleep("sleepTimerOptionCustom")
+        }
+      />
     </View>
   );
+
+  // Fixed-height wrapper so the preset↔stepper swap never reflows the column.
+  return <View style={{ height: TIMER_ROW_HEIGHT, justifyContent: "center" }}>{content}</View>;
 });
 
 // The one line that legitimately ticks every second — a single <Text>. Shows
@@ -280,7 +403,11 @@ const TimerStatusLine = memo(function TimerStatusLine() {
     : option === "∞"
     ? t("timerNoTimer")
     : t("timerFadeHint");
-  return <Text style={{ fontSize: T_CAPTION, color: colors.muted, textAlign: "center" }}>{status}</Text>;
+  return (
+    <Text testID="player-timer-status" style={{ fontSize: T_CAPTION, color: colors.muted, textAlign: "center" }}>
+      {status}
+    </Text>
+  );
 });
 
 // One-time disclosure that playback silently armed a sleep timer for the user
@@ -395,6 +522,7 @@ const PlayPauseButton = memo(function PlayPauseButton() {
 
   return (
     <AnimatedPressable
+      testID="player-playpause"
       onPress={handlePress}
       onPressIn={() => {
         scale.value = withTiming(0.97, PRESS_TIMING);
@@ -493,7 +621,9 @@ function WindDownScreen({ children }: { children: React.ReactNode }) {
         justifyContent: "center",
       }}
     >
-      <View style={{ width: "100%", maxWidth: CONTENT_MAX_W, alignItems: "center", gap: 14 }}>{children}</View>
+      <View testID="player-winddown" style={{ width: "100%", maxWidth: CONTENT_MAX_W, alignItems: "center", gap: 14 }}>
+        {children}
+      </View>
     </GlowBackground>
   );
 }
@@ -662,7 +792,7 @@ export default function PlayerScreen() {
         paddingBottom: Math.max(insets.bottom, 16) + 10,
       }}
     >
-      <View style={{ flex: 1, width: "100%", maxWidth: CONTENT_MAX_W, alignSelf: "center" }}>
+      <View testID="player-screen" style={{ flex: 1, width: "100%", maxWidth: CONTENT_MAX_W, alignSelf: "center" }}>
         <View
           style={{ position: "absolute", top: 0, left: 0, right: 0, alignItems: "center" }}
           pointerEvents="none"

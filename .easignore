@@ -1,0 +1,47 @@
+# EAS Build upload manifest. When this file exists, EAS uses it INSTEAD of
+# .gitignore, so it must contain everything .gitignore has plus the extras.
+
+# ---- mirror of .gitignore ----
+node_modules/
+.expo/
+dist/
+web-build/
+supabase/.temp/
+
+.env
+.env*.local
+
+ios/
+android/
+keystore/
+
+*.p8
+*.jks
+*.p12
+*.key
+*.mobileprovision
+*firebase-adminsdk*.json
+
+.DS_Store
+npm-debug.*
+
+plans
+.impeccable/critique/
+
+# ---- EAS-only excludes: dev / agent tooling, not part of the app ----
+# `.agents/` holds Windows symlinks EAS can't recreate in its shallow clone
+# (EPERM without Developer Mode). The rest is just upload bloat.
+.agents/
+.claude/
+.codex/
+.gemini/
+.vscode/
+.argent/
+.mcp.json
+skills-lock.json
+docs/
+
+# Local screenshot / build output
+out/
+build/
+goldie.config.ts

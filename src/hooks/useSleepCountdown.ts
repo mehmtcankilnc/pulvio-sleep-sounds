@@ -16,20 +16,29 @@ export function useSleepCountdown(tickMs = 1000): SleepCountdown {
   const option = useSleepTimerStore((s) => s.option);
   const startedAt = useSleepTimerStore((s) => s.startedAt);
   const endsAt = useSleepTimerStore((s) => s.endsAt);
+  const pausedRemainingMs = useSleepTimerStore((s) => s.pausedRemainingMs);
   const active = endsAt != null && option !== "∞";
+  // Frozen while playback is paused: hold the last value, run no interval.
+  const ticking = active && pausedRemainingMs == null;
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    if (!active) return;
+    if (!ticking) return;
     setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), tickMs);
     return () => clearInterval(id);
-  }, [active, endsAt, tickMs]);
+  }, [ticking, endsAt, tickMs]);
 
   if (!active || endsAt == null) return { active: false, label: null, progress: 0 };
 
-  const remaining = Math.max(0, endsAt - now);
   const span = startedAt != null ? endsAt - startedAt : 0;
+
+  if (pausedRemainingMs != null) {
+    const progress = span > 0 ? Math.min(1, Math.max(0, (span - pausedRemainingMs) / span)) : 0;
+    return { active: true, label: formatCountdown(pausedRemainingMs), progress };
+  }
+
+  const remaining = Math.max(0, endsAt - now);
   const progress = span > 0 ? Math.min(1, Math.max(0, (now - startedAt!) / span)) : 0;
   return { active: true, label: formatCountdown(remaining), progress };
 }

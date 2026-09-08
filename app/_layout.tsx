@@ -184,6 +184,7 @@ function AppShell() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(onboarding)" />
+        <Stack.Screen name="categories" />
         <Stack.Screen name="sounds" />
         <Stack.Screen name="favorites" />
         <Stack.Screen name="account" />

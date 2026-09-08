@@ -1,5 +1,6 @@
 {
   "tabTitle": "Sounds",
+  "allCategoriesTitle": "All categories",
   "loadError": "Couldn't load sounds. Try again.",
   "empty": "No sounds added yet",
   "emptyBody": "The catalog is empty right now — check back soon.",

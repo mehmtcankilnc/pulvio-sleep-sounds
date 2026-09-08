@@ -126,6 +126,7 @@ export function Dock({ state, descriptors, navigation }: BottomTabBarProps) {
           >
             <Pressable
               onPress={() => router.push("/player")}
+              testID="mini-player"
               style={{ flexDirection: "row", alignItems: "center", gap: 11, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 8 }}
               accessibilityRole="button"
               accessibilityLabel={t("nowPlayingAccessibilityLabel", { title: displayTrack.title })}
@@ -208,6 +209,7 @@ export function Dock({ state, descriptors, navigation }: BottomTabBarProps) {
             return (
               <Pressable
                 key={route.key}
+                testID={`tab-${route.name}`}
                 onPress={() => {
                   const event = navigation.emit({ type: "tabPress", target: route.key, canPreventDefault: true });
                   if (!focused && !event.defaultPrevented) navigation.navigate(route.name);

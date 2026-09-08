@@ -1,0 +1,9 @@
+steps:
+  - echo: Fresh launch, land on Explore.
+  - launch: com.pulvio.app
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
+  - await: { idle: true }
+  - echo: Explore -> "All categories" -> the category grid (cover tiles incl. Brown Noise / Pink Noise / Lo-fi).
+  - tap: { id: browse-all-categories }
+  - await: { visible: { id: category-tile-yagmur } }
+  - await: { idle: true }

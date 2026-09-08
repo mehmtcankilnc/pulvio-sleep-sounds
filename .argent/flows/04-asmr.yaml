@@ -1,0 +1,17 @@
+steps:
+  - echo: Fresh launch, land on Explore.
+  - launch: com.pulvio.app
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
+  - await: { idle: true }
+  - echo: Category grid -> ASMR Tapping tile -> the Sounds list, then the "All ASMR" sub-chip so both Tapping and Keyboard show.
+  - tap: { id: browse-all-categories }
+  - await: { visible: { id: category-tile-yagmur }, timeout: 15000 }
+  - await: { idle: true }
+  - scroll-to: { target: { id: category-tile-tiklama } }
+  - await: { visible: { id: category-tile-tiklama }, timeout: 10000 }
+  - await: { idle: true }
+  - tap: { id: category-tile-tiklama }
+  - await: { visible: { id: subcategory-chip-all }, timeout: 15000 }
+  - await: { idle: true }
+  - tap: { id: subcategory-chip-all }
+  - await: { idle: true }

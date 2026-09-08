@@ -1,0 +1,14 @@
+steps:
+  - echo: Fresh launch, land on Explore.
+  - launch: com.pulvio.app
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
+  - await: { idle: true }
+  - echo: Explore -> "All categories" grid -> Rain tile -> the Sounds list, then clear the filter for the full grouped catalogue.
+  - tap: { id: browse-all-categories }
+  - await: { visible: { id: category-tile-yagmur } }
+  - await: { idle: true }
+  - tap: { id: category-tile-yagmur }
+  - await: { visible: { id: category-chip-all } }
+  - await: { idle: true }
+  - tap: { id: category-chip-all }
+  - await: { idle: true }

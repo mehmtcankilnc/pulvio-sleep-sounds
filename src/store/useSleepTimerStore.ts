@@ -17,9 +17,16 @@ type SleepTimerState = {
   // Playing can disclose "Timer set — 45m. Change below." exactly once per
   // install. Cleared on any explicit (re-)arm or cancel.
   autoArmHint: { at: number; option: TimerOption } | null;
+  // ms left on the countdown at the moment playback was paused. While this is
+  // set the timer is frozen: the schedule is cleared and the UI shows this
+  // value instead of ticking against `endsAt`. `endsAt`/`startedAt` are kept
+  // (for the depleting-ring span) but stale until resume recomputes them.
+  pausedRemainingMs: number | null;
   setOption: (option: TimerOption, endsAt: number | null, startedAt?: number | null) => void;
   markFired: () => void;
   flagAutoArmHint: (option: TimerOption) => void;
+  pauseCountdown: (remainingMs: number) => void;
+  resumeCountdown: (endsAt: number, startedAt: number) => void;
 };
 
 export const useSleepTimerStore = create<SleepTimerState>((set) => ({
@@ -28,7 +35,11 @@ export const useSleepTimerStore = create<SleepTimerState>((set) => ({
   endsAt: null,
   firedAt: null,
   autoArmHint: null,
-  setOption: (option, endsAt, startedAt = null) => set({ option, endsAt, startedAt, firedAt: null, autoArmHint: null }),
+  pausedRemainingMs: null,
+  setOption: (option, endsAt, startedAt = null) =>
+    set({ option, endsAt, startedAt, firedAt: null, autoArmHint: null, pausedRemainingMs: null }),
   markFired: () => set({ firedAt: Date.now() }),
   flagAutoArmHint: (option) => set({ autoArmHint: { at: Date.now(), option } }),
+  pauseCountdown: (remainingMs) => set({ pausedRemainingMs: remainingMs }),
+  resumeCountdown: (endsAt, startedAt) => set({ endsAt, startedAt, pausedRemainingMs: null }),
 }));
