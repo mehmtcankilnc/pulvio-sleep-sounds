@@ -1,37 +1,25 @@
-// Pulvio — indirilen Pixabay mp3'lerini Supabase Storage'a yükler.
+// Pulvio — indirilen Pixabay mp3'lerini Cloudflare R2'ye yükler.
 //
 // Kullanım:
 //   node scripts/upload-audio.mjs "C:\\Users\\mehmt\\Masaüstü\\sounds"
-//   node scripts/upload-audio.mjs --sql        # 0016 migration'ını stdout'a basar (ağ/secret gerekmez)
+//   node scripts/upload-audio.mjs --sql        # katalog migration'ını stdout'a basar (ağ/secret gerekmez)
 //   node scripts/upload-audio.mjs --dry "..."  # yükleme yapmadan eşleşmeyi raporlar
 //
-// Gerekli ortam değişkenleri (yalnızca gerçek yüklemede):
-//   SUPABASE_URL                 (yoksa EXPO_PUBLIC_SUPABASE_URL kullanılır)
-//   SUPABASE_SERVICE_ROLE_KEY    (Dashboard → Project Settings → API → service_role)
+// Gerekli ortam değişkenleri (yalnızca gerçek yüklemede — bkz. scripts/r2.mjs):
+//   R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_PUBLIC_BASE
 // .env dosyası otomatik okunur.
 
 import { readdir, readFile } from "node:fs/promises";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ENTRIES, LICENSE_TYPE } from "./catalog.mjs";
+import { loadEnv, assertR2Env, publicUrl as r2PublicUrl, putObject } from "./r2.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
-const BUCKET = "tracks";
+const KEY_PREFIX = "tracks";
 const DEFAULT_DIR = "C:\\Users\\mehmt\\Masaüstü\\sounds";
 
-// ── .env yükle (bağımlılıksız) ───────────────────────────────────────────
-function loadEnv() {
-  const p = path.join(ROOT, ".env");
-  if (!existsSync(p)) return;
-  for (const line of readFileSync(p, "utf8").split(/\r?\n/)) {
-    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-    if (m && !(m[1] in process.env)) {
-      process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
-    }
-  }
-}
 loadEnv();
 
 const args = process.argv.slice(2);
@@ -39,24 +27,19 @@ const SQL_ONLY = args.includes("--sql");
 const DRY = args.includes("--dry");
 const dirArg = args.find((a) => !a.startsWith("--")) || DEFAULT_DIR;
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-const publicUrl = (storagePath) =>
-  `${SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/${BUCKET}/${storagePath}`;
+// storagePath = "<subcat>/<id>.mp3"  ->  R2 key "tracks/<subcat>/<id>.mp3"
+const publicUrl = (storagePath) => r2PublicUrl(`${KEY_PREFIX}/${storagePath}`);
 
 // ── --sql: migration üret ───────────────────────────────────────────────
 if (SQL_ONLY) {
-  const urlBase = SUPABASE_URL || "https://REPLACE_ME.supabase.co";
   const esc = (s) => s.replace(/'/g, "''");
   const rows = ENTRIES.map((e) => {
-    const su = `${urlBase.replace(/\/$/, "")}/storage/v1/object/public/${BUCKET}/${e.storagePath}`;
+    const su = publicUrl(e.storagePath);
     return `  ('${esc(e.title)}', '${e.category}', '${e.subcategory}', ${e.duration}, '${su}', null, ${e.isPremiumOnly}, '${esc(LICENSE_TYPE)}', '${esc(e.sourceUrl)}')`;
   });
   process.stdout.write(
-    `-- Pulvio — Faz 3: gerçek CC0/Pixabay ses kataloğu.\n` +
-      `-- 0004/0005 placeholder seed + 0011 placeholder kapaklarının yerini alır.\n` +
-      `-- Ses dosyaları Supabase Storage 'tracks' bucket'ına scripts/upload-audio.mjs\n` +
+    `-- Pulvio — gerçek CC0/Pixabay ses kataloğu.\n` +
+      `-- Ses dosyaları Cloudflare R2 'pulvio-media' bucket'ına scripts/upload-audio.mjs\n` +
       `-- ile yüklenir; bu migration yalnızca satırları yazar. cover_url şimdilik null\n` +
       `-- (kategori bazlı görseller sonra üretilecek). Kaynak-of-truth: scripts/catalog.mjs\n\n` +
       `delete from public.tracks;\n\n` +
@@ -105,18 +88,7 @@ if (DRY) {
 }
 
 // ── yükle ──────────────────────────────────────────────────────────────
-if (!SUPABASE_URL || !SERVICE_KEY) {
-  console.error(
-    `\nSUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY tanımlı değil.\n` +
-      `.env dosyasına ekle:\n  SUPABASE_SERVICE_ROLE_KEY=...\n`
-  );
-  process.exit(1);
-}
-
-const { createClient } = await import("@supabase/supabase-js");
-const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
+assertR2Env();
 
 // music-metadata varsa gerçek süreyi oku (isteğe bağlı)
 let parseFile = null;
@@ -127,37 +99,22 @@ try {
   console.log(`  Kesin süre için: npm i -D music-metadata\n`);
 }
 
-// bucket'ı garantiye al (public)
-const { data: buckets } = await supabase.storage.listBuckets();
-if (!buckets?.some((b) => b.name === BUCKET)) {
-  const { error } = await supabase.storage.createBucket(BUCKET, {
-    public: true,
-    allowedMimeTypes: ["audio/mpeg"],
-    fileSizeLimit: "50MB",
-  });
-  if (error) {
-    console.error(`Bucket oluşturulamadı: ${error.message}`);
-    process.exit(1);
-  }
-  console.log(`Bucket oluşturuldu: ${BUCKET} (public)`);
-}
-
 let ok = 0;
 let fail = 0;
 const durationFixes = [];
 for (const { file, entry } of matched) {
   const abs = path.join(dirArg, file);
   const bytes = await readFile(abs);
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(entry.storagePath, bytes, { contentType: "audio/mpeg", upsert: true });
-  if (error) {
-    console.log(`✗ ${entry.storagePath}  — ${error.message}`);
+  const key = `${KEY_PREFIX}/${entry.storagePath}`;
+  try {
+    await putObject(key, bytes, "audio/mpeg");
+  } catch (e) {
+    console.log(`✗ ${key}  — ${e.message}`);
     fail++;
     continue;
   }
   ok++;
-  process.stdout.write(`✓ ${entry.storagePath}\r`);
+  process.stdout.write(`✓ ${key}\r`);
 
   if (parseFile) {
     try {
@@ -178,4 +135,5 @@ if (durationFixes.length) {
   durationFixes.forEach((d) => console.log(`   ${d.id}  ${d.title}: ${d.was} → ${d.real}`));
 }
 
-console.log(`\nSonraki adım: supabase/migrations/0016_real_catalog.sql'i Supabase SQL editöründe çalıştır.`);
+console.log(`\nSonraki adım: yeni parçalar için katalog migration'ını üret (node scripts/upload-audio.mjs --sql)`);
+console.log(`ve Supabase SQL editöründe çalıştır. Mevcut katalog zaten R2 URL'lerini kullanıyor (0021).`);
