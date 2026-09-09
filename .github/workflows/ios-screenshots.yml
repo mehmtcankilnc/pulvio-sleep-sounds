@@ -36,17 +36,13 @@ jobs:
 
       - run: npm ci
 
-      - name: Rebuild argent native deps + warm the tool-server
+      - name: Rebuild argent native deps + prove the tool-server starts
         run: |
           npm rebuild @fails-components/webtransport-transport-http3-quiche tree-sitter tree-sitter-typescript || true
-          # the CLI only waits 15s for the server; a cold runner can need more,
-          # so kick it, wait, then prove it with `tools`.
-          npx --no-install argent server start || true
-          sleep 25
-          npx --no-install argent server status || true
-          echo "--- tool-server logs ---"
-          npx --no-install argent server logs || true
-          echo "--- exposed tools (must be non-empty for the capture to work) ---"
+          # `argent tools` auto-starts the shared background server and lists
+          # what it exposes — non-empty output means the capture step will work.
+          # (Do NOT `argent server start` here — it runs in the foreground and
+          # never returns.)
           npx --no-install argent tools | head -20
 
       - name: goldie + patch
