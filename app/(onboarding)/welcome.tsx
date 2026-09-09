@@ -78,7 +78,7 @@ export default function OnboardingWelcomeScreen() {
             <Text style={{ fontSize: 13, fontWeight: "600", color: colors.muted }}>{t("startOverCta")}</Text>
           </Pressable>
         ) : null}
-        <Pressable onPress={haveAccount} style={{ minHeight: 44, alignItems: "center", justifyContent: "center" }} accessibilityRole="button">
+        <Pressable testID="onboarding-have-account" onPress={haveAccount} style={{ minHeight: 44, alignItems: "center", justifyContent: "center" }} accessibilityRole="button">
           <Text style={{ fontSize: 13, fontWeight: "600", color: colors.muted }}>{t("haveAccountCta")}</Text>
         </Pressable>
       </View>

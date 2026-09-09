@@ -40,3 +40,4 @@ build/
 skills-lock.json
 .argent/config.json
 .argent/install.json
+.argent/secrets.env

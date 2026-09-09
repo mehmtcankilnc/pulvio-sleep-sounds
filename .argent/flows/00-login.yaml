@@ -1,0 +1,17 @@
+steps:
+  - echo: >-
+      Fresh install lands on the onboarding welcome. Sign in with the
+      screenshot/QA account (email + password from {{secret:...}}), end on the
+      Explore tab so the store-shot flows have their Premium state.
+  - launch: com.pulvio.app
+  - await: { visible: { id: onboarding-have-account }, timeout: 30000 }
+  - tap: { id: onboarding-have-account }
+  - await: { visible: { id: login-email }, timeout: 15000 }
+  - tap: { id: login-email }
+  - type: { text: "{{secret:SCREENSHOT_EMAIL}}", submit: false }
+  - tap: { id: login-password }
+  - type: { text: "{{secret:SCREENSHOT_PASSWORD}}", submit: false }
+  - tap: { id: login-submit }
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
+  - await: { visible: { id: tonight-pick } }
+  - await: { idle: true }

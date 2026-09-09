@@ -17,6 +17,16 @@
         "buildType": "apk"
       }
     },
+    "screenshots": {
+      "extends": "preview",
+      "environment": "preview",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_DISABLE_PURCHASES": "1"
+      }
+    },
     "production": {
       "autoIncrement": true
     }

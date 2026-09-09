@@ -11,6 +11,7 @@ type Props = {
   disabled?: boolean;
   loading?: boolean;
   accessibilityLabel?: string;
+  testID?: string;
 };
 
 // Drift primary CTA (DESIGN.md §7): full-width pill, min-h 54, `button` bg,
@@ -19,7 +20,7 @@ type Props = {
 // `danger` / `danger-outline` are reserved for irreversible destructive
 // actions (delete account) — the one place the app uses red. Danger stays
 // flat: the shadow carve-out in DESIGN.md is the ember primary only.
-export function Button({ label, onPress, variant = "primary", disabled, loading, accessibilityLabel }: Props) {
+export function Button({ label, onPress, variant = "primary", disabled, loading, accessibilityLabel, testID }: Props) {
   const colors = useThemeColors();
   const isDisabled = disabled || loading;
   const isPrimary = variant === "primary";
@@ -67,6 +68,7 @@ export function Button({ label, onPress, variant = "primary", disabled, loading,
         });
       }}
       disabled={isDisabled}
+      testID={testID}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: !!isDisabled, busy: !!loading }}

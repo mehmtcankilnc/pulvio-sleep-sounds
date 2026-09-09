@@ -179,7 +179,17 @@ subcategory as a cover-art tile, reached from Explore → "All categories". It
 shows "Brown noise", "Pink noise", "Fireplace", "Forest", "Lo-fi", "Ambient", …
 as literal tile labels, which is what the headline needs.
 
-### Localized headlines (DRAFT — native QA required)
+### Localized headlines
+
+> **Source of truth is now `goldie.config.ts`** (`scenes[].headline`, per
+> locale). Headlines are hard-broken with `\n` and **each `\n`-separated line
+> must stay short** (~12 chars) — the bigger 0.094 type + the left-aligned
+> narrow boxes on `tilt`/`tilt-right` re-wrap a long line into a 3rd row.
+> Keyword density was traded away for brevity; the keyword nouns live in the
+> App Store Connect caption field (metadata), which is what Apple indexes.
+> Scene 1 also has a `subhead` (the panorama right-tile caption). The table
+> below is the earlier long-form draft, kept only as a copy reference — the
+> shipping copy is in the config and still needs native-speaker QA.
 
 | # | PT-BR | DE | FR | ES | TR |
 |---|---|---|---|---|---|
@@ -194,16 +204,51 @@ as literal tile labels, which is what the headline needs.
 
 ## 4. Design spec (Goldie)
 
-- **Templates:** `editorial` (headline top, device below) for all 8. Keep it
-  uniform — the set should read as one system.
-- **Background:** solid plum (`#120a10`) with a soft peach radial glow
-  (`#f2b48c` at ~12% opacity) behind the device. No photos.
-- **Headline type:** bundled `Merriweather` (serif) to echo the app's Lora
-  headings; body/eyebrow in `DM Sans` (echoes Plus Jakarta Sans).
-- **Headline colour:** `#f7ede6` (near-white warm) with the keyword noun in
-  `#f2b48c`. High contrast on plum.
-- **Device frame:** `17-pro-silver` (neutral, doesn't fight the plum). If it still
-  reads too cold, use `theme.screenOnly: true` with rounded corners.
+- **Template:** custom per-scene sequence in `goldie.config.ts`
+  `theme.template` — `["panorama", "tilt-right", "classic", "classic", "tilt",
+  "classic"]`. 6 scenes → **7 output tiles** (scene 1's `panorama` has span 2):
+  | tile | scene | layout | note |
+  |---|---|---|---|
+  | 1 | 01-explore | panorama L | headline only |
+  | 2 | 01-explore | panorama R | `scene.subhead` caption (needs the patch, below) |
+  | 3 | 02-catalogue | tilt-right | catalogue list; top rows visible, crops the bottom |
+  | 4 | 03-sleep-timer | classic | full screen — keeps the timer chips + "fades out in mm:ss" visible |
+  | 5 | 04-asmr | classic | full screen |
+  | 6 | 05-schedule | tilt | tilt = leans left; crops the bottom (schedule arc is up top) |
+  | 7 | 06-categories | classic | full screen |
+  Built-in templates aren't used: `editorial`/`storyboard`/`showcase`/`dynamic`
+  put `duo*` layouts in the mix (pull a second capture from the *next* scene,
+  duplicating screens); `magazine` ends on `minimal` (no headline).
+- **`scripts/patch-goldie.mjs`** — goldie 0.3.1 has no theme knob for headline
+  size and draws copy once (left tile only) on a panorama. This script patches
+  the **global** goldie install for both: `TYPE.headlineSize` 0.082 → 0.094,
+  and a `panorama` scene's `subhead` map renders as the **right-tile** caption
+  (styled like a headline, `headlineColor`). Idempotent; keeps a `.orig`
+  backup; `--revert` restores. **Re-run after any `npm i -g goldie`.** Without
+  it: headlines render at stock size and scene 1's `subhead` stacks under the
+  headline on tile 1 (tile 2 stays bare).
+- **`goldie.design.json`:** kept empty (`{}`). The studio writes design
+  overrides here, but every value we need lives in the config, and a
+  `background` key in the sidecar makes `applyDesign` force its own copy
+  colours over `theme.headlineColor` / `subheadColor`. Config is the single
+  source of truth; re-empty the sidecar after any studio session.
+- **Background:** `linear-gradient(180deg, #2a1820, #1a1016 46%, #0c0710)` —
+  warm plum fading to near-black plum, echoing the app's GlowBackground.
+  `paint()` supports `linear-gradient` only (no radial).
+- **Headline type:** bundled `Merriweather` (serif). `headlineColor` `#f7ede6`
+  (near-white warm), single colour — no per-word accent. Each `headline` is
+  hard-broken to two lines with `\n`. `subhead` is set on **scene 1 only** and
+  is the panorama right-tile caption (see patch above) — not a stacked
+  subtitle.
+- **Copy geometry (classic frames only):** `theme.copyHeightRatio` `0.19`,
+  `theme.deviceWidthRatio` `0.96`. Other layouts carry their own ratios.
+- **Device frame:** iOS gets `17-pro-silver` (config `frame.variant`).
+  Android uses **`assets/pixel-10-pro-dark.png`** via `android.frame` — goldie's
+  bundled silver Pixel skin run through a luminance-darkening remap (opaque px →
+  `[14..104]`, screen cutout kept transparent, same 1410×2968 geometry). It's a
+  graphite bezel that sits into the plum gradient instead of the silver one
+  fighting it. Regenerate: `loadImage(goldie/assets/pixel-10-pro.webp)` → remap →
+  write PNG (see chat history for the exact `node -e`).
 - **Dimensions:** iPhone 6.9" `1320 × 2868`; Pixel `1080 × 1920`. Feature graphic
   (Play, separate asset) `1024 × 500` — reuse frame 1's headline + glow.
 - **Caption length:** ≤ 6 words. Never wrap past 2 lines.
@@ -234,23 +279,33 @@ Then install the app on it and point Metro at it (user starts Metro).
 
 `goldie capture` does one **reinstall** of the APK at the start of a run, which
 **wipes app data** → the premium session is gone and every flow lands on
-onboarding. So the pipeline is run **manually**, which also keeps the session:
+onboarding. So the pipeline is run **manually**, which also keeps the session.
+
+**`scripts/goldie-capture-locales.mjs`** does the whole per-locale loop:
 
 ```
-# 1. sign in once (premium account), demo status bar handled by the loop
-for s in 01-explore 02-catalogue 03-sleep-timer 04-asmr 05-schedule 06-categories; do
-  node_modules/.bin/argent flow run $s --device emulator-5554     # force-stop only, session survives
-  <re-broadcast the SystemUI demo status bar>                     # goldie's own sendDemoCommands set
-  adb -s emulator-5554 exec-out screencap -p > out/raw/pixel-10-pro/$s.png
-done
-# 2. hand-write out/raw/pixel-10-pro/manifest.json  { device, udid, screenshots:[{sceneId,file}], preview:null }
-goldie frame --device pixel-10-pro --locale en                    # → out/screenshots/pixel-10-pro/en/*.png
+# ONE-TIME by hand, before running the script:
+#   1. Pixel_9_Pro emulator up as emulator-5554
+#   2. build/pulvio-preview.apk installed  (Metro NOT needed — preview APK
+#      bundles its own JS)
+#   3. signed in with a PREMIUM account, sitting on the Explore tab
+node scripts/goldie-capture-locales.mjs
 ```
 
-`goldie frame` reads that manifest + the config's per-scene `headline[locale]`,
-composites the bezel + copy, and writes `out/screenshots/<device>/<locale>/`.
-The template is **`uniform`** (not `editorial` — that varies the layout per
-scene, cropping the device and splitting some scenes into 2 tiles).
+For each of the 6 locales it:
+- `adb shell cmd locale set-app-locales com.pulvio.app --locales <bcp47>` —
+  Android-13+ per-app LocaleManager, **no root** (the playstore emulator image
+  can't `adb root`, so `setprop persist.sys.locale` is out). The app reads it on
+  next launch via `Locale.getDefault()`.
+- `am force-stop` (keeps the session — no reinstall)
+- replays the 6 `.argent` flows, re-broadcasts goldie's SystemUI demo status
+  bar (09:41 / full wifi / 100% / no notifications) after each, and
+  `screencap`s the raw over `out/raw/pixel-10-pro/<scene>.png`
+- `goldie frame --device pixel-10-pro --locale <goldie-key>`
+
+`goldie frame` reads `out/raw/pixel-10-pro/manifest.json` + the config's
+per-scene `headline[locale]`, composites the bezel + copy, and writes
+`out/screenshots/<device>/<locale>/`.
 
 **Editing copy / background without touching the config:** `goldie studio`
 serves a browser UI at `http://localhost:4321` — switch device, background,
@@ -359,33 +414,57 @@ Stable, locale-independent selectors for the Goldie / QA flows. Added via option
 
 ---
 
-## 6. iOS hand-off (EAS cloud Mac)
+## 6. iOS set — GitHub Actions (`macos-latest`)
 
-Goldie's App Store path needs macOS + Xcode simulators, which this Windows machine
-does not have. To produce the iPhone 6.9" set:
+goldie's App Store path needs macOS + Xcode iOS simulators. `.github/workflows/
+ios-screenshots.yml` runs the whole thing on a `macos-latest` runner: EAS-local
+build → boot an "iPhone 17 Pro Max" sim → sign in → per-locale capture → frame →
+upload `out/screenshots/iphone-6.9/**` as an artifact.
 
-1. On a Mac (or `eas build` + a macOS CI runner / cloud Mac):
-   - `node 20+`, `ffmpeg` on PATH (goldie 0.3.1 also wants `ffprobe`), Xcode with
-     an **iPhone 17 Pro Max** simulator (goldie's `iphone-6.9` key resolves that
-     `simulatorName`).
-   - `npm i -g goldie` (pin `goldie@0.3.1` for parity with the Android run).
-   - Check out this repo — **`goldie.config.ts` is committed** at the repo root;
-     `.argent/flows/` exists.
-   - Edit `goldie.config.ts`: add `"iphone-6.9"` to `devices`, and set `appPath`
-     to a Release-iphonesimulator `.app` (`eas build -p ios --profile preview`
-     produces one, or build locally).
-   - `goldie doctor`, then `goldie all --device iphone-6.9`.
-2. **The 6 scene flows do not exist yet** (`goldie doctor` → all FAIL). They must
-   be recorded once — on Android here first, then replayed/repaired on the Mac.
-   The capture account is Premium now, so state is no longer a blocker.
-3. If an iOS selector misses on replay, repair that step with Argent on the Mac.
-4. Output lands in `out/screenshots/iphone-6.9/<locale>/` — upload to App Store
-   Connect in the order in §3.
+**One-time setup:**
+1. **Screenshot/QA account** — a real email+password account, then flip it to
+   **Premium in Supabase** directly (the `subscriptions` row / whatever
+   `get_user_status` reads). On iOS `resolveSubscriptionState` trusts the
+   backend `plan` as-is (RevenueCat SDK is unconfigured there), so a DB flag is
+   enough — no purchase.
+2. **Repo secrets** (Settings → Secrets → Actions):
+   - `EXPO_TOKEN` — Expo access token (for `eas build --local` + project env)
+   - `SCREENSHOT_EMAIL`, `SCREENSHOT_PASSWORD`
+3. **Build-time env**: the app's `EXPO_PUBLIC_*` (Supabase, R2 CDN, RevenueCat…)
+   must reach `eas build --local`. Put them on the **`screenshots`** profile's
+   `env` in `eas.json`, or as EAS project env vars, or a committed `.env`.
+4. `eas.json` already has the `screenshots` profile (`extends: preview` +
+   `ios.simulator: true`).
 
-Alternative if no Mac is available: capture the same 6 flows on the Android device
-here, then composite into iPhone 6.9" canvas size with an iPhone frame — store
-dimensions are valid but the status bar / UI chrome will be Android. Lower
-quality; use only as a stopgap.
+**Then:** Actions tab → *iOS store screenshots* → *Run workflow*. Download the
+`ios-screenshots` artifact.
+
+**Pieces it uses (all committed):**
+- `goldie.config.ts` reads `GOLDIE_IOS=1` → `devices: ["iphone-6.9"]` and
+  `GOLDIE_IOS_APP` → `appPath` (no file mutation in CI). `frame` is
+  `./assets/iphone-17-pro-dark.png` — the dark bezel, recoloured like
+  `android.frame` (goldie has no dark iPhone variant).
+- `scripts/patch-goldie.mjs` — must run on the runner too (panorama tile-2
+  caption + bigger headline live in the patch).
+- `.argent/flows/00-login.yaml` — types `{{secret:SCREENSHOT_EMAIL/PASSWORD}}`
+  (from `ARGENT_SECRET_*` env) into the login screen (`login-email` /
+  `login-password` / `login-submit` testIDs, `onboarding-have-account` on the
+  welcome screen), ends on Explore. Session survives the locale loop.
+- `scripts/goldie-capture-locales-ios.mjs` — iOS twin of the Android script:
+  runs `00-login` once, then per locale sets `AppleLocale`/`AppleLanguages`,
+  `terminate`s (no reinstall — keeps the session), replays the 6 flows, pins
+  the status bar to 9:41, `xcrun simctl io … screenshot`s each raw, and
+  `goldie frame --device iphone-6.9 --locale <x>`. Writes its own manifest.
+
+**Verify `00-login` before the first CI run** (cheaper than a 60-min runner):
+set `ARGENT_SECRET_SCREENSHOT_EMAIL` / `…PASSWORD` (env or `.argent/secrets.env`),
+put a simulator/emulator on a signed-out fresh install, then
+`npx argent flow run 00-login --device <id>`. If a selector or the `type:` shape
+needs a tweak, the failure output names it.
+
+Stopgap without CI: re-`goldie frame` the existing Android raws at the
+`iphone-6.9` canvas (1320×2868) — valid store dimensions but the Android status
+bar / nav pill show through. Low quality; last resort.
 
 ---
 

@@ -109,6 +109,7 @@ export default function LoginScreen() {
     <AuthScaffold eyebrow={t("login.eyebrow")} title={t("login.title")}>
       <View style={{ gap: 14 }}>
         <TextField
+          testID="login-email"
           kind="email"
           label={t("field.email")}
           placeholder={t("field.emailPlaceholder")}
@@ -124,6 +125,7 @@ export default function LoginScreen() {
         />
         <TextField
           ref={passwordRef}
+          testID="login-password"
           kind="password"
           label={t("field.password")}
           placeholder={t("field.passwordPlaceholder")}
@@ -182,7 +184,7 @@ export default function LoginScreen() {
           </View>
         ) : null}
 
-        <Button label={t("login.submit")} onPress={handleLogin} loading={loading} />
+        <Button testID="login-submit" label={t("login.submit")} onPress={handleLogin} loading={loading} />
       </View>
 
       <OrDivider label={t("or")} />
