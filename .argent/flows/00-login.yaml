@@ -1,17 +1,25 @@
 steps:
   - echo: >-
       Fresh install lands on the onboarding welcome. Sign in with the
-      screenshot/QA account (email + password from {{secret:...}}), end on the
-      Explore tab so the store-shot flows have their Premium state.
+      screenshot/QA account (email + password from {{secret:...}}), dismiss the
+      OS notification prompt, end on the Explore tab so the store-shot flows
+      have their Premium state. Runs at the en-US default locale, before any
+      per-locale switch, so the en login strings are the stable selectors.
   - launch: com.pulvio.app
-  - await: { visible: { id: onboarding-have-account }, timeout: 30000 }
-  - tap: { id: onboarding-have-account }
-  - await: { visible: { id: login-email }, timeout: 15000 }
-  - tap: { id: login-email }
-  - type: { text: "{{secret:SCREENSHOT_EMAIL}}", submit: false }
-  - tap: { id: login-password }
-  - type: { text: "{{secret:SCREENSHOT_PASSWORD}}", submit: false }
-  - tap: { id: login-submit }
+  - await: { visible: { text: "I already have an account" }, timeout: 30000 }
+  - tap: { text: "I already have an account" }
+  - await: { visible: { text: "Log in" }, timeout: 15000 }
+  - type: { into: { text: "you@example.com" }, text: "{{secret:SCREENSHOT_EMAIL}}", submit: false }
+  - type: { into: { text: "[password]" }, text: "{{secret:SCREENSHOT_PASSWORD}}", submit: false }
+  - tap: { text: "Log in" }
+  # auth round-trip, then the notification permission prompt on first run
+  - wait: 3500
+  - when: { visible: { id: permission_allow_button } } # Android system dialog
+    steps:
+      - tap: { id: permission_allow_button }
+  - when: { visible: { text: "Allow", role: button } } # iOS system alert
+    steps:
+      - tap: { text: "Allow", role: button }
   - await: { visible: { id: explore-screen }, timeout: 30000 }
   - await: { visible: { id: tonight-pick } }
   - await: { idle: true }

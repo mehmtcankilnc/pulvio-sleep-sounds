@@ -456,11 +456,11 @@ upload `out/screenshots/iphone-6.9/**` as an artifact.
   the status bar to 9:41, `xcrun simctl io … screenshot`s each raw, and
   `goldie frame --device iphone-6.9 --locale <x>`. Writes its own manifest.
 
-**Verify `00-login` before the first CI run** (cheaper than a 60-min runner):
-set `ARGENT_SECRET_SCREENSHOT_EMAIL` / `…PASSWORD` (env or `.argent/secrets.env`),
-put a simulator/emulator on a signed-out fresh install, then
-`npx argent flow run 00-login --device <id>`. If a selector or the `type:` shape
-needs a tweak, the failure output names it.
+`00-login` is **verified on Android** (fresh install → sign in → dismiss the
+notification prompt → Explore, Premium): the `type: { into, text, submit }`
+shape and the en-US login-screen text selectors are proven. Untested on iOS:
+the second `when:` block (iOS system-alert "Allow" button) — adjust its selector
+on the first CI run if the runner log shows it missed.
 
 Stopgap without CI: re-`goldie frame` the existing Android raws at the
 `iphone-6.9` canvas (1320×2868) — valid store dimensions but the Android status
