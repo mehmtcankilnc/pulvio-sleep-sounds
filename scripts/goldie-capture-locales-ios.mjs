@@ -88,8 +88,8 @@ for (const [goldieLoc, appleLocale, appleLang] of LOCALES) {
     process.stdout.write(`  ${scene} … `);
     execSync(`npx --no-install argent flow run ${scene} --device ${UDID}`, { stdio: ["ignore", "ignore", "inherit"] });
     statusBar();
-    const png = execSync(`xcrun simctl io ${UDID} screenshot --type png -`, { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 });
-    writeFileSync(`out/raw/iphone-6.9/${scene}.png`, png);
+    // simctl io screenshot has no stdout mode — write straight to the file
+    execSync(`xcrun simctl io ${UDID} screenshot --type png "${RAW}/${scene}.png"`, { stdio: "ignore" });
     console.log("captured");
   }
 
