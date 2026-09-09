@@ -96,9 +96,16 @@ jobs:
       - name: Capture all locales
         env:
           GOLDIE_IOS: "1"
-          ARGENT_SECRET_SCREENSHOT_EMAIL: ${{ secrets.SCREENSHOT_EMAIL }}
-          ARGENT_SECRET_SCREENSHOT_PASSWORD: ${{ secrets.SCREENSHOT_PASSWORD }}
-        run: node scripts/goldie-capture-locales-ios.mjs "$SIM_UDID"
+          SCREENSHOT_EMAIL: ${{ secrets.SCREENSHOT_EMAIL }}
+          SCREENSHOT_PASSWORD: ${{ secrets.SCREENSHOT_PASSWORD }}
+        run: |
+          # the shared tool-server (started in an earlier step, without these
+          # vars) resolves {{secret:NAME}} against <project>/.argent/secrets.env
+          # per request, so writing it now is enough — no server restart needed.
+          mkdir -p .argent
+          printf 'SCREENSHOT_EMAIL=%s\nSCREENSHOT_PASSWORD=%s\n' \
+            "$SCREENSHOT_EMAIL" "$SCREENSHOT_PASSWORD" > .argent/secrets.env
+          node scripts/goldie-capture-locales-ios.mjs "$SIM_UDID"
 
       - uses: actions/upload-artifact@v4
         if: always()
