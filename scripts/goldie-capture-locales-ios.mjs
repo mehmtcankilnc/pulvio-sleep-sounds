@@ -62,6 +62,15 @@ function statusBar() {
   sh(`xcrun simctl status_bar ${UDID} override --time "9:41" --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4 --dataNetwork wifi`);
 }
 
+// the argent CLI only waits 15s for its tool-server; make sure it is already up
+try {
+  execSync(`npx --no-install argent server start`, { stdio: "ignore" });
+  await new Promise((r) => setTimeout(r, 15000));
+  execSync(`npx --no-install argent tools`, { stdio: "ignore" });
+} catch {
+  console.warn("argent server warm-up failed — flow runs may time out");
+}
+
 // sign in once — the session in the app container survives locale changes and
 // `terminate` (only `reinstall-app` would wipe it, which this script avoids)
 console.log("signing in (00-login) …");

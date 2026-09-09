@@ -21,6 +21,8 @@ jobs:
     timeout-minutes: 90
     env:
       SIM_NAME: "iPhone 17 Pro Max" # the name goldie's iphone-6.9 key resolves
+      ARGENT_TELEMETRY: "0"
+      ARGENT_MCP_LOG: "1"
     steps:
       - uses: actions/checkout@v4
 
@@ -29,11 +31,26 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Native build tools (cmake for argent's webtransport/quiche dep)
+        run: brew install ffmpeg cmake
+
       - run: npm ci
 
-      - name: Tooling (ffmpeg, goldie + patch)
+      - name: Rebuild argent native deps + warm the tool-server
         run: |
-          brew install ffmpeg
+          npm rebuild @fails-components/webtransport-transport-http3-quiche tree-sitter tree-sitter-typescript || true
+          # the CLI only waits 15s for the server; a cold runner can need more,
+          # so kick it, wait, then prove it with `tools`.
+          npx --no-install argent server start || true
+          sleep 25
+          npx --no-install argent server status || true
+          echo "--- tool-server logs ---"
+          npx --no-install argent server logs || true
+          echo "--- exposed tools (must be non-empty for the capture to work) ---"
+          npx --no-install argent tools | head -20
+
+      - name: goldie + patch
+        run: |
           npm i -g goldie@0.3.1 eas-cli
           node scripts/patch-goldie.mjs
 
