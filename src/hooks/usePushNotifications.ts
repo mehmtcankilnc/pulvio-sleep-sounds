@@ -10,6 +10,9 @@ export function usePushNotifications() {
 
   useEffect(() => {
     if (!session) return;
+    // Store-screenshot builds skip this: the iOS notification prompt is a
+    // SpringBoard alert the capture automation can't see or dismiss.
+    if (process.env.EXPO_PUBLIC_DISABLE_PUSH_PROMPT === "1") return;
     registerForPushNotifications();
   }, [session]);
 }

@@ -1,12 +1,15 @@
 steps:
   - echo: >-
       Fresh install lands on the onboarding welcome. Sign in with the
-      screenshot/QA account (email + password from {{secret:...}}), dismiss the
-      OS notification prompt, end on the Explore tab so the store-shot flows
-      have their Premium state. Runs at the en-US default locale, so the en
-      login strings are stable selectors. The secure field carries no readable
-      text on either tree (iOS redacts it, Android shows "[password]"), so it
-      is reached relationally as the input right after the "Password" label.
+      screenshot/QA account (email + password from {{secret:...}}), end on the
+      Explore tab so the store-shot flows have their Premium state. Runs at the
+      en-US default locale, so the en login strings are stable selectors. The
+      secure field carries no readable text on either tree, so it is reached
+      relationally as the input right after the "Password" label.
+      The store-screenshot iOS build sets EXPO_PUBLIC_DISABLE_PUSH_PROMPT=1, so
+      there is no notification alert on iOS (a SpringBoard surface the runner,
+      pinned to the app, cannot see). A regular Android build still shows the
+      in-app system dialog, handled below.
   - launch: com.pulvio.app
   - await: { visible: { text: "I already have an account" }, timeout: 30000 }
   - tap: { text: "I already have an account" }
@@ -14,16 +17,10 @@ steps:
   - type: { into: { text: "you@example.com" }, text: "{{secret:SCREENSHOT_EMAIL}}", submit: false }
   - type: { into: { any: true, next: { text: "Password" } }, text: "{{secret:SCREENSHOT_PASSWORD}}", submit: false }
   - tap: { text: "Log in" }
-  # First run always prompts for notifications once it reaches the app. Wait it
-  # out and dismiss — a system surface, so platform-split.
   - when: { platform: android }
     steps:
       - await: { visible: { id: permission_allow_button }, timeout: 25000 }
       - tap: { id: permission_allow_button }
-  - when: { platform: ios }
-    steps:
-      - await: { visible: { text: "Allow" }, timeout: 25000 }
-      - tap: { text: "Allow" }
   - await: { visible: { id: explore-screen }, timeout: 30000 }
   - await: { visible: { id: tonight-pick } }
   - await: { idle: true }

@@ -24,7 +24,8 @@
         "simulator": true
       },
       "env": {
-        "EXPO_PUBLIC_DISABLE_PURCHASES": "1"
+        "EXPO_PUBLIC_DISABLE_PURCHASES": "1",
+        "EXPO_PUBLIC_DISABLE_PUSH_PROMPT": "1"
       }
     },
     "production": {
