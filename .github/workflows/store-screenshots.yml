@@ -1,22 +1,26 @@
-name: iOS store screenshots
+name: Store screenshots
 
-# Manual only. Produces out/screenshots/iphone-6.9/<locale>/ and uploads it as
-# an artifact. See docs/ASO_SCREENSHOTS.md §6.
+# Manual. Produces the localized store screenshot sets and uploads them as
+# artifacts (ios-screenshots, android-screenshots). See docs/ASO_SCREENSHOTS.md.
 #
 # Required repo secrets:
-#   EXPO_TOKEN            — Expo access token (eas build --local, project env)
-#   SCREENSHOT_EMAIL      — the QA/screenshot account (marked Premium in Supabase)
-#   SCREENSHOT_PASSWORD   — its password
+#   EXPO_TOKEN           — Expo access token (eas build --local + project env)
+#   SCREENSHOT_EMAIL     — the QA/screenshot account (Premium in Supabase)
+#   SCREENSHOT_PASSWORD  — its password
 #
-# The app's build-time EXPO_PUBLIC_* env must reach `eas build --local` — put it
-# on the `screenshots` profile's `env` in eas.json, or in EAS project env vars
-# (read when EXPO_TOKEN is set), or a committed .env.
+# The app's EXPO_PUBLIC_* build env must reach `eas build --local`: the
+# `screenshots` profile in eas.json sets `environment: preview`, so EAS project
+# env vars for `preview` are pulled in when EXPO_TOKEN is set.
 
 on:
   workflow_dispatch:
 
+concurrency:
+  group: store-screenshots
+  cancel-in-progress: true
+
 jobs:
-  screenshots:
+  ios:
     runs-on: macos-latest
     timeout-minutes: 90
     env:
@@ -25,7 +29,6 @@ jobs:
       ARGENT_MCP_LOG: "1"
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -39,10 +42,6 @@ jobs:
       - name: Rebuild argent native deps + prove the tool-server starts
         run: |
           npm rebuild @fails-components/webtransport-transport-http3-quiche tree-sitter tree-sitter-typescript || true
-          # `argent tools` auto-starts the shared background server and lists
-          # what it exposes — non-empty output means the capture step will work.
-          # (Do NOT `argent server start` here — it runs in the foreground and
-          # never returns.)
           npx --no-install argent tools | head -20
 
       - name: goldie + patch
@@ -99,9 +98,6 @@ jobs:
           SCREENSHOT_EMAIL: ${{ secrets.SCREENSHOT_EMAIL }}
           SCREENSHOT_PASSWORD: ${{ secrets.SCREENSHOT_PASSWORD }}
         run: |
-          # the shared tool-server (started in an earlier step, without these
-          # vars) resolves {{secret:NAME}} against <project>/.argent/secrets.env
-          # per request, so writing it now is enough — no server restart needed.
           mkdir -p .argent
           printf 'SCREENSHOT_EMAIL=%s\nSCREENSHOT_PASSWORD=%s\n' \
             "$SCREENSHOT_EMAIL" "$SCREENSHOT_PASSWORD" > .argent/secrets.env
@@ -114,3 +110,74 @@ jobs:
           path: |
             out/screenshots/iphone-6.9/**
             out/raw/iphone-6.9/**
+
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      ARGENT_TELEMETRY: "0"
+      ARGENT_MCP_LOG: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Enable KVM (hardware-accelerated emulator)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Native build tools
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg cmake
+
+      - run: npm ci
+
+      - name: Rebuild argent native deps + prove the tool-server starts
+        run: |
+          npm rebuild @fails-components/webtransport-transport-http3-quiche tree-sitter tree-sitter-typescript || true
+          npx --no-install argent tools | head -20
+
+      - name: goldie + patch
+        run: |
+          npm i -g goldie@0.3.1 eas-cli
+          node scripts/patch-goldie.mjs
+
+      - name: Build the Android APK (EAS local)
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          eas build --local --non-interactive \
+            --platform android --profile screenshots \
+            --output "$RUNNER_TEMP/pulvio.apk"
+          mkdir -p build
+          cp "$RUNNER_TEMP/pulvio.apk" build/pulvio-preview.apk
+
+      - name: Capture all locales on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          SCREENSHOT_EMAIL: ${{ secrets.SCREENSHOT_EMAIL }}
+          SCREENSHOT_PASSWORD: ${{ secrets.SCREENSHOT_PASSWORD }}
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          disable-animations: true
+          script: |
+            mkdir -p .argent
+            printf 'SCREENSHOT_EMAIL=%s\nSCREENSHOT_PASSWORD=%s\n' \
+              "$SCREENSHOT_EMAIL" "$SCREENSHOT_PASSWORD" > .argent/secrets.env
+            adb install -r build/pulvio-preview.apk
+            node scripts/goldie-capture-locales.mjs
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-screenshots
+          path: |
+            out/screenshots/pixel-10-pro/**
+            out/raw/pixel-10-pro/**

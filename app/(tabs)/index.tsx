@@ -14,6 +14,7 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "
 import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useBottomTabBarHeight } from "expo-router/js-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserStore } from "../../src/store/useUserStore";
 import { useTracks } from "../../src/hooks/useTracks";
 import { useFavorites } from "../../src/hooks/useFavorites";
@@ -328,6 +329,7 @@ export default function ExploreScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const tabBarHeight = useBottomTabBarHeight();
+  const insets = useSafeAreaInsets();
   const { sections, loading, error, refetch } = useTracks();
   const { favoriteIds, refetch: refetchFavorites } = useFavorites();
   const continueListeningId = useContinueListening();
@@ -415,7 +417,7 @@ export default function ExploreScreen() {
         contentContainerStyle={{
           ...centeredColumn,
           paddingHorizontal: 20,
-          paddingTop: 32,
+          paddingTop: insets.top + 12,
           paddingBottom: tabBarHeight + 24,
           gap: 16,
         }}

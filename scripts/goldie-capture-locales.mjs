@@ -1,27 +1,24 @@
 #!/usr/bin/env node
 /**
- * Per-locale screenshot capture for the store set.
+ * Per-locale Android screenshot capture for the store set.
  *
- * `goldie capture` reinstalls the APK on every run, which wipes app data and
- * drops the signed-in session, so it can't produce the Premium/Explore state
- * the flows expect. This does the capture manually instead — force-stop only,
- * so the Supabase session in AsyncStorage survives across locales.
+ * `goldie capture` reinstalls the APK every run, wiping app data and the
+ * signed-in session, so it can't produce the Premium/Explore state the flows
+ * expect. This drives the capture manually instead — `00-login` once, then
+ * force-stop only (no reinstall), so the Supabase session survives the loop.
  *
- * PREREQUISITES (do these once, by hand, before running):
- *   1. Emulator running as `emulator-5554` (goldie's Pixel_9_Pro AVD:
- *        argent boot, or `emulator -avd Pixel_9_Pro`).
- *   2. build/pulvio-preview.apk installed on it.
- *   3. Signed in with a PREMIUM account, sitting on the Explore tab.
- *      (Metro is NOT needed — the preview APK bundles its own JS.)
+ * PREREQUISITES:
+ *   1. Emulator running as `emulator-5554`, API 33+ (per-app LocaleManager).
+ *   2. build/pulvio-preview.apk installed on it (a `screenshots`-profile APK:
+ *      it sets EXPO_PUBLIC_DISABLE_PUSH_PROMPT=1 so login has no OS prompt).
+ *   3. SCREENSHOT_EMAIL / SCREENSHOT_PASSWORD available to argent as secrets
+ *      (env ARGENT_SECRET_*, or .argent/secrets.env). Account = Premium.
  *
  * Then:  node scripts/goldie-capture-locales.mjs
- *
- * For each locale it: sets the per-app locale (Android 13+ LocaleManager, no
- * root), force-stops, replays the six .argent flows, screencaps each raw over
- * out/raw/pixel-10-pro/<scene>.png, and runs `goldie frame --locale <x>`.
  */
 import { execSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { writeFileSync, mkdirSync } from "node:fs";
+import { resolve } from "node:path";
 
 const DEVICE = "emulator-5554";
 const PKG = "com.pulvio.app";
@@ -51,12 +48,31 @@ function demoStatusBar() {
   d(`-e command notifications -e visible false`);
 }
 
-// sanity: device present
 const devs = sh(`adb devices`);
 if (!devs.includes(`${DEVICE}\tdevice`)) {
-  console.error(`${DEVICE} not attached. Boot the Pixel_9_Pro emulator first.`);
+  console.error(`${DEVICE} not attached. Boot an API 33+ emulator first.`);
   process.exit(1);
 }
+
+const RAW = "out/raw/pixel-10-pro";
+mkdirSync(RAW, { recursive: true });
+writeFileSync(`${RAW}/manifest.json`, JSON.stringify({
+  device: "pixel-10-pro",
+  udid: DEVICE,
+  capturedAt: new Date().toISOString(),
+  screenshots: SCENES.map((s) => ({ sceneId: s, file: resolve(`${RAW}/${s}.png`) })),
+  preview: null,
+}, null, 2));
+
+// nudge argent's shared tool-server up before the first flow run
+try {
+  execSync(`npx --no-install argent tools`, { stdio: "ignore" });
+} catch {
+  console.warn("argent tool-server did not answer — flow runs may time out");
+}
+
+console.log("signing in (00-login) …");
+execSync(`npx --no-install argent flow run 00-login --device ${DEVICE}`, { stdio: ["ignore", "inherit", "inherit"] });
 
 for (const [goldieLoc, bcp] of LOCALES) {
   console.log(`\n=== ${goldieLoc} (${bcp}) ===`);
@@ -68,9 +84,8 @@ for (const [goldieLoc, bcp] of LOCALES) {
     process.stdout.write(`  ${scene} … `);
     execSync(`npx --no-install argent flow run ${scene} --device ${DEVICE}`, { stdio: ["ignore", "ignore", "inherit"] });
     demoStatusBar(); // the app launch can reset it
-    // capture the PNG as bytes (no shell redirect — cmd.exe mangles binary)
     const png = execSync(`adb -s ${DEVICE} exec-out screencap -p`, { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 });
-    writeFileSync(`out/raw/pixel-10-pro/${scene}.png`, png);
+    writeFileSync(`${RAW}/${scene}.png`, png);
     console.log("captured");
   }
 
@@ -78,6 +93,5 @@ for (const [goldieLoc, bcp] of LOCALES) {
   execSync(`npx goldie frame --device pixel-10-pro --locale ${goldieLoc}`, { stdio: ["ignore", "ignore", "inherit"] });
 }
 
-// leave the app locale back on English
 adb(`shell cmd locale set-app-locales ${PKG} --locales en-US`);
 console.log(`\nDone. Framed sets in out/screenshots/pixel-10-pro/<locale>/`);

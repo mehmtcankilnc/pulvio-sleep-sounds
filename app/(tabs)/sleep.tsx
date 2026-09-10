@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useBottomTabBarHeight } from "expo-router/js-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle, Path } from "react-native-svg";
 import DatePicker from "react-native-date-picker";
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withSequence, withTiming } from "react-native-reanimated";
@@ -424,6 +425,7 @@ export default function SleepScreen() {
   const { t } = useTranslation("sleep");
   const colors = useThemeColors();
   const tabBarHeight = useBottomTabBarHeight();
+  const insets = useSafeAreaInsets();
   const {
     schedule,
     loading: scheduleLoading,
@@ -523,7 +525,7 @@ export default function SleepScreen() {
       <ScrollView
         testID="sleep-screen"
         style={{ flex: 1 }}
-        contentContainerStyle={{ ...centeredColumn, paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
+        contentContainerStyle={{ ...centeredColumn, paddingHorizontal: 20, paddingTop: insets.top + 12, paddingBottom: tabBarHeight + 24, gap: 16 }}
       >
         <ScreenHeader eyebrow={t("eyebrow")} title={t("title")} trailing={<PremiumBadge />} />
 

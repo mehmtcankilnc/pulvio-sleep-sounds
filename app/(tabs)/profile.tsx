@@ -6,6 +6,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useBottomTabBarHeight } from "expo-router/js-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import DatePicker from "react-native-date-picker";
 import { signOut, deleteAccount } from "../../src/lib/auth";
@@ -212,6 +213,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const tabBarHeight = useBottomTabBarHeight();
+  const insets = useSafeAreaInsets();
   // A guest (paywall skip, or an anonymous purchase) holds a real session
   // with no email/password behind it — signing out would abandon it for
   // good, with no way back in, so that row is hidden for them entirely (see
@@ -367,7 +369,7 @@ export default function SettingsScreen() {
     >
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ ...centeredColumn, paddingHorizontal: 20, paddingTop: 32, paddingBottom: tabBarHeight + 24, gap: 16 }}
+        contentContainerStyle={{ ...centeredColumn, paddingHorizontal: 20, paddingTop: insets.top + 12, paddingBottom: tabBarHeight + 24, gap: 16 }}
       >
         <ScreenHeader eyebrow={t("screenEyebrow")} title={t("screenTitle")} />
 
