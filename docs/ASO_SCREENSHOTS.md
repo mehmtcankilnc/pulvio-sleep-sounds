@@ -421,6 +421,14 @@ ios-screenshots.yml` runs the whole thing on a `macos-latest` runner: EAS-local
 build → boot an "iPhone 17 Pro Max" sim → sign in → per-locale capture → frame →
 upload `out/screenshots/iphone-6.9/**` as an artifact.
 
+**Android is NOT in this workflow.** argent's `simulator-server` can't discover
+an emulator that a GH-Actions runner (`reactivecircus/android-emulator-runner`)
+booted — it never writes the `avd/running/pid_*.ini` argent reads — and letting
+argent boot the emulator on the runner was never made to work. Android is
+captured locally instead: a fresh `screenshots`-profile APK on a Pixel emulator,
+then `node scripts/goldie-capture-locales.mjs` (§4). The login + per-locale loop
+is identical to iOS.
+
 **One-time setup:**
 1. **Screenshot/QA account** — a real email+password account, then flip it to
    **Premium in Supabase** directly (the `subscriptions` row / whatever

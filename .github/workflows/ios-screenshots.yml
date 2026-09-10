@@ -1,0 +1,118 @@
+name: iOS store screenshots
+
+# Manual. Produces the localized iPhone 6.9" store screenshot set and uploads
+# it as the `ios-screenshots` artifact. See docs/ASO_SCREENSHOTS.md §6.
+#
+# Android is captured locally instead (scripts/goldie-capture-locales.mjs on a
+# Pixel emulator) — argent's simulator-server can't discover an emulator that a
+# GH-Actions runner booted, and letting argent boot it there was never made to
+# work reliably.
+#
+# Required repo secrets:
+#   EXPO_TOKEN           — Expo access token (eas build --local + project env)
+#   SCREENSHOT_EMAIL     — the QA/screenshot account (Premium in Supabase)
+#   SCREENSHOT_PASSWORD  — its password
+#
+# The app's EXPO_PUBLIC_* build env must reach `eas build --local`: the
+# `screenshots` profile in eas.json sets `environment: preview`, so EAS project
+# env vars for `preview` are pulled in when EXPO_TOKEN is set.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ios-store-screenshots
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 90
+    env:
+      SIM_NAME: "iPhone 17 Pro Max" # the name goldie's iphone-6.9 key resolves
+      ARGENT_TELEMETRY: "0"
+      ARGENT_MCP_LOG: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Native build tools (cmake for argent's webtransport/quiche dep)
+        run: brew install ffmpeg cmake
+
+      - run: npm ci
+
+      - name: Rebuild argent native deps
+        # Native rebuild only — do NOT start the tool-server here. It idles out
+        # after 30 min and the EAS build below is ~40 min; the capture script
+        # starts (and retries) the server itself, right before it's used.
+        run: npm rebuild @fails-components/webtransport-transport-http3-quiche tree-sitter tree-sitter-typescript || true
+
+      - name: goldie + patch
+        run: |
+          npm i -g goldie@0.3.1 eas-cli
+          node scripts/patch-goldie.mjs
+
+      - name: Build the iOS simulator app (EAS local)
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          eas build --local --non-interactive \
+            --platform ios --profile screenshots \
+            --output "$RUNNER_TEMP/pulvio-sim.tar.gz"
+          mkdir -p "$RUNNER_TEMP/app"
+          tar -xzf "$RUNNER_TEMP/pulvio-sim.tar.gz" -C "$RUNNER_TEMP/app"
+          APP="$(find "$RUNNER_TEMP/app" -maxdepth 3 -name '*.app' | head -1)"
+          test -n "$APP" || { echo "no .app in the EAS artifact"; exit 1; }
+          echo "GOLDIE_IOS_APP=$APP" >> "$GITHUB_ENV"
+
+      - name: Boot an "$SIM_NAME" simulator (alias an available 6.9" device)
+        run: |
+          if ! xcrun simctl list devices | grep -q "$SIM_NAME ("; then
+            RUNTIME="$(xcrun simctl list runtimes -j | node -e "
+              const r = JSON.parse(require('fs').readFileSync(0,'utf8')).runtimes
+                .filter(x => x.platform === 'iOS' && x.isAvailable);
+              if (!r.length) { console.error('no iOS runtime'); process.exit(1); }
+              console.log(r[r.length - 1].identifier);
+            ")"
+            DEVTYPE="$(xcrun simctl list devicetypes -j | node -e "
+              const d = JSON.parse(require('fs').readFileSync(0,'utf8')).devicetypes;
+              const pick = d.find(x => /iPhone (17|16|15) Pro Max/.test(x.name)) || d.find(x => /Pro Max/.test(x.name));
+              console.log(pick.identifier);
+            ")"
+            xcrun simctl create "$SIM_NAME" "$DEVTYPE" "$RUNTIME"
+          fi
+          xcrun simctl boot "$SIM_NAME"
+          xcrun simctl bootstatus "$SIM_NAME" -b
+          UDID="$(xcrun simctl list devices -j | node -e "
+            const d = JSON.parse(require('fs').readFileSync(0,'utf8')).devices;
+            for (const list of Object.values(d))
+              for (const dev of list)
+                if (dev.name === process.env.SIM_NAME && dev.state === 'Booted') { console.log(dev.udid); process.exit(0); }
+            process.exit(1);
+          ")"
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Install the app
+        run: xcrun simctl install "$SIM_UDID" "$GOLDIE_IOS_APP"
+
+      - name: Capture all locales
+        env:
+          GOLDIE_IOS: "1"
+          SCREENSHOT_EMAIL: ${{ secrets.SCREENSHOT_EMAIL }}
+          SCREENSHOT_PASSWORD: ${{ secrets.SCREENSHOT_PASSWORD }}
+        run: |
+          mkdir -p .argent
+          printf 'SCREENSHOT_EMAIL=%s\nSCREENSHOT_PASSWORD=%s\n' \
+            "$SCREENSHOT_EMAIL" "$SCREENSHOT_PASSWORD" > .argent/secrets.env
+          node scripts/goldie-capture-locales-ios.mjs "$SIM_UDID"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-screenshots
+          path: |
+            out/screenshots/iphone-6.9/**
+            out/raw/iphone-6.9/**
