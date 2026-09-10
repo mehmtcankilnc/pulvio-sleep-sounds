@@ -14,13 +14,20 @@ name: Store screenshots
 
 on:
   workflow_dispatch:
+    inputs:
+      platform:
+        description: Which platform(s) to capture
+        type: choice
+        default: both
+        options: [both, ios, android]
 
 concurrency:
-  group: store-screenshots
+  group: store-screenshots-${{ github.event.inputs.platform }}
   cancel-in-progress: true
 
 jobs:
   ios:
+    if: ${{ github.event.inputs.platform == 'both' || github.event.inputs.platform == 'ios' }}
     runs-on: macos-latest
     timeout-minutes: 90
     env:
@@ -113,11 +120,18 @@ jobs:
             out/raw/iphone-6.9/**
 
   android:
+    if: ${{ github.event.inputs.platform == 'both' || github.event.inputs.platform == 'android' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
       ARGENT_TELEMETRY: "0"
       ARGENT_MCP_LOG: "1"
+      # argent's simulator-server (Rust) discovers the running emulator by
+      # reading $XDG_RUNTIME_DIR/avd/running/pid_*.ini. GH runners leave
+      # XDG_RUNTIME_DIR unset, so the emulator writes that .ini to
+      # ~/.android/avd/running instead and simulator-server finds nothing.
+      # Pin it for both, and (below) copy the .ini into place after boot.
+      XDG_RUNTIME_DIR: /home/runner/.xdgr
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -125,8 +139,9 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Enable KVM (hardware-accelerated emulator)
+      - name: XDG runtime dir + KVM
         run: |
+          mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
@@ -187,6 +202,9 @@ jobs:
           script: |
             mkdir -p .argent
             printf 'SCREENSHOT_EMAIL=%s\nSCREENSHOT_PASSWORD=%s\n' "$SCREENSHOT_EMAIL" "$SCREENSHOT_PASSWORD" > .argent/secrets.env
+            mkdir -p "$XDG_RUNTIME_DIR/avd/running"
+            find "$HOME/.android" /tmp "$XDG_RUNTIME_DIR" -path '*avd/running/pid_*.ini' -exec cp -v {} "$XDG_RUNTIME_DIR/avd/running/" \; || true
+            echo "--- emulator discovery .ini ($XDG_RUNTIME_DIR/avd/running) ---" ; ls -la "$XDG_RUNTIME_DIR/avd/running/" ; cat "$XDG_RUNTIME_DIR"/avd/running/pid_*.ini 2>/dev/null || echo "NO .ini FOUND — simulator-server cannot discover the emulator"
             adb install -r build/pulvio-preview.apk
             xvfb-run -a node scripts/goldie-capture-locales.mjs || (echo "=== argent server logs ===" && npx --no-install argent server logs || true; exit 1)
 
