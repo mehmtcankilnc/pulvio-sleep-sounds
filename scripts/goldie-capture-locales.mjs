@@ -64,12 +64,20 @@ writeFileSync(`${RAW}/manifest.json`, JSON.stringify({
   preview: null,
 }, null, 2));
 
-// nudge argent's shared tool-server up before the first flow run
-try {
-  execSync(`npx --no-install argent tools`, { stdio: "ignore" });
-} catch {
-  console.warn("argent tool-server did not answer — flow runs may time out");
+// Start argent's shared tool-server before the first flow run. A cold start
+// can exceed argent's hard-coded 15s spawn-ready window on a busy CI runner;
+// a retry almost always clears it (the first attempt warms the native modules
+// in the OS file cache).
+let toolServerUp = false;
+for (let attempt = 1; attempt <= 4 && !toolServerUp; attempt++) {
+  try {
+    execSync(`npx --no-install argent tools`, { stdio: "ignore" });
+    toolServerUp = true;
+  } catch {
+    console.warn(`argent tool-server not ready (attempt ${attempt}/4)`);
+  }
 }
+if (!toolServerUp) console.warn("proceeding without a confirmed tool-server — 00-login may fail");
 
 console.log("signing in (00-login) …");
 try {

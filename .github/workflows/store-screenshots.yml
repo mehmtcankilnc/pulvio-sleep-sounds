@@ -39,10 +39,11 @@ jobs:
 
       - run: npm ci
 
-      - name: Rebuild argent native deps + prove the tool-server starts
-        run: |
-          npm rebuild @fails-components/webtransport-transport-http3-quiche tree-sitter tree-sitter-typescript || true
-          npx --no-install argent tools | head -20
+      - name: Rebuild argent native deps
+        # Native rebuild only — do NOT start the tool-server here. It idles out
+        # after 30 min and the EAS build below is ~40 min; the capture script
+        # starts (and retries) the server itself, right before it's used.
+        run: npm rebuild @fails-components/webtransport-transport-http3-quiche tree-sitter tree-sitter-typescript || true
 
       - name: goldie + patch
         run: |
@@ -145,6 +146,7 @@ jobs:
       - run: npm ci
 
       - name: Rebuild argent native deps
+        # See the ios job — no early tool-server start.
         run: npm rebuild @fails-components/webtransport-transport-http3-quiche tree-sitter tree-sitter-typescript || true
 
       - name: goldie + patch
@@ -173,7 +175,10 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          # -grpc-use-token: argent's simulator-server discovers the emulator by
+          # reading grpc.port + grpc.token from ~/.android/avd/running/pid_*.ini;
+          # a plain launch writes neither, so it reports "no running emulator".
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -grpc-use-token
           disable-animations: true
           # android-emulator-runner executes each line as its own `sh -c`, so
           # every line must be a self-contained command (no `\` continuations).

@@ -62,13 +62,21 @@ function statusBar() {
   sh(`xcrun simctl status_bar ${UDID} override --time "9:41" --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4 --dataNetwork wifi`);
 }
 
-// nudge argent's shared tool-server up before the first flow run (it
-// auto-starts, but a cold start can brush the CLI's 15s wait)
-try {
-  execSync(`npx --no-install argent tools`, { stdio: "ignore" });
-} catch {
-  console.warn("argent tool-server did not answer — flow runs may time out");
+// Start argent's shared tool-server before the first flow run. A cold start
+// (loading the native tree-sitter/webtransport modules) can exceed argent's
+// hard-coded 15s spawn-ready window on a busy CI runner; a retry almost always
+// clears it because the first attempt leaves those modules warm in the OS
+// file cache.
+let toolServerUp = false;
+for (let attempt = 1; attempt <= 4 && !toolServerUp; attempt++) {
+  try {
+    execSync(`npx --no-install argent tools`, { stdio: "ignore" });
+    toolServerUp = true;
+  } catch {
+    console.warn(`argent tool-server not ready (attempt ${attempt}/4)`);
+  }
 }
+if (!toolServerUp) console.warn("proceeding without a confirmed tool-server — 00-login may fail");
 
 // sign in once — the session in the app container survives locale changes and
 // `terminate` (only `reinstall-app` would wipe it, which this script avoids)
