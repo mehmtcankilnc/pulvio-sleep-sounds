@@ -167,10 +167,11 @@ jobs:
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
           disable-animations: true
+          # android-emulator-runner executes each line as its own `sh -c`, so
+          # every line must be a self-contained command (no `\` continuations).
           script: |
             mkdir -p .argent
-            printf 'SCREENSHOT_EMAIL=%s\nSCREENSHOT_PASSWORD=%s\n' \
-              "$SCREENSHOT_EMAIL" "$SCREENSHOT_PASSWORD" > .argent/secrets.env
+            printf 'SCREENSHOT_EMAIL=%s\nSCREENSHOT_PASSWORD=%s\n' "$SCREENSHOT_EMAIL" "$SCREENSHOT_PASSWORD" > .argent/secrets.env
             adb install -r build/pulvio-preview.apk
             node scripts/goldie-capture-locales.mjs
 
