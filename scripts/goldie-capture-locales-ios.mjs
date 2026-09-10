@@ -86,7 +86,7 @@ for (const [goldieLoc, appleLocale, appleLang] of LOCALES) {
 
   for (const scene of SCENES) {
     process.stdout.write(`  ${scene} … `);
-    execSync(`npx --no-install argent flow run ${scene} --device ${UDID}`, { stdio: ["ignore", "ignore", "inherit"] });
+    execSync(`npx --no-install argent flow run ${scene} --device ${UDID}`, { stdio: "inherit" });
     statusBar();
     // simctl io screenshot has no stdout mode — write straight to the file
     execSync(`xcrun simctl io ${UDID} screenshot --type png "${RAW}/${scene}.png"`, { stdio: "ignore" });
@@ -94,7 +94,7 @@ for (const [goldieLoc, appleLocale, appleLang] of LOCALES) {
   }
 
   console.log(`  framing ${goldieLoc} …`);
-  execSync(`npx goldie frame --device iphone-6.9 --locale ${goldieLoc}`, { stdio: ["ignore", "ignore", "inherit"] });
+  execSync(`npx goldie frame --device iphone-6.9 --locale ${goldieLoc}`, { stdio: "inherit" });
 }
 
 sh(`xcrun simctl status_bar ${UDID} clear`);

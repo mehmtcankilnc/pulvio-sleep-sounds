@@ -82,7 +82,7 @@ for (const [goldieLoc, bcp] of LOCALES) {
 
   for (const scene of SCENES) {
     process.stdout.write(`  ${scene} … `);
-    execSync(`npx --no-install argent flow run ${scene} --device ${DEVICE}`, { stdio: ["ignore", "ignore", "inherit"] });
+    execSync(`npx --no-install argent flow run ${scene} --device ${DEVICE}`, { stdio: "inherit" });
     demoStatusBar(); // the app launch can reset it
     const png = execSync(`adb -s ${DEVICE} exec-out screencap -p`, { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 });
     writeFileSync(`${RAW}/${scene}.png`, png);
@@ -90,7 +90,7 @@ for (const [goldieLoc, bcp] of LOCALES) {
   }
 
   console.log(`  framing ${goldieLoc} …`);
-  execSync(`npx goldie frame --device pixel-10-pro --locale ${goldieLoc}`, { stdio: ["ignore", "ignore", "inherit"] });
+  execSync(`npx goldie frame --device pixel-10-pro --locale ${goldieLoc}`, { stdio: "inherit" });
 }
 
 adb(`shell cmd locale set-app-locales ${PKG} --locales en-US`);
