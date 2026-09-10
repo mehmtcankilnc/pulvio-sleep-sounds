@@ -78,6 +78,19 @@ for (let attempt = 1; attempt <= 4 && !toolServerUp; attempt++) {
 }
 if (!toolServerUp) console.warn("proceeding without a confirmed tool-server — 00-login may fail");
 
+// Warm the per-device simulator-server as well. Its ready timeout is a
+// hard-coded 30s with no internal retry, and a cold start after the ~40-min
+// EAS build routinely blows it; a throwaway tap forces it up, and a retry
+// clears the slow first attempt.
+for (let attempt = 1; attempt <= 5; attempt++) {
+  try {
+    execSync(`npx --no-install argent run gesture-tap --udid ${UDID} --x 0.5 --y 0.5`, { stdio: "ignore" });
+    break;
+  } catch {
+    console.warn(`simulator-server warm-up not ready (attempt ${attempt}/5)`);
+  }
+}
+
 // sign in once — the session in the app container survives locale changes and
 // `terminate` (only `reinstall-app` would wipe it, which this script avoids)
 console.log("signing in (00-login) …");

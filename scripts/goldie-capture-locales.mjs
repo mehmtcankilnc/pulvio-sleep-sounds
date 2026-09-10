@@ -79,6 +79,18 @@ for (let attempt = 1; attempt <= 4 && !toolServerUp; attempt++) {
 }
 if (!toolServerUp) console.warn("proceeding without a confirmed tool-server — 00-login may fail");
 
+// Warm the per-device simulator-server too (hard-coded 30s ready timeout, no
+// internal retry — a cold start after the EAS build blows it). A throwaway tap
+// forces it up; the retry clears a slow first attempt.
+for (let attempt = 1; attempt <= 5; attempt++) {
+  try {
+    execSync(`npx --no-install argent run gesture-tap --udid ${DEVICE} --x 0.5 --y 0.5`, { stdio: "ignore" });
+    break;
+  } catch {
+    console.warn(`simulator-server warm-up not ready (attempt ${attempt}/5)`);
+  }
+}
+
 console.log("signing in (00-login) …");
 try {
   execSync(`npx --no-install argent flow run 00-login --device ${DEVICE}`, { stdio: ["ignore", "inherit", "inherit"] });
