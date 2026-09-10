@@ -130,15 +130,22 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Native build tools
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg cmake
+      - name: Native + headless-X deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg cmake xvfb
+          # argent's simulator-server (a Rust ELF) is gRPC + x11rb — it needs an
+          # X display or it exits before becoming ready. xvfb provides one; the
+          # rest cover the shared libs it dlopens on a bare runner.
+          sudo apt-get install -y \
+            libgl1 libglib2.0-0t64 libnss3 libxcb1 libxkbcommon0 libdbus-1-3 \
+            libxrandr2 libxcomposite1 libxdamage1 libxfixes3 libgbm1 libxrender1 \
+            libxtst6 libxi6 libxext6 || true
 
       - run: npm ci
 
-      - name: Rebuild argent native deps + prove the tool-server starts
-        run: |
-          npm rebuild @fails-components/webtransport-transport-http3-quiche tree-sitter tree-sitter-typescript || true
-          npx --no-install argent tools | head -20
+      - name: Rebuild argent native deps
+        run: npm rebuild @fails-components/webtransport-transport-http3-quiche tree-sitter tree-sitter-typescript || true
 
       - name: goldie + patch
         run: |
@@ -160,6 +167,7 @@ jobs:
         env:
           SCREENSHOT_EMAIL: ${{ secrets.SCREENSHOT_EMAIL }}
           SCREENSHOT_PASSWORD: ${{ secrets.SCREENSHOT_PASSWORD }}
+          ARGENT_EMULATOR_NO_WINDOW: "1"
         with:
           api-level: 34
           target: google_apis
@@ -169,11 +177,13 @@ jobs:
           disable-animations: true
           # android-emulator-runner executes each line as its own `sh -c`, so
           # every line must be a self-contained command (no `\` continuations).
+          # xvfb-run wraps the whole capture so the tool-server it auto-starts —
+          # and the simulator-server that server spawns — inherit a DISPLAY.
           script: |
             mkdir -p .argent
             printf 'SCREENSHOT_EMAIL=%s\nSCREENSHOT_PASSWORD=%s\n' "$SCREENSHOT_EMAIL" "$SCREENSHOT_PASSWORD" > .argent/secrets.env
             adb install -r build/pulvio-preview.apk
-            node scripts/goldie-capture-locales.mjs
+            xvfb-run -a node scripts/goldie-capture-locales.mjs || (echo "=== argent server logs ===" && npx --no-install argent server logs || true; exit 1)
 
       - uses: actions/upload-artifact@v4
         if: always()

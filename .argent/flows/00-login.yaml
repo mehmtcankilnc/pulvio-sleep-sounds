@@ -2,24 +2,23 @@ steps:
   - echo: >-
       Fresh install lands on the onboarding welcome. Sign in with the
       screenshot/QA account (email + password from {{secret:...}}), end on the
-      Explore tab so the store-shot flows have their Premium state. Runs at the
-      en-US default locale, so the en login strings are stable selectors. The
-      secure field carries no readable text on either tree, so it is reached
-      relationally as the input right after the "Password" label.
+      Explore tab so the store-shot flows have their Premium state. Selectors
+      are the testIDs added for this (login-email / login-password /
+      login-submit, onboarding-have-account) — deterministic on both trees.
       Store-screenshot builds set EXPO_PUBLIC_DISABLE_PUSH_PROMPT=1, so there is
-      no OS notification prompt after login; a plain dev build still shows the
-      Android in-app dialog, dismissed best-effort below.
+      no OS notification prompt; a plain dev build still shows the Android
+      in-app dialog, dismissed best-effort below.
   - launch: com.pulvio.app
-  - await: { visible: { text: "I already have an account" }, timeout: 30000 }
-  - tap: { text: "I already have an account" }
-  - await: { visible: { text: "Log in" }, timeout: 15000 }
-  - type: { into: { text: "you@example.com" }, text: "{{secret:SCREENSHOT_EMAIL}}", submit: false }
-  - type: { into: { any: true, next: { text: "Password" } }, text: "{{secret:SCREENSHOT_PASSWORD}}", submit: false }
-  - tap: { text: "Log in" }
-  - wait: 3000
+  - await: { visible: { id: onboarding-have-account }, timeout: 30000 }
+  - tap: { id: onboarding-have-account }
+  - await: { visible: { id: login-email }, timeout: 15000 }
+  - type: { into: { id: login-email }, text: "{{secret:SCREENSHOT_EMAIL}}", submit: false }
+  - type: { into: { id: login-password }, text: "{{secret:SCREENSHOT_PASSWORD}}", submit: false }
+  - tap: { id: login-submit }
+  - wait: 4000
   - when: { visible: { id: permission_allow_button } } # Android dev-build only
     steps:
       - tap: { id: permission_allow_button }
-  - await: { visible: { id: explore-screen }, timeout: 45000 }
+  - await: { visible: { id: explore-screen }, timeout: 60000 }
   - await: { visible: { id: tonight-pick } }
   - await: { idle: true }

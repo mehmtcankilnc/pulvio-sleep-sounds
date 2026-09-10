@@ -73,7 +73,13 @@ try {
 // sign in once — the session in the app container survives locale changes and
 // `terminate` (only `reinstall-app` would wipe it, which this script avoids)
 console.log("signing in (00-login) …");
-execSync(`npx --no-install argent flow run 00-login --device ${UDID}`, { stdio: ["ignore", "inherit", "inherit"] });
+try {
+  execSync(`npx --no-install argent flow run 00-login --device ${UDID}`, { stdio: ["ignore", "inherit", "inherit"] });
+} catch (e) {
+  try { execSync(`xcrun simctl io ${UDID} screenshot --type png "${RAW}/00-login-failure.png"`, { stdio: "ignore" }); } catch {}
+  console.error(`\n00-login failed — screen saved to ${RAW}/00-login-failure.png (in the artifact)`);
+  throw e;
+}
 
 for (const [goldieLoc, appleLocale, appleLang] of LOCALES) {
   console.log(`\n=== ${goldieLoc} (${appleLocale}) ===`);

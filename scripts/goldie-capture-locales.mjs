@@ -72,7 +72,13 @@ try {
 }
 
 console.log("signing in (00-login) …");
-execSync(`npx --no-install argent flow run 00-login --device ${DEVICE}`, { stdio: ["ignore", "inherit", "inherit"] });
+try {
+  execSync(`npx --no-install argent flow run 00-login --device ${DEVICE}`, { stdio: ["ignore", "inherit", "inherit"] });
+} catch (e) {
+  try { writeFileSync(`${RAW}/00-login-failure.png`, execSync(`adb -s ${DEVICE} exec-out screencap -p`, { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 })); } catch {}
+  console.error(`\n00-login failed — screen saved to ${RAW}/00-login-failure.png (in the artifact)`);
+  throw e;
+}
 
 for (const [goldieLoc, bcp] of LOCALES) {
   console.log(`\n=== ${goldieLoc} (${bcp}) ===`);
