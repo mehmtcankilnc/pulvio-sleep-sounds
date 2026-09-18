@@ -11,9 +11,11 @@ name: iOS paywall subscription screenshots
 # SCREENSHOT_PASSWORD; nothing here signs in.
 #
 # Required repo secrets:
-#   EXPO_TOKEN — Expo access token (eas build --local + project env, incl.
-#                EXPO_PUBLIC_REVENUECAT_IOS_API_KEY — without it the paywall
-#                shows its "couldn't load" empty state instead of priced cards)
+#   EXPO_TOKEN — Expo access token (eas build --local + project env). Prices
+#                shown come from a mock offering (EXPO_PUBLIC_MOCK_PAYWALL_OFFERING=1,
+#                set by the `screenshots` EAS profile — see
+#                src/lib/revenuecat.ts getMockOffering), not a live
+#                RevenueCat/StoreKit fetch — see 07-paywall-yearly.yaml for why.
 
 on:
   workflow_dispatch:

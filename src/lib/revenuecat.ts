@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import Purchases, { LOG_LEVEL } from "react-native-purchases";
-import type { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
+import type { PurchasesOffering, PurchasesPackage, PurchasesStoreProduct } from "react-native-purchases";
+import { formatCurrency } from "./paywallPricing";
 
 const ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY;
 const IOS_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY;
@@ -47,10 +48,101 @@ export function configureRevenueCatOnce() {
   isConfigured = true;
 }
 
+// Screenshot-only escape hatch: App Store Connect's subscription review
+// screenshot is a chicken-and-egg requirement — it won't leave "Missing
+// Metadata" without one, but StoreKit won't resolve real prices for a
+// product that isn't Ready to Submit yet (and a fresh CI simulator has no
+// Sandbox Apple ID either way). Apple doesn't require this particular
+// screenshot to show live pricing, just what the purchase screen looks like,
+// so EXPO_PUBLIC_MOCK_PAYWALL_OFFERING=1 substitutes a realistic offering
+// (real prices, no live StoreKit/RevenueCat calls) when the real one is
+// unavailable. Never set outside the `screenshots` EAS profile.
+export const mockPaywallOfferingEnabled =
+  process.env.EXPO_PUBLIC_MOCK_PAYWALL_OFFERING === "1";
+
+function mockProduct(
+  price: number,
+  subscriptionPeriod: string,
+  introPrice: PurchasesStoreProduct["introPrice"] = null,
+): PurchasesStoreProduct {
+  return {
+    identifier: `mock_${subscriptionPeriod}`,
+    description: "",
+    title: "",
+    price,
+    priceString: formatCurrency(price, "USD"),
+    currencyCode: "USD",
+    subscriptionPeriod,
+    introPrice,
+    discounts: null,
+    productCategory: "SUBSCRIPTION",
+    productType: "AUTO_RENEWABLE_SUBSCRIPTION",
+    defaultOption: null,
+    subscriptionOptions: null,
+    presentedOfferingIdentifier: "default",
+    presentedOfferingContext: { offeringIdentifier: "default", placementIdentifier: null, targetingContext: null },
+  } as unknown as PurchasesStoreProduct;
+}
+
+function mockPackage(
+  identifier: string,
+  packageType: string,
+  price: number,
+  subscriptionPeriod: string,
+  introPrice: PurchasesStoreProduct["introPrice"] = null,
+): PurchasesPackage {
+  return {
+    identifier,
+    packageType,
+    product: mockProduct(price, subscriptionPeriod, introPrice),
+    offeringIdentifier: "default",
+    presentedOfferingContext: { offeringIdentifier: "default", placementIdentifier: null, targetingContext: null },
+  } as unknown as PurchasesPackage;
+}
+
+export function getMockOffering(): PurchasesOffering {
+  const weekly = mockPackage("$rc_weekly", "WEEKLY", 2.99, "P1W");
+  const monthly = mockPackage("$rc_monthly", "MONTHLY", 4.99, "P1M");
+  const threeMonth = mockPackage("$rc_three_month", "THREE_MONTH", 13.99, "P3M", {
+    price: 0,
+    priceString: formatCurrency(0, "USD"),
+    period: "P1W",
+    periodUnit: "WEEK",
+    periodNumberOfUnits: 1,
+    cycles: 1,
+  } as unknown as PurchasesStoreProduct["introPrice"]);
+  const annual = mockPackage("$rc_annual", "ANNUAL", 49.99, "P1Y");
+  const availablePackages = [weekly, monthly, threeMonth, annual];
+
+  return {
+    identifier: "default",
+    serverDescription: "Mock offering (EXPO_PUBLIC_MOCK_PAYWALL_OFFERING=1)",
+    metadata: { primary: ["$rc_annual", "$rc_three_month"] },
+    availablePackages,
+    lifetime: null,
+    annual,
+    sixMonth: null,
+    threeMonth,
+    twoMonth: null,
+    monthly,
+    weekly,
+  } as unknown as PurchasesOffering;
+}
+
 export async function getCurrentOffering(): Promise<PurchasesOffering | null> {
-  if (purchasesDisabled || !isConfigured) return null;
-  const offerings = await Purchases.getOfferings();
-  return offerings.current;
+  if (purchasesDisabled || !isConfigured) {
+    return mockPaywallOfferingEnabled ? getMockOffering() : null;
+  }
+  try {
+    const offerings = await Purchases.getOfferings();
+    return offerings.current ?? (mockPaywallOfferingEnabled ? getMockOffering() : null);
+  } catch (e) {
+    // StoreKit can throw outright (unresolvable products, no Sandbox Apple
+    // ID) rather than just returning a null `current` — the mock fallback
+    // needs to catch that path too, not just the empty-offering one above.
+    if (mockPaywallOfferingEnabled) return getMockOffering();
+    throw e;
+  }
 }
 
 export async function purchasePackage(pkg: PurchasesPackage) {

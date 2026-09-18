@@ -6,9 +6,13 @@
  * en-US, using the natural onboarding hand-off to reach it — a Premium
  * account has no "Go Premium" entry point, so this needs an app instance
  * that has NEVER signed in (fresh `simctl install`, never launched before).
- * RevenueCat must be configured for iOS (EXPO_PUBLIC_REVENUECAT_IOS_API_KEY
- * set as an EAS project env var) or the paywall shows its "couldn't load"
- * empty state instead of priced plan cards.
+ * Prices come from a mock offering (EXPO_PUBLIC_MOCK_PAYWALL_OFFERING=1, set
+ * by the `screenshots` EAS profile — see src/lib/revenuecat.ts
+ * getMockOffering), not a live RevenueCat/StoreKit fetch: a fresh CI
+ * simulator has no Sandbox Apple ID, and App Store Connect's own
+ * subscription-screenshot requirement is a chicken-and-egg otherwise
+ * ("Missing Metadata" until this screenshot exists, but StoreKit won't
+ * resolve real prices for a product that isn't Ready to Submit yet).
  *
  * PREREQUISITES:
  *   1. Xcode with an iOS simulator booted.

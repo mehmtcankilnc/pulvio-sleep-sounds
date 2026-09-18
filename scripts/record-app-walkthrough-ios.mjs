@@ -15,8 +15,12 @@
  *
  * A segment failing (bad selector, slow network, etc.) does not abort the
  * run — it's logged in the summary and the remaining segments still attempt
- * to run against whatever screen the app is left on. Check the summary and
- * the per-segment clips before trusting the concatenated video end to end.
+ * to run against whatever screen the app is left on. Recording is likewise
+ * decoupled from the flow: if simulator-server won't come up in time for
+ * screen-recording-start, the flow still runs unrecorded rather than being
+ * skipped (skipping it would cascade — wk-02's sign-in is load-bearing for
+ * every later segment). Check the summary and the per-segment clips before
+ * trusting the concatenated video end to end.
  *
  * PREREQUISITES (same as scripts/goldie-capture-locales-ios.mjs):
  *   1. Xcode with an iOS simulator booted.
@@ -81,12 +85,17 @@ for (let attempt = 1; attempt <= 4 && !toolServerUp; attempt++) {
 }
 if (!toolServerUp) console.warn("proceeding without a confirmed tool-server — wk-01 may fail");
 
-for (let attempt = 1; attempt <= 5; attempt++) {
+// A cold simulator-server right after the ~40-min EAS build can take much
+// longer than a couple of throwaway taps to become ready (seen in CI: 5
+// warm-up attempts here, then screen-recording-start itself timing out on
+// the first 2-3 segments). Retry with backoff instead of one shot.
+for (let attempt = 1; attempt <= 10; attempt++) {
   try {
     execSync(`npx --no-install argent run gesture-tap --udid ${UDID} --x 0.5 --y 0.5`, { stdio: "ignore" });
     break;
   } catch {
-    console.warn(`simulator-server warm-up not ready (attempt ${attempt}/5)`);
+    console.warn(`simulator-server warm-up not ready (attempt ${attempt}/10)`);
+    execSync("sleep 5");
   }
 }
 
@@ -97,16 +106,25 @@ for (const [index, [flow, label, timeLimitSeconds]] of SEGMENTS.entries()) {
   console.log(`\n=== ${seq} ${flow} — ${label} ===`);
   const startedAt = Date.now();
 
-  try {
-    execSync(
-      `npx --no-install argent run screen-recording-start --udid ${UDID} --timeLimitSeconds ${timeLimitSeconds} --trimStatic true`,
-      { stdio: "inherit" },
-    );
-  } catch (e) {
-    console.error(`could not start recording for ${flow}: ${e.message}`);
-    summary.push({ flow, label, status: "recording-start-failed" });
-    continue;
+  // Recording is nice-to-have, not a precondition for the flow itself — a
+  // segment whose recording never starts must still run its flow, or every
+  // later segment cascades into failure (wk-02's sign-in, in particular, is
+  // load-bearing for every segment after it). Retry a few times before
+  // giving up on video for this segment only.
+  let recording = false;
+  for (let attempt = 1; attempt <= 4 && !recording; attempt++) {
+    try {
+      execSync(
+        `npx --no-install argent run screen-recording-start --udid ${UDID} --timeLimitSeconds ${timeLimitSeconds} --trimStatic true`,
+        { stdio: "inherit" },
+      );
+      recording = true;
+    } catch (e) {
+      console.error(`could not start recording for ${flow} (attempt ${attempt}/4): ${e.message}`);
+      execSync("sleep 5");
+    }
   }
+  if (!recording) console.error(`proceeding with ${flow} unrecorded — simulator-server would not come up`);
 
   let flowOk = true;
   try {
@@ -117,18 +135,21 @@ for (const [index, [flow, label, timeLimitSeconds]] of SEGMENTS.entries()) {
   }
 
   let savedAs = null;
-  try {
-    execSync(`npx --no-install argent run screen-recording-stop --udid ${UDID}`, { stdio: "inherit" });
-    const recorded = newestRecording(startedAt - 2000);
-    if (recorded) {
-      savedAs = `${seq}-${flow}.mp4`;
-      renameSync(join(RECORDINGS_DIR, recorded), join(OUT_DIR, savedAs));
+  if (recording) {
+    try {
+      execSync(`npx --no-install argent run screen-recording-stop --udid ${UDID}`, { stdio: "inherit" });
+      const recorded = newestRecording(startedAt - 2000);
+      if (recorded) {
+        savedAs = `${seq}-${flow}.mp4`;
+        renameSync(join(RECORDINGS_DIR, recorded), join(OUT_DIR, savedAs));
+      }
+    } catch (e) {
+      console.error(`could not stop/collect recording for ${flow}: ${e.message}`);
     }
-  } catch (e) {
-    console.error(`could not stop/collect recording for ${flow}: ${e.message}`);
   }
 
-  summary.push({ flow, label, status: flowOk ? "ok" : "flow-error", file: savedAs });
+  const status = !recording ? "unrecorded" : flowOk ? "ok" : "flow-error";
+  summary.push({ flow, label, status, file: savedAs });
 }
 
 writeFileSync(join(OUT_DIR, "summary.json"), JSON.stringify(summary, null, 2));

@@ -6,9 +6,13 @@ steps:
       walk through the onboarding funnel to the paywall (from=onboarding),
       with the Yearly plan selected (the default primary pick). en-US locale
       — plan labels are the selectors, read straight off each PlanCard's
-      rendered text (app/paywall.tsx). RevenueCat must be configured for iOS
-      (EXPO_PUBLIC_REVENUECAT_IOS_API_KEY set) or this paywall shows its
-      "couldn't load" empty state instead of priced plan cards.
+      rendered text (app/paywall.tsx). Prices come from
+      EXPO_PUBLIC_MOCK_PAYWALL_OFFERING=1 (src/lib/revenuecat.ts
+      getMockOffering) — the `screenshots` EAS profile sets it, since a fresh
+      CI simulator has no Sandbox Apple ID and App Store Connect's own
+      subscription-screenshot requirement is otherwise a chicken-and-egg
+      ("Missing Metadata" until this screenshot exists, but StoreKit won't
+      resolve real prices for a product that isn't Ready to Submit yet).
       IMPORTANT: app/(onboarding)/_layout.tsx switches its Stack screen
       transition to a plain native "fade" whenever useReducedMotion() reads
       true (vs. the normal slide_from_right) — the iOS simulator can default
