@@ -64,6 +64,14 @@ steps:
 
   - await: { visible: { text: "Your wind-down is ready" }, timeout: 20000 }
   - await: { idle: true }
+  # "Hear it" is in the tree (and tappable-looking) even while the catalog
+  # fetch behind it is still loading — plan-ready.tsx only gates it with
+  # `disabled={loading || !!error}`, and `idle` settling with a warning here
+  # (small ongoing change = the loading spinner) is not proof loading
+  # finished. A disabled RN Pressable still accepts the tap dispatch and
+  # silently drops the press, so a premature tap here strands the flow on
+  # this screen with no error — that's what happened before this wait.
+  - wait: 3000
   - tap: { text: "Hear it" }
 
   - await: { visible: { text: "Next, create an account" }, timeout: 15000 }
