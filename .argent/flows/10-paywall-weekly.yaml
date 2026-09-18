@@ -1,0 +1,6 @@
+executionPrerequisite: The paywall is open on iOS with "Show other plans" already expanded (Weekly and Monthly cards visible) — run right after 09-paywall-monthly.
+steps:
+  - echo: Select the Weekly plan card.
+  - tap: { text: Weekly }
+  - wait: 500
+  - await: { idle: true }

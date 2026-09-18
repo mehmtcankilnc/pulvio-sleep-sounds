@@ -1,0 +1,33 @@
+steps:
+  - echo: >-
+      Requires wk-01-onboarding to have just run (app is on Explore as an
+      anonymous guest). Settings -> "Complete your account" card -> signup
+      screen -> "Log in instead" -> login screen -> an inert "Forgot
+      password?" tap (empty email -> just shows the inline notice, no email
+      sent) -> real sign-in with the screenshot/QA account, which upgrades the
+      anonymous session in place (same user id) and lands back on Explore,
+      now Premium. Runs at en-US so these text selectors are stable; iOS
+      redacts the secure field, so the password input is targeted relationally
+      as "the input right after the Password label" (same trick 00-login uses).
+  - launch: com.pulvio.app
+  - await: { visible: { id: explore-screen }, timeout: 20000 }
+  - tap: { id: tab-profile }
+  - await: { visible: { text: "Complete your account" }, timeout: 15000 }
+  - tap: { text: "Complete My Account" }
+
+  - await: { visible: { text: "Create your account" }, timeout: 15000 }
+  - await: { idle: true }
+  - tap: { text: "Log in instead" }
+
+  - await: { visible: { text: "Log in to your account" }, timeout: 15000 }
+  - tap: { text: "Forgot password?" }
+  - await: { visible: { text: "Enter your email above first" }, timeout: 8000 }
+
+  - type: { into: { text: "you@example.com" }, text: "{{secret:SCREENSHOT_EMAIL}}", submit: false }
+  - type: { into: { any: true, next: { text: "Password" } }, text: "{{secret:SCREENSHOT_PASSWORD}}", submit: false }
+  - tap: { text: "Log in" }
+  - wait: 4000
+
+  - await: { visible: { id: explore-screen }, timeout: 60000 }
+  - await: { visible: { id: tonight-pick } }
+  - await: { idle: true }

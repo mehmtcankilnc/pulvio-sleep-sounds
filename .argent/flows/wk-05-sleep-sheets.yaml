@@ -1,0 +1,32 @@
+steps:
+  - echo: >-
+      Requires a signed-in session (run after wk-02-auth). Sleep tab -> Adjust
+      schedule sheet (bedtime/wake-up segmented control) -> Done -> "Tonight's
+      routine" track picker sheet, searched -> toggle Gentle fade-out and
+      Quiet wake-up. Ends with the track picker open on filtered results (no
+      reliable selector for its unlabeled icon-only close button — see the
+      note left for the app team below).
+  - launch: com.pulvio.app
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
+  - tap: { id: tab-sleep }
+  - await: { visible: { id: sleep-schedule-card }, timeout: 15000 }
+  - await: { idle: true }
+
+  - tap: { id: sleep-adjust }
+  - await: { visible: { text: "Adjust schedule" }, timeout: 8000 }
+  - tap: { text: "Wake up" }
+  - wait: 500
+  - tap: { text: Done }
+  - await: { idle: true }
+
+  - tap: { id: sleep-fade-out-toggle }
+  - wait: 400
+  - tap: { id: sleep-quiet-wakeup-toggle }
+  - await: { idle: true }
+  - wait: 400
+
+  - tap: { id: sleep-play-at-bedtime }
+  - await: { visible: { text: "Choose a sound" }, timeout: 8000 }
+  - type: { into: { text: "Search sounds" }, text: rain, submit: false }
+  - await: { idle: true }
+  - wait: 1000

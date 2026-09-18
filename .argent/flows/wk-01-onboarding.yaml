@@ -1,0 +1,58 @@
+steps:
+  - echo: >-
+      FRESH INSTALL ONLY — must run before any sign-in on this app instance
+      (first launch after `simctl install`, before wk-02 ever runs). Walks the
+      full onboarding funnel (welcome -> frequency -> struggles -> sounds ->
+      bedtime -> reminder -> plan-ready -> preview) and the natural hand-off
+      into the paywall (from=onboarding). en-US locale strings used as
+      selectors (no testIDs exist on these screens beyond welcome's
+      onboarding-have-account). Store-build sets
+      EXPO_PUBLIC_DISABLE_PUSH_PROMPT=1, so the reminder step's "Yes, nudge
+      me" does not raise an OS permission dialog. RevenueCat is not wired on
+      iOS yet (Platform.OS !== "android" early-return in
+      src/lib/revenuecat.ts), so the paywall shows its "couldn't load" empty
+      state rather than priced offer cards — expected, not a capture bug.
+      Tapping "Close" there is a real product path (see paywall.tsx dismiss()):
+      it establishes an anonymous guest session and lands on Explore — wk-02
+      picks up from there to show the "Complete your account" / sign-in path.
+  - launch: com.pulvio.app
+  - await: { visible: { text: "Fall asleep, the easy way" }, timeout: 30000 }
+  - await: { idle: true }
+  - tap: { text: "Get started" }
+
+  - await: { visible: { text: "How often is falling asleep hard?" }, timeout: 15000 }
+  - tap: { text: "Most nights" }
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: "What keeps you up at night?" }, timeout: 15000 }
+  - tap: { text: "Racing thoughts" }
+  - tap: { text: "Stress and tension" }
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: "What helps you drift off?" }, timeout: 15000 }
+  - tap: { text: "Rain and Thunder" }
+  - tap: { text: "White Noise" }
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: "When do you usually go to bed?" }, timeout: 15000 }
+  - wait: 800
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: "Want a bedtime nudge?" }, timeout: 15000 }
+  - tap: { text: "Yes, nudge me" }
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: "Your wind-down is ready" }, timeout: 20000 }
+  - await: { idle: true }
+  - tap: { text: "Hear it" }
+
+  - await: { visible: { text: "Playing now" }, timeout: 15000 }
+  - wait: 5000
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: "Pulvio Premium" }, timeout: 15000 }
+  - await: { idle: true }
+  - tap: { text: "Close" }
+
+  - await: { visible: { id: explore-screen }, timeout: 20000 }
+  - await: { idle: true }

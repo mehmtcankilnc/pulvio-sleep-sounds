@@ -1,0 +1,27 @@
+steps:
+  - echo: >-
+      Requires a signed-in session (run after wk-02-auth). Explore -> All
+      categories grid -> a category -> full grouped catalogue -> search ->
+      "Free only" filter on, then off.
+  - launch: com.pulvio.app
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
+  - await: { idle: true }
+  - tap: { id: browse-all-categories }
+  - await: { visible: { id: category-tile-yagmur }, timeout: 15000 }
+  - await: { idle: true }
+  - tap: { id: category-tile-yagmur }
+  - await: { visible: { id: category-chip-all }, timeout: 15000 }
+  - await: { idle: true }
+  - tap: { id: category-chip-all }
+  - await: { idle: true }
+
+  - tap: { text: "Search sounds" }
+  - type: { into: { text: "Search sounds" }, text: "rain", submit: false }
+  - await: { idle: true }
+  - wait: 800
+
+  - tap: { text: "Free only" }
+  - await: { idle: true }
+  - wait: 800
+  - tap: { text: "Free only" }
+  - await: { idle: true }

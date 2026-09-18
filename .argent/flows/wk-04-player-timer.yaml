@@ -1,0 +1,23 @@
+steps:
+  - echo: >-
+      Requires a signed-in session (run after wk-02-auth). Explore ->
+      "Tonight's pick" -> player (auto-armed sleep timer) -> open the custom
+      timer stepper, bump it twice, confirm -> close back to Explore.
+  - launch: com.pulvio.app
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
+  - await: { idle: true }
+  - tap: { id: tonight-pick }
+  - await: { visible: { id: player-playpause }, timeout: 15000 }
+  - await: { visible: { id: player-timer-status } }
+  - wait: 1200
+
+  - tap: { text: Custom }
+  - await: { visible: { text: "Increase custom timer" }, timeout: 8000 }
+  - tap: { text: "Increase custom timer" }
+  - tap: { text: "Increase custom timer" }
+  - tap: { text: "Confirm custom timer" }
+  - await: { idle: true }
+  - wait: 1000
+
+  - tap: { text: Close }
+  - await: { visible: { id: explore-screen }, timeout: 15000 }

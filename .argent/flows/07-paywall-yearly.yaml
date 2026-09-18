@@ -1,0 +1,49 @@
+steps:
+  - echo: >-
+      FRESH INSTALL ONLY — needs an app instance that has never signed in (a
+      Premium account has no "Go Premium" entry point, so this reaches the
+      paywall the same way a new user does: the onboarding hand-off). Fast
+      walk through the onboarding funnel to the paywall (from=onboarding),
+      with the Yearly plan selected (the default primary pick). en-US locale
+      — plan labels are the selectors, read straight off each PlanCard's
+      rendered text (app/paywall.tsx). RevenueCat must be configured for iOS
+      (EXPO_PUBLIC_REVENUECAT_IOS_API_KEY set) or this paywall shows its
+      "couldn't load" empty state instead of priced plan cards.
+  - launch: com.pulvio.app
+  - await: { visible: { text: "Fall asleep, the easy way" }, timeout: 30000 }
+  - await: { idle: true }
+  - tap: { text: "Get started" }
+
+  - await: { visible: { text: "How often is falling asleep hard?" }, timeout: 15000 }
+  - tap: { text: "Most nights" }
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: "What keeps you up at night?" }, timeout: 15000 }
+  - tap: { text: "Racing thoughts" }
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: "What helps you drift off?" }, timeout: 15000 }
+  - tap: { text: "Rain and Thunder" }
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: "When do you usually go to bed?" }, timeout: 15000 }
+  - wait: 800
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: "Want a bedtime nudge?" }, timeout: 15000 }
+  - tap: { text: "No thanks" }
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: "Your wind-down is ready" }, timeout: 20000 }
+  - await: { idle: true }
+  - tap: { text: "Hear it" }
+
+  - await: { visible: { text: "Playing now" }, timeout: 15000 }
+  - wait: 5000
+  - tap: { text: "Continue" }
+
+  - await: { visible: { text: Yearly }, timeout: 15000 }
+  - await: { idle: true }
+  - tap: { text: Yearly }
+  - wait: 500
+  - await: { idle: true }

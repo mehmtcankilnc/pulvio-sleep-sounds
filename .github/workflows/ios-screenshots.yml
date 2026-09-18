@@ -15,7 +15,10 @@ name: iOS store screenshots
 #
 # The app's EXPO_PUBLIC_* build env must reach `eas build --local`: the
 # `screenshots` profile in eas.json sets `environment: preview`, so EAS project
-# env vars for `preview` are pulled in when EXPO_TOKEN is set.
+# env vars for `preview` are pulled in when EXPO_TOKEN is set. That includes
+# EXPO_PUBLIC_REVENUECAT_IOS_API_KEY, which the `paywall-subscriptions` job
+# below needs — without it the paywall shows its "couldn't load" empty state
+# instead of priced plan cards.
 
 on:
   workflow_dispatch:
@@ -116,3 +119,82 @@ jobs:
           path: |
             out/screenshots/iphone-6.9/**
             out/raw/iphone-6.9/**
+
+  paywall-subscriptions:
+    # App Store Connect's "App Subscriptions" review screenshots — one per
+    # plan (Yearly, 3 months, Monthly, Weekly), en-US only. Independent job:
+    # needs its own never-launched-before app instance (a Premium account has
+    # no "Go Premium" entry point, so this reaches the paywall the same way a
+    # new user does, through the onboarding hand-off — see
+    # .argent/flows/07-paywall-yearly.yaml). Does not need SCREENSHOT_EMAIL /
+    # SCREENSHOT_PASSWORD; nothing here signs in.
+    runs-on: macos-latest
+    timeout-minutes: 30
+    env:
+      SIM_NAME: "iPhone 17 Pro Max Paywall"
+      ARGENT_TELEMETRY: "0"
+      ARGENT_MCP_LOG: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Rebuild argent native deps
+        run: npm rebuild @fails-components/webtransport-transport-http3-quiche tree-sitter tree-sitter-typescript || true
+
+      - name: Build the iOS simulator app (EAS local)
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          npm i -g eas-cli
+          eas build --local --non-interactive \
+            --platform ios --profile screenshots \
+            --output "$RUNNER_TEMP/pulvio-sim.tar.gz"
+          mkdir -p "$RUNNER_TEMP/app"
+          tar -xzf "$RUNNER_TEMP/pulvio-sim.tar.gz" -C "$RUNNER_TEMP/app"
+          APP="$(find "$RUNNER_TEMP/app" -maxdepth 3 -name '*.app' | head -1)"
+          test -n "$APP" || { echo "no .app in the EAS artifact"; exit 1; }
+          echo "PAYWALL_IOS_APP=$APP" >> "$GITHUB_ENV"
+
+      - name: Boot an "$SIM_NAME" simulator
+        run: |
+          if ! xcrun simctl list devices | grep -q "$SIM_NAME ("; then
+            RUNTIME="$(xcrun simctl list runtimes -j | node -e "
+              const r = JSON.parse(require('fs').readFileSync(0,'utf8')).runtimes
+                .filter(x => x.platform === 'iOS' && x.isAvailable);
+              if (!r.length) { console.error('no iOS runtime'); process.exit(1); }
+              console.log(r[r.length - 1].identifier);
+            ")"
+            DEVTYPE="$(xcrun simctl list devicetypes -j | node -e "
+              const d = JSON.parse(require('fs').readFileSync(0,'utf8')).devicetypes;
+              const pick = d.find(x => /iPhone (17|16|15) Pro Max/.test(x.name)) || d.find(x => /Pro Max/.test(x.name));
+              console.log(pick.identifier);
+            ")"
+            xcrun simctl create "$SIM_NAME" "$DEVTYPE" "$RUNTIME"
+          fi
+          xcrun simctl boot "$SIM_NAME"
+          xcrun simctl bootstatus "$SIM_NAME" -b
+          UDID="$(xcrun simctl list devices -j | node -e "
+            const d = JSON.parse(require('fs').readFileSync(0,'utf8')).devices;
+            for (const list of Object.values(d))
+              for (const dev of list)
+                if (dev.name === process.env.SIM_NAME && dev.state === 'Booted') { console.log(dev.udid); process.exit(0); }
+            process.exit(1);
+          ")"
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Install the app (fresh — must never have been launched before)
+        run: xcrun simctl install "$SIM_UDID" "$PAYWALL_IOS_APP"
+
+      - name: Capture the paywall per plan
+        run: node scripts/capture-paywall-plans-ios.mjs "$SIM_UDID"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-subscription-screenshots
+          path: out/screenshots/subscriptions/**

@@ -1,0 +1,6 @@
+executionPrerequisite: The paywall is open on iOS with the primary plan cards (Yearly, 3 months) visible — run right after 07-paywall-yearly.
+steps:
+  - echo: Select the "3 months" (quarterly) plan card.
+  - tap: { text: "3 months" }
+  - wait: 500
+  - await: { idle: true }

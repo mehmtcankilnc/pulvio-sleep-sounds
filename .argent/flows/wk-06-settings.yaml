@@ -1,0 +1,37 @@
+steps:
+  - echo: >-
+      Requires a signed-in session (run after wk-02-auth). Settings ->
+      Language sheet (switch to Turkish, back to English) -> Bedtime reminder
+      sheet -> Done -> Go Premium (paywall, RevenueCat not wired on iOS yet so
+      it's the "couldn't load" empty state) -> Close -> Sign out confirmation
+      sheet -> Cancel (does not actually sign out).
+  - launch: com.pulvio.app
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
+  - tap: { id: tab-profile }
+  - await: { visible: { text: Settings }, timeout: 15000 }
+  - await: { idle: true }
+
+  - tap: { text: Language }
+  - await: { visible: { text: "Choose your language" }, timeout: 8000 }
+  - tap: { text: Türkçe }
+  - wait: 1200
+  - tap: { text: Dil }
+  - wait: 1200
+  - tap: { text: English }
+  - wait: 1200
+
+  - tap: { text: "Bedtime reminder" }
+  - await: { visible: { text: "Reminder time" }, timeout: 8000 }
+  - tap: { text: Done }
+  - await: { idle: true }
+
+  - tap: { text: "Go Premium" }
+  - await: { visible: { text: "Pulvio Premium" }, timeout: 15000 }
+  - await: { idle: true }
+  - tap: { text: Close }
+
+  - await: { visible: { text: Settings }, timeout: 10000 }
+  - tap: { text: "Sign out" }
+  - await: { visible: { text: "Sign out of Pulvio?" }, timeout: 8000 }
+  - tap: { text: Cancel }
+  - await: { idle: true }

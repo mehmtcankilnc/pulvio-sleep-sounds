@@ -1,0 +1,9 @@
+executionPrerequisite: The paywall is open on iOS with a plan already selected — run right after 08-paywall-quarterly.
+steps:
+  - echo: Expand "Show other plans" and select Monthly.
+  - tap: { text: "Show other plans" }
+  - await: { visible: { text: Monthly }, timeout: 8000 }
+  - await: { idle: true }
+  - tap: { text: Monthly }
+  - wait: 500
+  - await: { idle: true }

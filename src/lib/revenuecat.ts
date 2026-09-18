@@ -3,6 +3,7 @@ import Purchases, { LOG_LEVEL } from "react-native-purchases";
 import type { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
 
 const ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY;
+const IOS_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY;
 
 // Dev escape hatch for emulators without Google Play Billing: the SDK logs a
 // red `BILLING_UNAVAILABLE` on every configure/logIn there. Set
@@ -18,10 +19,6 @@ export const REVENUECAT_ENTITLEMENT_ID =
 
 let isConfigured = false;
 
-// Apple Developer hesabı henüz yok, Faz 5 kapsamı Android/Google Play ile
-// sınırlı — iOS dalı bilinçli olarak erken dönüyor. İleride iOS eklenirken
-// sadece bir EXPO_PUBLIC_REVENUECAT_IOS_API_KEY + bu koşul eklenmesi yeterli,
-// mimari iOS'a kapalı değil.
 export function configureRevenueCatOnce() {
   if (isConfigured) return;
 
@@ -30,16 +27,22 @@ export function configureRevenueCatOnce() {
     return;
   }
 
-  if (Platform.OS !== "android") {
+  if (Platform.OS !== "android" && Platform.OS !== "ios") {
     return;
   }
 
-  if (!ANDROID_API_KEY) {
-    console.warn("EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY tanımlı değil, RevenueCat devre dışı");
+  const apiKey = Platform.OS === "ios" ? IOS_API_KEY : ANDROID_API_KEY;
+  const missingKeyEnvVar =
+    Platform.OS === "ios"
+      ? "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY"
+      : "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY";
+
+  if (!apiKey) {
+    console.warn(`${missingKeyEnvVar} tanımlı değil, RevenueCat devre dışı`);
     return;
   }
 
-  Purchases.configure({ apiKey: ANDROID_API_KEY });
+  Purchases.configure({ apiKey });
   Purchases.setLogLevel(LOG_LEVEL.WARN);
   isConfigured = true;
 }
