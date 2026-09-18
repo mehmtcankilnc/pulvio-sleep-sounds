@@ -16,6 +16,10 @@ steps:
       still mid-flight and the next control isn't interactive yet. Every
       screen-arrival `await: visible` below is followed by `await: idle`
       before the first tap on that screen, specifically to clear this.
+      The preview screen's eyebrow text ("Playing now" vs "Ready for
+      tonight") depends on whether recommendPlan() found any picks for this
+      combination of answers — not guaranteed — so the identity check after
+      "Hear it" uses the footnote text instead, which renders either way.
   - launch: com.pulvio.app
   - await: { visible: { text: "Fall asleep, the easy way" }, timeout: 30000 }
   - await: { idle: true }
@@ -54,7 +58,7 @@ steps:
   - await: { idle: true }
   - tap: { text: "Hear it" }
 
-  - await: { visible: { text: "Playing now" }, timeout: 15000 }
+  - await: { visible: { text: "Next, create an account" }, timeout: 15000 }
   - wait: 5000
   - tap: { text: "Continue" }
 
