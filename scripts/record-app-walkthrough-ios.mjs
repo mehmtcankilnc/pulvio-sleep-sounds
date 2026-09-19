@@ -126,16 +126,33 @@ for (const [index, [flow, label, timeLimitSeconds]] of SEGMENTS.entries()) {
   }
   if (!recording) console.error(`proceeding with ${flow} unrecorded — simulator-server would not come up`);
 
-  // A segment that opens with `launch` + an `await: visible` for the
-  // post-relaunch screen (explore-screen, after session/i18n/fonts settle)
-  // has been seen to fail that very first await on a loaded CI runner — the
-  // relaunch is a fresh JS process racing session rehydration (a token
-  // refresh round trip on a stale AsyncStorage session) and the initial
-  // catalog fetch against CPU/network contention from the concurrent
-  // recording + ffmpeg work. Failing here isn't recoverable by waiting
-  // longer mid-flow, but a full one-shot retry after a short settle often
-  // clears it — and a segment stuck here cascades into every later one
-  // (wk-02's sign-in especially), so it's worth the extra time.
+  // Every segment after wk-01 has been seen to fail its very first step —
+  // `launch` + `await visible id=explore-screen` — instantly and
+  // deterministically (two back-to-back full-flow retries produced
+  // byte-identical failures within the same second, not a timeout). That
+  // rules out a slow JS relaunch racing session/network work, which would
+  // eventually pass or at least vary. It also isn't a pre-existing app bug:
+  // scripts/goldie-capture-locales-ios.mjs chains the same
+  // "argent flow run <scene>" against an already-running app the same way,
+  // each starting with its own `launch:`, with no recording wrapped around
+  // it — and that's known to work. The one thing different here is
+  // screen-recording-start/stop bracketing every segment, so the leading
+  // theory is that toggling the recording drops or staggers the
+  // native-devtools/ViewInspector bridge, and `launch` alone doesn't force
+  // an already-running app to re-attach it — only `restart-app` documents
+  // that it does ("refreshes the native-devtools injection before the
+  // relaunch"). Force that here for every segment but the first: wk-01 must
+  // stay a genuine first-ever launch (its own prerequisite), everything
+  // after it is fair game since the flow's own `launch:` step is a safe
+  // no-op once the app is already frontmost and correctly attached.
+  if (index > 0) {
+    try {
+      execSync(`npx --no-install argent run restart-app --udid ${UDID} --bundleId com.pulvio.app`, { stdio: "inherit" });
+    } catch (e) {
+      console.warn(`restart-app before ${flow} failed, proceeding anyway: ${e.message}`);
+    }
+  }
+
   let flowOk = true;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -149,10 +166,10 @@ for (const [index, [flow, label, timeLimitSeconds]] of SEGMENTS.entries()) {
     }
   }
 
-  // The retry above is a guess at the cause (CI resource contention on a
-  // fresh relaunch), not a confirmed diagnosis — if it still fails, capture
-  // what's actually on screen so the next investigation has evidence instead
-  // of another blind guess.
+  // restart-app above is a best-effort fix for the leading theory (a stale
+  // devtools bridge after recording toggles), not a confirmed diagnosis — if
+  // it still fails, capture what's actually on screen so the next
+  // investigation has evidence instead of another blind guess.
   if (!flowOk) {
     try {
       execSync(`xcrun simctl io ${UDID} screenshot --type png "${join(OUT_DIR, `${seq}-${flow}-failure.png`)}"`, { stdio: "ignore" });
