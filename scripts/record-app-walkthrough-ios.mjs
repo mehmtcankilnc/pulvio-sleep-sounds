@@ -126,12 +126,39 @@ for (const [index, [flow, label, timeLimitSeconds]] of SEGMENTS.entries()) {
   }
   if (!recording) console.error(`proceeding with ${flow} unrecorded — simulator-server would not come up`);
 
+  // A segment that opens with `launch` + an `await: visible` for the
+  // post-relaunch screen (explore-screen, after session/i18n/fonts settle)
+  // has been seen to fail that very first await on a loaded CI runner — the
+  // relaunch is a fresh JS process racing session rehydration (a token
+  // refresh round trip on a stale AsyncStorage session) and the initial
+  // catalog fetch against CPU/network contention from the concurrent
+  // recording + ffmpeg work. Failing here isn't recoverable by waiting
+  // longer mid-flow, but a full one-shot retry after a short settle often
+  // clears it — and a segment stuck here cascades into every later one
+  // (wk-02's sign-in especially), so it's worth the extra time.
   let flowOk = true;
-  try {
-    execFileSync("npx", ["--no-install", "argent", "flow", "run", flow, "--device", UDID], { stdio: "inherit" });
-  } catch (e) {
-    flowOk = false;
-    console.error(`${flow} did not complete cleanly: ${e.message}`);
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      execFileSync("npx", ["--no-install", "argent", "flow", "run", flow, "--device", UDID], { stdio: "inherit" });
+      flowOk = true;
+      break;
+    } catch (e) {
+      flowOk = false;
+      console.error(`${flow} did not complete cleanly (attempt ${attempt}/2): ${e.message}`);
+      if (attempt < 2) execSync("sleep 5");
+    }
+  }
+
+  // The retry above is a guess at the cause (CI resource contention on a
+  // fresh relaunch), not a confirmed diagnosis — if it still fails, capture
+  // what's actually on screen so the next investigation has evidence instead
+  // of another blind guess.
+  if (!flowOk) {
+    try {
+      execSync(`xcrun simctl io ${UDID} screenshot --type png "${join(OUT_DIR, `${seq}-${flow}-failure.png`)}"`, { stdio: "ignore" });
+    } catch (e) {
+      console.error(`could not capture failure screenshot for ${flow}: ${e.message}`);
+    }
   }
 
   let savedAs = null;

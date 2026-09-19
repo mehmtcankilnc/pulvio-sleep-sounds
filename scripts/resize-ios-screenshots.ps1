@@ -42,8 +42,11 @@ foreach ($file in $files) {
     [int]$cropX = [Math]::Floor(($scaledW - $Width) / 2)
     [int]$cropY = [Math]::Floor(($scaledH - $Height) / 2)
 
-    $final = New-Object -TypeName System.Drawing.Bitmap -ArgumentList @([int]$Width, [int]$Height)
+    # Format24bppRgb has no alpha channel - Apple rejects PNGs that carry one,
+    # even if fully opaque.
+    $final = New-Object -TypeName System.Drawing.Bitmap -ArgumentList @([int]$Width, [int]$Height, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
     $gFinal = [System.Drawing.Graphics]::FromImage($final)
+    $gFinal.Clear([System.Drawing.Color]::Black)
     $srcRect = New-Object -TypeName System.Drawing.Rectangle -ArgumentList @([int]$cropX, [int]$cropY, [int]$Width, [int]$Height)
     $destRect = New-Object -TypeName System.Drawing.Rectangle -ArgumentList @(0, 0, [int]$Width, [int]$Height)
     $gFinal.DrawImage($scaled, $destRect, $srcRect, [System.Drawing.GraphicsUnit]::Pixel)

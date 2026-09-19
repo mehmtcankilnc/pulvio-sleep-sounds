@@ -81,6 +81,36 @@ Rules honoured: no word repeated across Title / Subtitle / Keywords. Title =
 sleep, white, noise, pulvio. Subtitle = rain, ocean, asmr, fan, sounds. Keyword
 field shares nothing with either.
 
+**Sanity-check on this shape (Challenger tier — no brand search volume yet, so
+score strictly):**
+
+- **Title/subtitle: sound.** Keyword-first, no repeated words, both fields
+  maxed or near-maxed. `nature` isn't in the subtitle but isn't lost — it's in
+  the keyword field, and combines with subtitle's `sounds` to still rank
+  "nature sounds". `fan` earns its subtitle slot: it's not recoverable via
+  combination from anywhere else, and it's a real underserved niche (Calm/
+  Headspace don't have fan-noise content).
+- **Keyword field has 4 bytes of slack (96/100)** — currently wasted. Two
+  concrete fixes, pick one:
+  1. Add `,aid` → 100/100, unlocks the "sleep aid" combination (title already
+     has `sleep`). High-intent phrase, currently not covered anywhere.
+  2. Swap the weakest entry, `birds` (low standalone search volume, already
+     implied by `forest`/`nature`), for `insomnia` (9 bytes) — a real
+     acquisition term ("insomnia app", "insomnia relief") this list is
+     currently missing entirely.
+  Recommend **both are worth testing**, but if only one: `insomnia` has more
+  independent search volume than `aid`.
+- **Deliberately excluded, correctly:** `meditation` — high volume, but the
+  positioning (§1) is explicit that Pulvio is *not* a meditation app. Ranking
+  for it would trade install volume for mismatched-expectation 1-star
+  reviews. Leave it out of metadata; don't leave it out of mind if the
+  catalogue ever grows a guided-breathing feature.
+- **Not verifiable from this doc:** actual search volume for `fan`/`ASMR`/
+  `insomnia` in this niche — that needs App Store Connect's Search Ads
+  Suggested Keywords or a paid ASO tool (e.g. AppTweak, Sensor Tower) once
+  the app has any live data to pull from. Treat the above as directionally
+  right, not volume-verified.
+
 #### Google Play
 
 | Field | Value | Count |
@@ -133,19 +163,396 @@ Languages: English, Português (Brasil), Deutsch, Français, Español, Türkçe.
 
 ### Localized title / subtitle / keywords (DRAFT — native QA required)
 
-Titles follow the EN pattern **[sleep] & [white noise] : [brand]**, keyword-first.
-Where all three won't fit 30 chars the brand is dropped (flagged). The column
-below is the **Google short description**; each locale still needs its own **Apple
-subtitle (≤30, no word repeated from that locale's title)** — draft during native
-QA with the same rain/ocean/ASMR/fan/sounds fill as EN.
+**No — the Apple Keyword field must NOT reuse the English keyword list across
+locales.** Apple Search indexes each App Store localization independently:
+Title + Subtitle + Keyword field are per-language metadata, and Apple matches
+against what people actually type in that storefront's language. Submitting
+the English `relax,calm,fall,asleep,timer,nature,...` string under the German
+or Turkish localization wastes the entire 100-byte budget on terms almost
+nobody searches for in those markets. The one exception is genuine loanwords
+that get searched in their English form even by non-English speakers — here
+that's `ASMR` (universal, never translated) and arguably `lo-fi`; everything
+else below is localized.
 
-| Locale | Title (≤30) | Google short desc | Top keywords |
+The previous "Top keywords" column (below the table) was a **loose phrase
+list for description prose** — multi-word phrases with spaces, which is not
+the format Apple's Keyword field accepts efficiently (spaces cost bytes for
+zero combinatorial benefit; single words let Title × Subtitle × Keywords
+combine into those same phrases for free). It was never validated against
+the 100-byte limit, which is what you ran into. The table below replaces it
+with an actual submittable field: single-word tokens, comma-separated, no
+spaces, **measured in real UTF-8 bytes** (`wc -c` on the encoded string, not
+character count — every accented letter in pt/de/fr/es/tr and every
+dotted/dotless-ı or ğ/ş/ö/ü in tr is 2 bytes, not 1). No word appears more
+than once across that locale's Title + Subtitle + Keywords.
+
+Titles follow the EN pattern **[sleep] & [white noise] : [brand]**, keyword-first.
+Where all three won't fit 30 chars the brand is dropped (flagged). Subtitles
+follow EN's **[rain], [ocean], ASMR, [wind]** fill — "wind" replaces EN's "fan"
+in every other locale because translated fan-noise words (`ventilador`,
+`Ventilator`) ran too long to fit alongside the other three terms; wind is
+real catalogue content either way (§2 lists it), so nothing is fabricated.
+
+| Locale | Title (≤30 chars) | Subtitle (≤30 chars) | Apple Keyword field (≤100 bytes) |
 |---|---|---|---|
-| **PT-BR** | `Ruído branco e sono: Pulvio` (27) | `Ruído branco, chuva, oceano e ASMR com timer de sono que diminui aos poucos.` | sons para dormir, ruído branco, som de chuva, sons da natureza, relaxamento, timer de sono, ASMR, ondas do mar, dormir rápido, sono profundo |
-| **DE** | `Weißes Rauschen & Schlaf` (24, **brand dropped**; alt `Rauschen & Schlaf: Pulvio` 25) | `Weißes Rauschen, Regen, Meer und ASMR mit sanftem Einschlaf-Timer.` | einschlafen, weißes rauschen, regengeräusche, naturgeräusche, entspannung, schlaf timer, ASMR, meeresrauschen, einschlafhilfe, beruhigend |
-| **FR** | `Bruit blanc & sommeil : Pulvio` (30) | `Bruit blanc, pluie, océan et ASMR avec une minuterie de sommeil en fondu.` | sons pour dormir, bruit blanc, bruit de pluie, sons de la nature, relaxation, minuterie sommeil, ASMR, vagues océan, aide au sommeil, apaisant |
-| **ES** | `Ruido blanco y dormir: Pulvio` (29) | `Ruido blanco, lluvia, océano y ASMR con temporizador de sueño con desvanecido.` | sonidos para dormir, ruido blanco, sonido de lluvia, sonidos de la naturaleza, relajación, temporizador de sueño, ASMR, olas del mar, conciliar el sueño, calma |
-| **TR** | `Beyaz Gürültü & Uyku: Pulvio` (28) | `Yağmur, okyanus, beyaz gürültü ve ASMR; uyku zamanlayıcı yavaşça kısılır.` | uyku sesleri, beyaz gürültü, yağmur sesi, doğa sesleri, rahatlatıcı, uyku zamanlayıcısı, ASMR, okyanus dalgası, meditasyon, gevşeme |
+| **EN** | `Sleep & White Noise: Pulvio` (27) | `Rain, Ocean, ASMR & Fan Sounds` (30) | `relax,calm,fall,asleep,timer,nature,thunderstorm,fireplace,forest,birds,waves,brown,pink,bedtime` (96 bytes) |
+| **PT-BR** | `Ruído branco e sono: Pulvio` (27) | `Chuva, Oceano, ASMR e Vento` (27) | `sons,dormir,insônia,timer,natureza,relaxar,ondas,profundo,rápido,marrom,rosa,floresta,trovão` (95 bytes) |
+| **DE** | `Weißes Rauschen & Schlaf` (24, **brand dropped**; alt `Rauschen & Schlaf: Pulvio` 25) | `Regen, Meer, ASMR, Wind, Natur` (30) | `schlafen,einschlafhilfe,insomnie,timer,wellen,entspannung,beruhigend,braunes,rosa,wald,gewitter` (95 bytes) |
+| **FR** | `Bruit blanc & sommeil : Pulvio` (30) | `Pluie, Océan, ASMR, Vent` (25) | `insomnie,minuterie,nature,vagues,relaxation,apaisant,brun,rose,forêt,orage,cheminée,oiseaux,rapide` (100 bytes) |
+| **ES** | `Ruido blanco y dormir: Pulvio` (29) | `Lluvia, Océano, ASMR, Viento` (29) | `insomnio,temporizador,naturaleza,olas,relajación,calma,marrón,rosa,bosque,tormenta,chimenea` (93 bytes) |
+| **TR** | `Beyaz Gürültü & Uyku: Pulvio` (28) | `Yağmur, Deniz, ASMR, Rüzgar` (29) | `okyanus,uyumak,uykusuzluk,zamanlayıcı,doğa,dalga,rahatlama,sakinleştirici,kahverengi,pembe,orman` (100 bytes) |
+
+Notes on the trades made to fit the byte budget (each dropped term is still
+covered in that locale's full description, §2 below, so it isn't lost —
+just not in the highest-value field):
+
+- **TR subtitle changed ocean word from `Okyanus` to `Deniz`** (sea) to fit
+  30 chars — the original `Yağmur, Okyanus, ASMR, Rüzgar` was 31/30. This
+  freed `okyanus` to move into the keyword field instead, so both terms
+  still end up indexed, just in different fields.
+- **PT** drops `lareira` (fireplace) and `pássaros` (birds) from the keyword
+  field — both niche, low standalone search volume, both appear in the PT
+  description's feature bullets.
+- **DE** drops `vögel` (birds) and `müde` (tired) — same reasoning; `müde`
+  in particular is a weak standalone search term.
+- **FR** drops `profond` (deep) — "sommeil profond" (deep sleep) is a real
+  phrase but lower priority than insomnia/relaxation/nature terms that made
+  the cut.
+- **ES** has 7 bytes of slack (93/100) after dropping `pájaros`, `rápido`,
+  `profundo` — none fit without cutting something higher-value, and forcing
+  the budget to exactly 100 isn't itself a goal. Native QA may find a
+  shorter Spanish word that fills it usefully.
+- **TR** drops `fırtına` (storm), `şömine` (fireplace), `kuşlar` (birds) —
+  all three are in the TR description; `sakinleştirici` (calming) was kept
+  over them since "calming sounds" is a stronger standalone search pattern
+  than any single ambience word.
+
+> **One real content gap, not a wording issue:** the old TR "Top keywords"
+> phrase list included `meditasyon`. Every other locale (and the EN strategy
+> in §2) deliberately excludes "meditation" — Pulvio isn't a meditation app,
+> and ranking for the term risks mismatched-expectation reviews. It's
+> correctly absent from the TR keyword field above; just flagging that the
+> old table had it so nobody resurrects it during translation QA.
+
+These are still **DRAFT** — a native speaker should sanity-check that each
+localized term is actually what people search (not just a correct
+dictionary translation; e.g. confirm `Rauschen` vs `Geräusch` in DE, or
+whether Brazilian users search `ruído branco` vs `som branco`) before
+submission in App Store Connect.
+
+### Google Play — localized titles & short descriptions (DRAFT)
+
+Google has no hidden keyword field — the **title is indexed and is the
+strongest signal**, and the **short description (≤80 chars) and full
+description (§ below) are both indexed too**, so these need real localized
+search terms in visible prose, not a separate token list.
+
+| Locale | Title (≤30 chars) | Short description (≤80 chars) |
+|---|---|---|
+| **PT-BR** | `Ruído branco e sono: Pulvio` (27) | `Ruído branco, chuva, oceano e ASMR com timer de sono que diminui aos poucos.` |
+| **DE** | `Weißes Rauschen & Schlaf` (24) | `Weißes Rauschen, Regen, Meer und ASMR mit sanftem Einschlaf-Timer.` |
+| **FR** | `Bruit blanc & sommeil : Pulvio` (30) | `Bruit blanc, pluie, océan et ASMR avec une minuterie de sommeil en fondu.` |
+| **ES** | `Ruido blanco y dormir: Pulvio` (29) | `Ruido blanco, lluvia, océano y ASMR con temporizador de sueño con desvanecido.` |
+| **TR** | `Beyaz Gürültü & Uyku: Pulvio` (28) | `Yağmur, okyanus, beyaz gürültü ve ASMR; uyku zamanlayıcı yavaşça kısılır.` |
+
+Google's title can reuse the same string as Apple's (no cross-field repeat
+penalty like Apple's), so these match the Title column above. Same DRAFT/QA
+caveat applies.
+
+### Promotional text (Apple only — 170 chars, not indexed, editable without a new build)
+
+Apple confirms this field doesn't affect search ranking, so it's pure
+conversion copy — and the only ASO field you can change without a version
+review, so revisit it seasonally (holidays, exam season, back-to-school) once
+there's a reason to. Counts below are exact (`wc -m`), not estimates.
+
+| Locale | Text | Chars |
+|---|---|---|
+| **EN** | `Rain, ocean, white noise, brown noise and ASMR — with a sleep timer that fades out gently instead of cutting off. A real free tier, no fake trial.` | 148 / 170 |
+| **PT-BR** | `Chuva, oceano, ruído branco, ruído marrom e ASMR — com um timer de sono que diminui aos poucos, sem cortar de repente. Um plano grátis de verdade, sem trial falso.` | 168 / 170 |
+| **DE** | `Regen, Meer, weißes Rauschen, braunes Rauschen und ASMR — mit einem Einschlaf-Timer, der sanft statt abrupt ausblendet. Eine echte Gratis-Version, kein falscher Test.` | 169 / 170 |
+| **FR** | `Pluie, océan, bruit blanc et ASMR — avec une minuterie de sommeil qui s'estompe en douceur, sans s'arrêter net. Une vraie version gratuite, sans faux essai.` | 160 / 170 |
+| **ES** | `Lluvia, océano, ruido blanco y ASMR — con un temporizador de sueño que se desvanece poco a poco, sin cortarse de golpe. Un plan gratis real, sin prueba falsa.` | 162 / 170 |
+| **TR** | `Yağmur, okyanus, beyaz gürültü ve ASMR — sesi aniden kesmek yerine yavaşça kısan bir uyku zamanlayıcısı. Sahte deneme değil, gerçek bir ücretsiz plan.` | 165 / 170 |
+
+FR and ES drop "bruit brun"/"ruido marrón" to fit the 170-char limit — brown
+noise is still covered by the title/keyword field, this text is conversion
+copy, not a keyword slot. DRAFT, needs native QA like everything else non-EN.
+
+### Full descriptions — all locales (DRAFT — native QA required)
+
+**Apple description is not indexed for search** — it exists purely to convert
+someone who already tapped in from the icon/screenshots. Keep it scannable:
+short opening hook, then feature groups, then the honest-free-tier pitch,
+then a closing line that sets expectations (no light mode, no meditation
+content) to keep reviews aligned with what the app actually is.
+
+**Google full description IS indexed** — same structure, but written to
+carry the locale's long-tail keywords (§2 "Top keywords" column) naturally in
+prose, not stuffed. Target density stays 2–3%; these drafts don't force it
+higher than that.
+
+<details>
+<summary>Apple App Store description — EN</summary>
+
+```
+Pulvio is a focused sleep-sound app: ambient sounds, noise and ASMR, with a timer that fades out instead of cutting off.
+
+FALL ASLEEP TO
+Rain, thunderstorm, ocean waves, streams, forest, birdsong, wind and fireplace — plus white noise, brown noise and pink noise. ASMR triggers like tapping and keyboard sounds. Vehicle ambience — car interior, train, plane cabin, bus, café. Piano, lo-fi and ambient music.
+
+A TIMER THAT FADES, NOT CUTS
+Set how long you want sound for. Instead of stopping abruptly and waking you, it lowers gradually as you drift off. Keeps playing with the screen off, with lock-screen controls, and can wake you gently with a soft morning sound.
+
+BUILT AROUND YOUR BEDTIME
+Answer a few quick questions and Pulvio puts together a wind-down mix for you. Set a bedtime and your sounds are ready on time, every night.
+
+A FREE TIER THAT'S ACTUALLY FREE
+Free listening isn't a countdown to a paywall — it's time-limited with a cooldown, not a trial that disappears. Premium removes the wait and unlocks the full library, for anyone who wants it every night.
+
+No light mode, no gamification, no meditation lessons — just sounds and a timer that helps you fall asleep.
+```
+</details>
+
+<details>
+<summary>Apple App Store description — PT-BR</summary>
+
+```
+Pulvio é um app focado em sons para dormir: ambientes, ruídos e ASMR, com um timer que diminui aos poucos em vez de cortar de repente.
+
+PARA DORMIR
+Chuva, tempestade, ondas do mar, riachos, floresta, canto de pássaros, vento e lareira — além de ruído branco, ruído marrom e ruído rosa. Gatilhos de ASMR como tapping e teclado. Ambientes de viagem — carro, trem, avião, ônibus, café. Piano, lo-fi e música ambiente.
+
+UM TIMER QUE DIMINUI, NÃO CORTA
+Escolha por quanto tempo quer ouvir o som. Em vez de parar de repente e te acordar, ele vai diminuindo aos poucos enquanto você pega no sono. Continua tocando com a tela desligada, com controles na tela de bloqueio, e pode te acordar suavemente com um som matinal.
+
+FEITO PARA O SEU HORÁRIO DE DORMIR
+Responda algumas perguntas rápidas e o Pulvio monta uma rotina de relaxamento para você. Defina um horário de dormir e seus sons estarão prontos, todas as noites.
+
+UM PLANO GRATUITO DE VERDADE
+Ouvir de graça não é uma contagem regressiva até um paywall — é limitado no tempo, com um intervalo entre sessões, não um trial que desaparece. O Premium remove essa espera e libera a biblioteca completa, para quem quiser usar todas as noites.
+
+Sem modo claro, sem gamificação, sem aulas de meditação — só sons e um timer que ajuda você a dormir.
+```
+</details>
+
+<details>
+<summary>Apple App Store description — DE</summary>
+
+```
+Pulvio ist eine fokussierte Einschlaf-App: Umgebungsgeräusche, Rauschen und ASMR, mit einem Timer, der sanft ausblendet statt abrupt zu stoppen.
+
+ZUM EINSCHLAFEN
+Regen, Gewitter, Meereswellen, Bäche, Wald, Vogelgezwitscher, Wind und Kamin — dazu weißes, braunes und rosa Rauschen. ASMR-Trigger wie Tapping und Tastaturgeräusche. Reise-Ambiente — Auto, Zug, Flugzeugkabine, Bus, Café. Klavier, Lo-Fi und Ambient-Musik.
+
+EIN TIMER, DER AUSBLENDET, NICHT ABBRICHT
+Stelle ein, wie lange der Sound laufen soll. Statt abrupt zu stoppen und dich aufzuwecken, wird er sanft leiser, während du einschläfst. Läuft weiter bei ausgeschaltetem Display, mit Steuerung im Sperrbildschirm, und kann dich sanft mit einem Morgengeräusch wecken.
+
+RUND UM DEINE SCHLAFENSZEIT GEBAUT
+Beantworte ein paar kurze Fragen, und Pulvio stellt dir eine Einschlaf-Routine zusammen. Lege eine Schlafenszeit fest, und deine Klänge sind jeden Abend pünktlich bereit.
+
+EIN GRATIS-TARIF, DER WIRKLICH GRATIS IST
+Kostenloses Hören ist kein Countdown zur Kaufaufforderung — es ist zeitlich begrenzt mit einer Pause danach, kein Test, der plötzlich verschwindet. Premium entfernt das Warten und schaltet die komplette Bibliothek frei, für alle, die es jede Nacht nutzen wollen.
+
+Kein heller Modus, keine Gamification, keine Meditationskurse — nur Klänge und ein Timer, der beim Einschlafen hilft.
+```
+</details>
+
+<details>
+<summary>Apple App Store description — FR</summary>
+
+```
+Pulvio est une application centrée sur le sommeil : sons d'ambiance, bruits et ASMR, avec une minuterie qui s'estompe en douceur au lieu de s'arrêter net.
+
+POUR S'ENDORMIR
+Pluie, orage, vagues, ruisseaux, forêt, chants d'oiseaux, vent et cheminée — ainsi que bruit blanc, bruit brun et bruit rose. Déclencheurs ASMR comme le tapping et le clavier. Ambiances de transport — voiture, train, cabine d'avion, bus, café. Piano, lo-fi et musique d'ambiance.
+
+UNE MINUTERIE QUI S'ESTOMPE, PAS QUI COUPE
+Choisissez la durée du son. Au lieu de s'arrêter brusquement et de vous réveiller, il baisse progressivement pendant que vous vous endormez. Continue avec l'écran éteint, avec des commandes sur l'écran verrouillé, et peut vous réveiller en douceur avec un son matinal.
+
+PENSÉE POUR VOTRE HEURE DE COUCHER
+Répondez à quelques questions rapides et Pulvio compose une routine de détente pour vous. Réglez une heure de coucher et vos sons sont prêts chaque soir.
+
+UNE VERSION GRATUITE VRAIMENT GRATUITE
+Écouter gratuitement n'est pas un compte à rebours vers un paywall — c'est limité dans le temps avec une pause, pas un essai qui disparaît. Premium supprime cette attente et débloque la bibliothèque complète, pour qui veut l'utiliser chaque soir.
+
+Pas de mode clair, pas de gamification, pas de cours de méditation — juste des sons et une minuterie qui aide à s'endormir.
+```
+</details>
+
+<details>
+<summary>Apple App Store description — ES</summary>
+
+```
+Pulvio es una app centrada en el sueño: sonidos ambientales, ruido y ASMR, con un temporizador que se desvanece poco a poco en vez de cortarse de golpe.
+
+PARA CONCILIAR EL SUEÑO
+Lluvia, tormenta, olas del mar, arroyos, bosque, canto de pájaros, viento y chimenea — además de ruido blanco, ruido marrón y ruido rosa. Gatillos de ASMR como tapping y teclado. Ambientes de viaje — coche, tren, cabina de avión, autobús, café. Piano, lo-fi y música ambiental.
+
+UN TEMPORIZADOR QUE SE DESVANECE, NO CORTA
+Elige cuánto tiempo quieres que suene. En vez de detenerse de golpe y despertarte, baja poco a poco mientras te duermes. Sigue sonando con la pantalla apagada, con controles en la pantalla de bloqueo, y puede despertarte suavemente con un sonido matutino.
+
+PENSADA PARA TU HORA DE DORMIR
+Responde unas preguntas rápidas y Pulvio arma una rutina de relajación para ti. Fija una hora de dormir y tus sonidos estarán listos cada noche.
+
+UN PLAN GRATIS DE VERDAD
+Escuchar gratis no es una cuenta regresiva hacia un paywall — está limitado en el tiempo con una pausa entre sesiones, no es una prueba que desaparece. Premium elimina esa espera y desbloquea la biblioteca completa, para quien quiera usarla cada noche.
+
+Sin modo claro, sin gamificación, sin clases de meditación — solo sonidos y un temporizador que ayuda a dormir.
+```
+</details>
+
+<details>
+<summary>Apple App Store description — TR</summary>
+
+```
+Pulvio, uyku sesleri üzerine odaklanmış bir uygulama: ortam sesleri, gürültü ve ASMR; sesi aniden kesmek yerine yavaşça kısan bir zamanlayıcıyla.
+
+UYKUYA DALMAK İÇİN
+Yağmur, fırtına, deniz dalgaları, dere, orman, kuş sesleri, rüzgar ve şömine — ayrıca beyaz gürültü, kahverengi gürültü ve pembe gürültü. Tıklama ve klavye gibi ASMR tetikleyicileri. Yolculuk ortamları — araba, tren, uçak kabini, otobüs, kafe. Piyano, lo-fi ve ambiyans müzik.
+
+KESMEYEN, YAVAŞÇA KISAN BİR ZAMANLAYICI
+Sesin ne kadar süre çalacağını sen seç. Aniden durup seni uyandırmak yerine, sen uykuya dalarken ses yavaşça kısılır. Ekran kapalıyken çalmaya devam eder, kilit ekranından kontrol edilir ve seni yumuşak bir sabah sesiyle uyandırabilir.
+
+UYKU SAATİNE GÖRE KURULUR
+Birkaç kısa soruyu yanıtla, Pulvio senin için bir uyku rutini hazırlasın. Bir uyku saati belirle, seslerin her gece zamanında hazır olsun.
+
+GERÇEKTEN ÜCRETSİZ BİR PLAN
+Ücretsiz dinleme, ödeme ekranına doğru geri sayım değildir — süre sınırlı ve aralarında bekleme var, kaybolan bir deneme süresi değil. Premium bu bekleyişi kaldırır ve tüm kütüphaneyi açar, her gece kullanmak isteyenler için.
+
+Açık tema yok, oyunlaştırma yok, meditasyon dersleri yok — sadece sesler ve uykuya dalmana yardımcı olan bir zamanlayıcı.
+```
+</details>
+
+<details>
+<summary>Google Play full description — PT-BR</summary>
+
+```
+Pulvio toca sons ambientes para dormir, ruídos e ASMR para você pegar no sono mais rápido — sem precisar procurar um vídeo novo toda noite.
+
+O QUE TEM NO APP
+• Chuva, tempestade, ondas do mar, riachos, floresta, canto de pássaros, vento e lareira
+• Ruído branco, ruído marrom e ruído rosa
+• Gatilhos de ASMR — tapping, teclado e mais
+• Ambientes de viagem — carro, trem, avião, ônibus, café
+• Piano, lo-fi e música ambiente
+
+UM TIMER DE SONO QUE DIMINUI AOS POUCOS
+Defina um timer e o som vai diminuindo aos poucos enquanto você pega no sono, em vez de cortar de repente e te acordar. A reprodução continua com a tela desligada, com controles na tela de bloqueio.
+
+FEITO PARA A HORA DE DORMIR
+Responda algumas perguntas rápidas e o Pulvio monta uma rotina de relaxamento para você. Defina seu horário de dormir e seus sons estarão prontos na hora certa. Acorde suavemente com um som matinal.
+
+UM PLANO GRATUITO DE VERDADE
+Ouvir de graça é realmente gratuito — limitado no tempo, com um intervalo entre sessões, não um trial que desaparece de repente. Assine o Premium para ouvir sem limites e ter acesso à biblioteca completa.
+
+Idiomas: Português (Brasil), English, Deutsch, Français, Español, Türkçe.
+```
+</details>
+
+<details>
+<summary>Google Play full description — DE</summary>
+
+```
+Pulvio spielt Umgebungsgeräusche zum Einschlafen, Rauschen und ASMR, damit du schneller einschläfst — ohne jeden Abend ein neues Video suchen zu müssen.
+
+DAS ERWARTET DICH
+• Regen, Gewitter, Meereswellen, Bäche, Wald, Vogelgezwitscher, Wind und Kamin
+• Weißes Rauschen, braunes Rauschen und rosa Rauschen
+• ASMR-Trigger — Tapping, Tastatur und mehr
+• Reise-Ambiente — Auto, Zug, Flugzeugkabine, Bus, Café
+• Klavier, Lo-Fi und Ambient-Musik
+
+EIN EINSCHLAF-TIMER, DER SANFT AUSBLENDET
+Stelle einen Timer ein, und der Sound wird leiser, während du einschläfst, statt abrupt zu stoppen und dich zu wecken. Die Wiedergabe läuft bei ausgeschaltetem Display weiter, mit Steuerung im Sperrbildschirm.
+
+GEBAUT FÜR DEINE SCHLAFENSZEIT
+Beantworte ein paar kurze Fragen, und Pulvio stellt dir eine Einschlaf-Routine zusammen. Lege deine Schlafenszeit fest, und deine Klänge sind pünktlich bereit. Wache sanft mit einem Morgengeräusch auf.
+
+EIN GRATIS-TARIF, DER WIRKLICH GRATIS IST
+Kostenloses Hören ist wirklich gratis — zeitlich begrenzt mit einer Pause danach, kein Test, der plötzlich verschwindet. Hol dir Premium für unbegrenztes Hören und die komplette Bibliothek.
+
+Sprachen: Deutsch, English, Português (Brasil), Français, Español, Türkçe.
+```
+</details>
+
+<details>
+<summary>Google Play full description — FR</summary>
+
+```
+Pulvio diffuse des sons d'ambiance pour dormir, des bruits et de l'ASMR pour vous endormir plus vite — sans chercher une nouvelle vidéo chaque soir.
+
+AU PROGRAMME
+• Pluie, orage, vagues, ruisseaux, forêt, chants d'oiseaux, vent et cheminée
+• Bruit blanc, bruit brun et bruit rose
+• Déclencheurs ASMR — tapping, clavier et plus
+• Ambiances de transport — voiture, train, cabine d'avion, bus, café
+• Piano, lo-fi et musique d'ambiance
+
+UNE MINUTERIE DE SOMMEIL QUI S'ESTOMPE EN DOUCEUR
+Réglez une minuterie et le son baisse progressivement pendant que vous vous endormez, au lieu de s'arrêter net et de vous réveiller. La lecture continue écran éteint, avec des commandes sur l'écran verrouillé.
+
+PENSÉE POUR VOTRE HEURE DE COUCHER
+Répondez à quelques questions rapides et Pulvio compose une routine de détente pour vous. Réglez votre heure de coucher et vos sons sont prêts au bon moment. Réveillez-vous en douceur avec un son matinal.
+
+UNE VERSION GRATUITE VRAIMENT GRATUITE
+Écouter gratuitement est réellement gratuit — limité dans le temps avec une pause, pas un essai qui disparaît soudainement. Passez à Premium pour une écoute illimitée et la bibliothèque complète.
+
+Langues : Français, English, Português (Brasil), Deutsch, Español, Türkçe.
+```
+</details>
+
+<details>
+<summary>Google Play full description — ES</summary>
+
+```
+Pulvio reproduce sonidos ambientales para dormir, ruido y ASMR para que te duermas más rápido, sin tener que buscar un video nuevo cada noche.
+
+QUÉ INCLUYE
+• Lluvia, tormenta, olas del mar, arroyos, bosque, canto de pájaros, viento y chimenea
+• Ruido blanco, ruido marrón y ruido rosa
+• Gatillos de ASMR — tapping, teclado y más
+• Ambientes de viaje — coche, tren, cabina de avión, autobús, café
+• Piano, lo-fi y música ambiental
+
+UN TEMPORIZADOR DE SUEÑO QUE SE DESVANECE POCO A POCO
+Configura un temporizador y el sonido baja poco a poco mientras te duermes, en lugar de cortarse de golpe y despertarte. La reproducción sigue con la pantalla apagada, con controles en la pantalla de bloqueo.
+
+PENSADA PARA TU HORA DE DORMIR
+Responde unas preguntas rápidas y Pulvio arma una rutina de relajación para ti. Fija tu hora de dormir y tus sonidos estarán listos a tiempo. Despierta suavemente con un sonido matutino.
+
+UN PLAN GRATIS DE VERDAD
+Escuchar gratis es realmente gratis — limitado en el tiempo con una pausa entre sesiones, no una prueba que desaparece de repente. Consigue Premium para escuchar sin límites y acceder a la biblioteca completa.
+
+Idiomas: Español, English, Português (Brasil), Deutsch, Français, Türkçe.
+```
+</details>
+
+<details>
+<summary>Google Play full description — TR</summary>
+
+```
+Pulvio, her gece yeni bir video aramak zorunda kalmadan daha hızlı uykuya dalman için uyku sesleri, gürültü ve ASMR çalar.
+
+UYGULAMADA NELER VAR
+• Yağmur, fırtına, deniz dalgaları, dere, orman, kuş sesleri, rüzgar ve şömine
+• Beyaz gürültü, kahverengi gürültü ve pembe gürültü
+• ASMR tetikleyicileri — tıklama, klavye ve daha fazlası
+• Yolculuk ortamları — araba, tren, uçak kabini, otobüs, kafe
+• Piyano, lo-fi ve ambiyans müzik
+
+YAVAŞÇA KISILAN BİR UYKU ZAMANLAYICISI
+Bir zamanlayıcı ayarla; ses aniden kesilip seni uyandırmak yerine, sen uykuya dalarken yavaşça kısılır. Ekran kapalıyken çalmaya devam eder, kilit ekranından kontrol edilebilir.
+
+UYKU SAATİNE GÖRE TASARLANDI
+Birkaç kısa soruyu yanıtla, Pulvio senin için bir uyku rutini hazırlasın. Uyku saatini belirle, seslerin zamanında hazır olsun. Yumuşak bir sabah sesiyle nazikçe uyan.
+
+GERÇEKTEN ÜCRETSİZ BİR PLAN
+Ücretsiz dinleme gerçekten ücretsizdir — süre sınırlı ve aralarında bekleme var, aniden kaybolan bir deneme süresi değil. Sınırsız dinlemek ve tüm kütüphaneye erişmek için Premium'a geç.
+
+Diller: Türkçe, English, Português (Brasil), Deutsch, Français, Español.
+```
+</details>
 
 ---
 

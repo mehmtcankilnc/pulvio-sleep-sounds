@@ -10,7 +10,12 @@ steps:
       redacts the secure field, so the password input is targeted relationally
       as "the input right after the Password label" (same trick 00-login uses).
   - launch: com.pulvio.app
-  - await: { visible: { id: explore-screen }, timeout: 20000 }
+  # A relaunch is a fresh JS process: session rehydration (possibly a token
+  # refresh round trip) + fonts/i18n + the initial catalog fetch all race
+  # before explore-screen mounts (app/(tabs)/index.tsx only sets its testID
+  # once useTracks() finishes loading). 30s matches every later segment's
+  # same post-launch await instead of budgeting this one more tightly.
+  - await: { visible: { id: explore-screen }, timeout: 30000 }
   - tap: { id: tab-profile }
   - await: { visible: { text: "Complete your account" }, timeout: 15000 }
   - tap: { text: "Complete My Account" }
