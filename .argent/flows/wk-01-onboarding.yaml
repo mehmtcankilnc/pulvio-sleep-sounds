@@ -51,7 +51,12 @@ steps:
   - await: { idle: true }
   - tap: { text: "Continue" }
 
-  - await: { visible: { text: "When do you usually go to bed?" }, timeout: 15000 }
+  # Mounting react-native-date-picker's native wheel here is heavier than the
+  # prior screens' plain Views — under a screen recording (extra CPU/GPU load
+  # on the simulator) a 15s budget has been seen to time out even though the
+  # same await passes comfortably unrecorded (see 07-paywall-yearly). 30s
+  # matches the plan-ready catalog-fetch await below for the same reason.
+  - await: { visible: { text: "When do you usually go to bed?" }, timeout: 30000 }
   - await: { idle: true }
   - wait: 800
   - tap: { text: "Continue" }

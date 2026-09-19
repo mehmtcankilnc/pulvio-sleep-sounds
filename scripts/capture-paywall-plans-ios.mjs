@@ -71,8 +71,22 @@ for (let attempt = 1; attempt <= 5; attempt++) {
 }
 
 for (const [flow, name] of PLANS) {
-  process.stdout.write(`${flow} (${name}) … `);
-  execFileSync("npx", ["--no-install", "argent", "flow", "run", flow, "--device", UDID], { stdio: "inherit" });
+  process.stdout.write(`${flow} (${name}) … \n`);
+  // Each flow is a fresh `argent flow run` process reconnecting to the
+  // simulator's ViewInspector bridge. That reconnect has been seen to time
+  // out transiently right after the previous flow's screenshot (RPC timeout
+  // on the very first step) — retry a couple of times with a short settle
+  // wait rather than aborting the whole capture run over one flaky flow.
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      execFileSync("npx", ["--no-install", "argent", "flow", "run", flow, "--device", UDID], { stdio: "inherit" });
+      break;
+    } catch (e) {
+      if (attempt === 3) throw e;
+      console.warn(`${flow} did not complete cleanly (attempt ${attempt}/3), retrying: ${e.message}`);
+      execSync("sleep 3");
+    }
+  }
   execSync(`xcrun simctl io ${UDID} screenshot --type png "${OUT}/paywall-${name}.png"`, { stdio: "ignore" });
   console.log("captured");
 }
