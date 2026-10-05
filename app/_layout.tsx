@@ -1,7 +1,7 @@
 import "../global.css";
 import { useEffect, useRef, useState } from "react";
-import { View, ActivityIndicator } from "react-native";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { View, ActivityIndicator, Appearance } from "react-native";
+import { Stack, ThemeProvider, DarkTheme, useRouter, useSegments } from "expo-router";
 import {
   useFonts,
   PlusJakartaSans_400Regular,
@@ -21,6 +21,7 @@ import { saveOnboardingAnswers } from "../src/lib/onboarding/saveAnswers";
 import { PlayerEngineProvider } from "../src/lib/player/PlayerEngineProvider";
 import { initI18n } from "../src/lib/i18n";
 import { useThemeColors } from "../src/hooks/useThemeColors";
+import { colors } from "../src/theme/colors";
 
 // Cold start resolves `/` to this group, not `(auth)` — so a logged-in user
 // never gets the login screen as the first painted frame while the guard
@@ -29,8 +30,17 @@ export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
 
+// Drift is dark-only. Without this, a phone in Light Mode paints the native
+// stack's screens white (UIKit systemBackground) over the funnel's glow.
+Appearance.setColorScheme("dark");
+
+const NAV_THEME = {
+  ...DarkTheme,
+  colors: { ...DarkTheme.colors, background: colors.bg, card: colors.bg },
+};
+
 export default function RootLayout() {
-  const colors = useThemeColors();
+  const themeColors = useThemeColors();
   useAuthListener();
   useSubscriptionStatus();
   useRevenueCatSync();
@@ -125,14 +135,18 @@ export default function RootLayout() {
     return (
       <View
         className="flex-1 items-center justify-center"
-        style={{ backgroundColor: colors.bg }}
+        style={{ backgroundColor: themeColors.bg }}
       >
-        <ActivityIndicator color={colors.button} />
+        <ActivityIndicator color={themeColors.button} />
       </View>
     );
   }
 
-  return <AppShell />;
+  return (
+    <ThemeProvider value={NAV_THEME}>
+      <AppShell />
+    </ThemeProvider>
+  );
 }
 
 // The pre-auth funnel ends at signup (preview -> paywall -> signup), so the

@@ -88,13 +88,14 @@ if (!toolServerUp) console.warn("proceeding without a confirmed tool-server — 
 // A cold simulator-server right after the ~40-min EAS build can take much
 // longer than a couple of throwaway taps to become ready (seen in CI: 5
 // warm-up attempts here, then screen-recording-start itself timing out on
-// the first 2-3 segments). Retry with backoff instead of one shot.
-for (let attempt = 1; attempt <= 10; attempt++) {
+// the first 2-3 segments; one run needed 8 of the 10 attempts below before
+// the runner settled). Retry with backoff instead of one shot.
+for (let attempt = 1; attempt <= 15; attempt++) {
   try {
     execSync(`npx --no-install argent run gesture-tap --udid ${UDID} --x 0.5 --y 0.5`, { stdio: "ignore" });
     break;
   } catch {
-    console.warn(`simulator-server warm-up not ready (attempt ${attempt}/10)`);
+    console.warn(`simulator-server warm-up not ready (attempt ${attempt}/15)`);
     execSync("sleep 5");
   }
 }
@@ -126,25 +127,17 @@ for (const [index, [flow, label, timeLimitSeconds]] of SEGMENTS.entries()) {
   }
   if (!recording) console.error(`proceeding with ${flow} unrecorded — simulator-server would not come up`);
 
-  // Every segment after wk-01 has been seen to fail its very first step —
-  // `launch` + `await visible id=explore-screen` — instantly and
-  // deterministically (two back-to-back full-flow retries produced
-  // byte-identical failures within the same second, not a timeout). That
-  // rules out a slow JS relaunch racing session/network work, which would
-  // eventually pass or at least vary. It also isn't a pre-existing app bug:
-  // scripts/goldie-capture-locales-ios.mjs chains the same
-  // "argent flow run <scene>" against an already-running app the same way,
-  // each starting with its own `launch:`, with no recording wrapped around
-  // it — and that's known to work. The one thing different here is
-  // screen-recording-start/stop bracketing every segment, so the leading
-  // theory is that toggling the recording drops or staggers the
-  // native-devtools/ViewInspector bridge, and `launch` alone doesn't force
-  // an already-running app to re-attach it — only `restart-app` documents
-  // that it does ("refreshes the native-devtools injection before the
-  // relaunch"). Force that here for every segment but the first: wk-01 must
-  // stay a genuine first-ever launch (its own prerequisite), everything
-  // after it is fair game since the flow's own `launch:` step is a safe
-  // no-op once the app is already frontmost and correctly attached.
+  // Every segment after wk-01 has repeatedly failed its very first step —
+  // `launch` + `await visible id=explore-screen`. Forcing a confirmed
+  // `restart-app` here (it echoes back `{"restarted": true}`, so the
+  // native-devtools bridge genuinely is fresh) did NOT fix it on its own —
+  // that CI run also saw wk-01 itself fail on trivial early steps
+  // ("tap Get started" not found), which never happens otherwise. That
+  // points to the whole runner being unusually slow/contended that run
+  // rather than a specific bridge-staleness bug, so restart-app is kept as
+  // cheap defense-in-depth (never hurts) while the real mitigation is the
+  // retry budget below plus a longer warm-up. wk-01 stays exempt — it must
+  // remain a genuine first-ever launch, its own prerequisite.
   if (index > 0) {
     try {
       execSync(`npx --no-install argent run restart-app --udid ${UDID} --bundleId com.pulvio.app`, { stdio: "inherit" });
@@ -154,15 +147,15 @@ for (const [index, [flow, label, timeLimitSeconds]] of SEGMENTS.entries()) {
   }
 
   let flowOk = true;
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       execFileSync("npx", ["--no-install", "argent", "flow", "run", flow, "--device", UDID], { stdio: "inherit" });
       flowOk = true;
       break;
     } catch (e) {
       flowOk = false;
-      console.error(`${flow} did not complete cleanly (attempt ${attempt}/2): ${e.message}`);
-      if (attempt < 2) execSync("sleep 5");
+      console.error(`${flow} did not complete cleanly (attempt ${attempt}/3): ${e.message}`);
+      if (attempt < 3) execSync("sleep 10");
     }
   }
 

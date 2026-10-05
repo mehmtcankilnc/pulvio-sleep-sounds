@@ -16,6 +16,7 @@ import { TextField } from "../../src/components/ui/TextField";
 import { Button } from "../../src/components/ui/Button";
 import { AuthScaffold } from "../../src/components/auth/AuthScaffold";
 import { ProviderButtons, OrDivider } from "../../src/components/auth/ProviderButtons";
+import { GuestButton } from "../../src/components/auth/GuestButton";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -196,6 +197,8 @@ export default function LoginScreen() {
         onGoogle={() => handleOAuth("google")}
         pending={oauth}
       />
+
+      <GuestButton />
 
       <Pressable
         onPress={() => router.replace("/(auth)/signup")}

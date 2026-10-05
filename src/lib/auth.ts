@@ -155,6 +155,8 @@ export function authErrorKey(error: AuthError | Error | null): string {
       return "error.samePassword";
     case "validation_failed":
       return "error.invalidEmail";
+    case "identity_already_exists":
+      return "error.alreadyRegisteredGuest";
     case "over_request_rate_limit":
     case "over_email_send_rate_limit":
     case "over_sms_send_rate_limit":
@@ -212,6 +214,19 @@ export async function deleteAccount() {
   return { error: null };
 }
 
+// On iOS, ASWebAuthenticationSession swallows the pulvio:// redirect and hands
+// it back as this promise's `success` URL — it never reaches the Linking
+// listener, so the code has to be exchanged here. On Android the redirect
+// arrives through Linking (this resolves "dismiss"), where useAuthListener
+// exchanges it; exchangeCodeFromUrl is idempotent per code so both can run.
+async function finishOAuthSession(authUrl: string, redirectUri: string) {
+  const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+  if (result.type === "success" && result.url) {
+    return { error: await exchangeCodeFromUrl(result.url) };
+  }
+  return { error: null };
+}
+
 // Google: Custom Tabs / SFAuthenticationSession web flow. On Android the
 // return often comes through the app's normal deep-link path rather than
 // openAuthSessionAsync's own promise (which resolves "dismiss" even on a
@@ -228,10 +243,7 @@ export async function signInWithGoogle() {
     return { error: error ?? new Error("Google için OAuth URL'i alınamadı") };
   }
 
-  await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
-  // Sonucu (success/dismiss) kasıtlı olarak yok sayıyoruz — gerçek tamamlanma
-  // deep-link dinleyicisinden gelecek.
-  return { error: null };
+  return finishOAuthSession(data.url, redirectUri);
 }
 
 // Same web flow as signInWithGoogle, but supabase.auth.linkIdentity attaches
@@ -251,8 +263,7 @@ export async function linkGoogleAccount() {
     return { error: error ?? new Error("Google için OAuth URL'i alınamadı") };
   }
 
-  await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
-  return { error: null };
+  return finishOAuthSession(data.url, redirectUri);
 }
 
 // Apple: the native system flow (iOS only — the button is gated to
@@ -293,6 +304,7 @@ async function appleIdentity(
     }
 
     const { error } = await exchange(credential.identityToken, rawNonce);
+    if (error) console.warn("[auth] apple id-token exchange failed", { code: (error as AuthError).code, message: error.message });
     return { error };
   } catch (e) {
     // Tapping "Cancel" on the system sheet is not an error state.
@@ -306,10 +318,22 @@ async function appleIdentity(
 // pulvio:// ile dönen OAuth linkini işler, 'code' varsa session'a çevirir.
 // useAuthListener hem canlı deep-link event'lerinde hem de soğuk başlangıçta
 // (Linking.getInitialURL) bunu çağırır.
-export async function exchangeCodeFromUrl(url: string) {
+const exchangedCodes = new Set<string>();
+
+export async function exchangeCodeFromUrl(url: string): Promise<AuthError | null> {
   const { queryParams } = Linking.parse(url);
   const code = queryParams?.code;
-  if (typeof code !== "string") return;
+  if (typeof code !== "string" || exchangedCodes.has(code)) return null;
+  exchangedCodes.add(code);
 
-  await supabase.auth.exchangeCodeForSession(code);
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  if (error) console.warn("[auth] exchangeCodeForSession failed", { code: error.code, message: error.message });
+  return error;
+}
+
+// Guest entry: a real Supabase anonymous session (see pulvio-guest-auth) so
+// backend-enforced cooldown still applies. Same path the paywall's skip uses.
+export async function continueAsGuest() {
+  const { data, error } = await supabase.auth.signInAnonymously();
+  return { session: data.session, error };
 }
