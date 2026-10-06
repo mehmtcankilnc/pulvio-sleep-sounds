@@ -215,7 +215,10 @@ function AppShell() {
             gestureDirection: "vertical",
           }}
         />
-        <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
+        {/* gestureEnabled false: the iOS sheet's swipe-to-dismiss fights the
+            testimonial carousel's horizontal swipe, and bypasses dismiss()
+            (guest session setup) — the in-screen close button is the exit. */}
+        <Stack.Screen name="paywall" options={{ presentation: "modal", gestureEnabled: false }} />
       </Stack>
     </>
   );
