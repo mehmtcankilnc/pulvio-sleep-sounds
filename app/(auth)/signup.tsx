@@ -11,6 +11,7 @@ import {
   signInWithGoogle,
   linkGoogleAccount,
   authErrorKey,
+  settleAfterOAuth,
   MIN_PASSWORD,
 } from "../../src/lib/auth";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
@@ -113,8 +114,14 @@ export default function SignupScreen() {
       : provider === "google"
         ? await signInWithGoogle()
         : await signInWithApple();
+    if (error) {
+      setOauth(null);
+      setFormNotice(t(authErrorKey(error)));
+      return;
+    }
+    const signedIn = await settleAfterOAuth();
     setOauth(null);
-    if (error) setFormNotice(t(authErrorKey(error)));
+    if (signedIn) router.replace("/(tabs)");
   }
 
   // Dev-only shortcut past auth so QA can reach the tab screens without a real

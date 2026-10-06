@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, ThemeProvider, DarkTheme, useRouter, useSegments } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useReducedMotion } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,6 +19,14 @@ import { routeStepInfo, stepAnswered, TOTAL_STEPS } from "../../src/lib/onboardi
 // Motion: a single horizontal push carries step-to-step continuity. Under
 // Reduce Motion the slide collapses to a crossfade — the bar's fill still
 // animates (it carries meaning), the panel just stops travelling.
+// The root theme paints native stack screens solid colors.bg, which would
+// cover this layout's shared glow on iOS. Transparent here only, so the one
+// continuous sky behind the Stack shows through the step panels.
+const FUNNEL_THEME = {
+  ...DarkTheme,
+  colors: { ...DarkTheme.colors, background: "transparent", card: "transparent" },
+};
+
 export default function OnboardingLayout() {
   const reduced = useReducedMotion();
   const colors = useThemeColors();
@@ -60,15 +68,17 @@ export default function OnboardingLayout() {
         </View>
       ) : null}
 
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animation: reduced ? "fade" : "slide_from_right",
-          animationDuration: reduced ? 160 : 280,
-          gestureEnabled: true,
-          contentStyle: { backgroundColor: "transparent" },
-        }}
-      />
+      <ThemeProvider value={FUNNEL_THEME}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            animation: reduced ? "fade" : "slide_from_right",
+            animationDuration: reduced ? 160 : 280,
+            gestureEnabled: true,
+            contentStyle: { backgroundColor: "transparent" },
+          }}
+        />
+      </ThemeProvider>
     </View>
   );
 }

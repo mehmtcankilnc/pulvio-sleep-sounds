@@ -6,6 +6,7 @@ import * as Crypto from "expo-crypto";
 import type { AuthError, User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import i18n from "./i18n";
+import { useUserStore } from "../store/useUserStore";
 
 // OAuth akışı tarayıcıdan uygulamaya dönerken bekleyen promise'i tamamlaması için gerekli.
 WebBrowser.maybeCompleteAuthSession();
@@ -336,4 +337,15 @@ export async function exchangeCodeFromUrl(url: string): Promise<AuthError | null
 export async function continueAsGuest() {
   const { data, error } = await supabase.auth.signInAnonymously();
   return { session: data.session, error };
+}
+
+// After a provider sign-in/link returns without error: refresh the session so
+// the JWT's `is_anonymous` claim reflects a just-linked guest, then report
+// whether the user is now a real signed-in account (false = cancelled).
+export async function settleAfterOAuth(): Promise<boolean> {
+  const { data } = await supabase.auth.refreshSession();
+  const session = data.session ?? (await supabase.auth.getSession()).data.session;
+  if (!session) return false;
+  useUserStore.getState().setSession(session);
+  return session.user.is_anonymous !== true;
 }

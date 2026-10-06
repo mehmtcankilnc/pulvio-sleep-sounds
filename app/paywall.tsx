@@ -244,7 +244,16 @@ export default function PaywallScreen() {
     setError(null);
     getCurrentOffering()
       .then(setOffering)
-      .catch(() => setError(t("loadError")))
+      .catch((e) => {
+        console.warn("[paywall] getOfferings failed", e);
+        // TEMP (TestFlight diagnosis): show the raw RevenueCat/StoreKit
+        // error on screen. Remove before the final App Store submission.
+        const detail = e instanceof Error ? e.message : String(e);
+        const code = typeof e === "object" && e !== null && "code" in e ? ` [${String(e.code)}]` : "";
+        setError(`${t("loadError")}
+
+${detail}${code}`);
+      })
       .finally(() => setLoading(false));
   }, [t]);
 

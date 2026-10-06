@@ -9,6 +9,7 @@ import {
   sendPasswordReset,
   resendConfirmationEmail,
   authErrorKey,
+  settleAfterOAuth,
 } from "../../src/lib/auth";
 import { SUPPORT_EMAIL, openSupportEmail } from "../../src/lib/links";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
@@ -81,8 +82,14 @@ export default function LoginScreen() {
     clearErrors();
     setOauth(provider);
     const { error } = provider === "google" ? await signInWithGoogle() : await signInWithApple();
+    if (error) {
+      setOauth(null);
+      setFormNotice(t(authErrorKey(error)));
+      return;
+    }
+    const signedIn = await settleAfterOAuth();
     setOauth(null);
-    if (error) setFormNotice(t(authErrorKey(error)));
+    if (signedIn) router.replace("/(tabs)");
   }
 
   async function handleForgotPassword() {
