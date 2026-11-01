@@ -10,5 +10,10 @@
   "loading": "Yükleniyor",
   "showPassword": "Şifreyi göster",
   "hidePassword": "Şifreyi gizle",
-  "clear": "Temizle"
+  "clear": "Temizle",
+  "updateTitle": "Yeni sürüm hazır",
+  "updateBody": "Yeni sesler ve iyileştirmeler yayında. Hepsini duymak için güncelle.",
+  "updateRequiredTitle": "Güncelleme gerekli",
+  "updateRequiredBody": "Devam etmek için Pulvio'yu en son sürüme güncellemen gerekiyor.",
+  "updateAction": "Güncelle"
 }

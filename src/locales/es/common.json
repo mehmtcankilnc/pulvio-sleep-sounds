@@ -10,5 +10,10 @@
   "loading": "Cargando",
   "showPassword": "Mostrar contraseña",
   "hidePassword": "Ocultar contraseña",
-  "clear": "Borrar"
+  "clear": "Borrar",
+  "updateTitle": "Nueva versión disponible",
+  "updateBody": "Hay sonidos nuevos y mejoras. Actualiza para escucharlos todos.",
+  "updateRequiredTitle": "Actualización necesaria",
+  "updateRequiredBody": "Actualiza Pulvio a la última versión para continuar.",
+  "updateAction": "Actualizar"
 }

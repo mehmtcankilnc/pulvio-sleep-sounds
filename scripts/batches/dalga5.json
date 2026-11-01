@@ -1,0 +1,578 @@
+[
+  {
+    "id": 53170,
+    "subcategory": "sehir_yagmuru",
+    "title": "Şehirde Yağmur",
+    "i18n": {
+      "en": "Rain on the City",
+      "de": "Regen auf der Stadt",
+      "fr": "Pluie sur la ville",
+      "es": "Lluvia sobre la ciudad",
+      "pt": "Chuva sobre a cidade"
+    },
+    "premium": false,
+    "duration": 546,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/city-001867-rain-on-city-deck-53170/"
+  },
+  {
+    "id": 309504,
+    "subcategory": "sehir_yagmuru",
+    "title": "Yapraklara Yağmur",
+    "i18n": {
+      "en": "Rain on Leaves",
+      "de": "Regen auf Blättern",
+      "fr": "Pluie sur les feuilles",
+      "es": "Lluvia sobre las hojas",
+      "pt": "Chuva nas folhas"
+    },
+    "premium": true,
+    "duration": 347,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-rain-on-leaves-309504/"
+  },
+  {
+    "id": 18097,
+    "subcategory": "yagmur_ormani",
+    "title": "Hawaii'de Kuşlar ve Hafif Yağmur",
+    "i18n": {
+      "en": "Hawaiian Birds and Soft Rain",
+      "de": "Hawaii-Vögel und sanfter Regen",
+      "fr": "Oiseaux d'Hawaï et pluie douce",
+      "es": "Aves de Hawái y lluvia suave",
+      "pt": "Pássaros do Havaí e chuva suave"
+    },
+    "premium": false,
+    "duration": 286,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-hawaii-birds-and-soft-rain-field-recording-18097/"
+  },
+  {
+    "id": 339096,
+    "subcategory": "yagmur_ormani",
+    "title": "Cangıl Ambiyansı",
+    "i18n": {
+      "en": "Jungle Ambience",
+      "de": "Dschungel-Atmosphäre",
+      "fr": "Ambiance de jungle",
+      "es": "Ambiente de selva",
+      "pt": "Ambiente de selva"
+    },
+    "premium": true,
+    "duration": 213,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-jungle-ambience-339096/"
+  },
+  {
+    "id": 111405,
+    "subcategory": "yagmur_ormani",
+    "title": "Ormanda Yağmur ve Kuşlar",
+    "i18n": {
+      "en": "Rain in the Forest with Birds",
+      "de": "Regen im Wald mit Vögeln",
+      "fr": "Pluie en forêt avec oiseaux",
+      "es": "Lluvia en el bosque con pájaros",
+      "pt": "Chuva na floresta com pássaros"
+    },
+    "premium": true,
+    "duration": 360,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/rain-in-forest-birds-nature-111405/"
+  },
+  {
+    "id": 176820,
+    "subcategory": "gol_kiyisi",
+    "title": "Akşam Göl Suyu",
+    "i18n": {
+      "en": "Evening Lake Water",
+      "de": "Abendliches Seewasser",
+      "fr": "Eau du lac au soir",
+      "es": "Agua del lago al atardecer",
+      "pt": "Água do lago ao entardecer"
+    },
+    "premium": false,
+    "duration": 302,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-relaxing-amp-calming-evening-lake-water-176820/"
+  },
+  {
+    "id": 19106,
+    "subcategory": "gol_kiyisi",
+    "title": "Almere Gölü",
+    "i18n": {
+      "en": "Lake in Almere",
+      "de": "See in Almere",
+      "fr": "Lac d'Almere",
+      "es": "Lago en Almere",
+      "pt": "Lago em Almere"
+    },
+    "premium": true,
+    "duration": 386,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-lake-in-almere-19106/"
+  },
+  {
+    "id": 50230,
+    "subcategory": "gol_kiyisi",
+    "title": "Gece Küçük Göl",
+    "i18n": {
+      "en": "Small Lake at Night",
+      "de": "Kleiner See bei Nacht",
+      "fr": "Petit lac la nuit",
+      "es": "Pequeño lago de noche",
+      "pt": "Pequeno lago à noite"
+    },
+    "premium": true,
+    "duration": 210,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-small-lake-at-night-50230/"
+  },
+  {
+    "id": 60110,
+    "subcategory": "gol_kiyisi",
+    "title": "Fritton Gölü",
+    "i18n": {
+      "en": "Fritton Lake",
+      "de": "Fritton Lake",
+      "fr": "Lac de Fritton",
+      "es": "Lago Fritton",
+      "pt": "Lago Fritton"
+    },
+    "premium": true,
+    "duration": 1241,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-000578-180905-fritton-lake-60110/"
+  },
+  {
+    "id": 48410,
+    "subcategory": "kurbaga_golet",
+    "title": "Kurbağalar",
+    "i18n": {
+      "en": "Frogs",
+      "de": "Frösche",
+      "fr": "Grenouilles",
+      "es": "Ranas",
+      "pt": "Sapos"
+    },
+    "premium": false,
+    "duration": 240,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-frogs-48410/"
+  },
+  {
+    "id": 269871,
+    "subcategory": "damla",
+    "title": "Damlayan Su",
+    "i18n": {
+      "en": "Dripping Water",
+      "de": "Tropfendes Wasser",
+      "fr": "Eau qui goutte",
+      "es": "Agua goteando",
+      "pt": "Água pingando"
+    },
+    "premium": false,
+    "duration": 238,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/film-special-effects-dripping-water-one-minute-269871/"
+  },
+  {
+    "id": 281292,
+    "subcategory": "damla",
+    "title": "Su Damlaları",
+    "i18n": {
+      "en": "Water Drops",
+      "de": "Wassertropfen",
+      "fr": "Gouttes d'eau",
+      "es": "Gotas de agua",
+      "pt": "Gotas d'água"
+    },
+    "premium": true,
+    "duration": 193,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-drops-of-water-281292/"
+  },
+  {
+    "id": 49763,
+    "subcategory": "camasir_makinesi",
+    "title": "Çamaşır Makinesi",
+    "i18n": {
+      "en": "Washing Machine",
+      "de": "Waschmaschine",
+      "fr": "Lave-linge",
+      "es": "Lavadora",
+      "pt": "Máquina de lavar"
+    },
+    "premium": false,
+    "duration": 191,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/household-washing-machine-49763/"
+  },
+  {
+    "id": 19338,
+    "subcategory": "camasir_makinesi",
+    "title": "Kurutma Makinesi",
+    "i18n": {
+      "en": "Dryer",
+      "de": "Wäschetrockner",
+      "fr": "Sèche-linge",
+      "es": "Secadora",
+      "pt": "Secadora"
+    },
+    "premium": true,
+    "duration": 460,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/technology-dryer-19338/"
+  },
+  {
+    "id": 52783,
+    "subcategory": "kedi_murilti",
+    "title": "Kedi Mırıltısı",
+    "i18n": {
+      "en": "Purring Cat",
+      "de": "Schnurrende Katze",
+      "fr": "Chat qui ronronne",
+      "es": "Gato ronroneando",
+      "pt": "Gato ronronando"
+    },
+    "premium": false,
+    "duration": 423,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-purring-cat-52783/"
+  },
+  {
+    "id": 57289,
+    "subcategory": "metro_tramvay",
+    "title": "Metro Yolculuğu",
+    "i18n": {
+      "en": "Subway Ride",
+      "de": "U-Bahn-Fahrt",
+      "fr": "Trajet en métro",
+      "es": "Viaje en metro",
+      "pt": "Viagem de metrô"
+    },
+    "premium": false,
+    "duration": 303,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/city-subway-ride-57289/"
+  },
+  {
+    "id": 456318,
+    "subcategory": "metro_tramvay",
+    "title": "Metro İstasyonu",
+    "i18n": {
+      "en": "Subway Station",
+      "de": "U-Bahn-Station",
+      "fr": "Station de métro",
+      "es": "Estación de metro",
+      "pt": "Estação de metrô"
+    },
+    "premium": true,
+    "duration": 280,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/subway-station-456318/"
+  },
+  {
+    "id": 51125,
+    "subcategory": "metro_tramvay",
+    "title": "Alicante Tramvayı",
+    "i18n": {
+      "en": "Alicante Tram",
+      "de": "Straßenbahn in Alicante",
+      "fr": "Tramway d'Alicante",
+      "es": "Tranvía de Alicante",
+      "pt": "Bonde de Alicante"
+    },
+    "premium": true,
+    "duration": 263,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/city-tram-metropolitano-de-alicante-51125/"
+  },
+  {
+    "id": 48741,
+    "subcategory": "gong",
+    "title": "Gong",
+    "i18n": {
+      "en": "Gong",
+      "de": "Gong",
+      "fr": "Gong",
+      "es": "Gong",
+      "pt": "Gongo"
+    },
+    "premium": false,
+    "duration": 304,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/musical-gong-48741/"
+  },
+  {
+    "id": 57001,
+    "subcategory": "kalem_yazi",
+    "title": "Yazı Sesi",
+    "i18n": {
+      "en": "Writing Sound",
+      "de": "Schreibgeräusch",
+      "fr": "Bruit d'écriture",
+      "es": "Sonido de escritura",
+      "pt": "Som de escrita"
+    },
+    "premium": false,
+    "duration": 294,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/film-special-effects-writing-sound-loop-57001/"
+  },
+  {
+    "id": 55361,
+    "subcategory": "kalem_yazi",
+    "title": "Kalemle Yazı",
+    "i18n": {
+      "en": "Writing with a Pen",
+      "de": "Schreiben mit Stift",
+      "fr": "Écrire au stylo",
+      "es": "Escribir con pluma",
+      "pt": "Escrever com caneta"
+    },
+    "premium": true,
+    "duration": 238,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/film-special-effects-writing-with-pen-55361/"
+  },
+  {
+    "id": 57324,
+    "subcategory": "firca",
+    "title": "Boya Fırçası",
+    "i18n": {
+      "en": "Paint Brush",
+      "de": "Pinsel",
+      "fr": "Pinceau",
+      "es": "Pincel",
+      "pt": "Pincel"
+    },
+    "premium": false,
+    "duration": 304,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/film-special-effects-paint-brush-57324/"
+  },
+  {
+    "id": 482891,
+    "subcategory": "kum_pirinc",
+    "title": "Kum Hışırtısı",
+    "i18n": {
+      "en": "Sand Rustling",
+      "de": "Rascheln von Sand",
+      "fr": "Froissement de sable",
+      "es": "Crujido de arena",
+      "pt": "Farfalhar de areia"
+    },
+    "premium": false,
+    "duration": 391,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/film-special-effects-desert-sand-rustling-482891/"
+  },
+  {
+    "id": 482890,
+    "subcategory": "kum_pirinc",
+    "title": "Çöl Kum Tepeleri",
+    "i18n": {
+      "en": "Desert Sand Dunes",
+      "de": "Wüstendünen",
+      "fr": "Dunes du désert",
+      "es": "Dunas del desierto",
+      "pt": "Dunas do deserto"
+    },
+    "premium": true,
+    "duration": 282,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/film-special-effects-desert-sand-dunes-482890/"
+  },
+  {
+    "id": 139209,
+    "subcategory": "gitar",
+    "title": "Yıldızların Ninnisi",
+    "i18n": {
+      "en": "Lullaby of the Stars",
+      "de": "Wiegenlied der Sterne",
+      "fr": "Berceuse des étoiles",
+      "es": "Nana de las estrellas",
+      "pt": "Canção de ninar das estrelas"
+    },
+    "premium": true,
+    "duration": 238,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/solo-guitar-lullaby-of-the-stars-calm-acoustic-guitar-139209/"
+  },
+  {
+    "id": 15700,
+    "subcategory": "gitar",
+    "title": "Ruhunun Beşiği",
+    "i18n": {
+      "en": "The Cradle of Your Soul",
+      "de": "Die Wiege deiner Seele",
+      "fr": "Le berceau de ton âme",
+      "es": "La cuna de tu alma",
+      "pt": "O berço da sua alma"
+    },
+    "premium": true,
+    "duration": 178,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/solo-guitar-the-cradle-of-your-soul-15700/"
+  },
+  {
+    "id": 182391,
+    "subcategory": "gitar",
+    "title": "Yıldızlı Gökyüzünde Kamp",
+    "i18n": {
+      "en": "Camping Under the Starry Sky",
+      "de": "Camping unterm Sternenhimmel",
+      "fr": "Camper sous le ciel étoilé",
+      "es": "Acampar bajo el cielo estrellado",
+      "pt": "Acampar sob o céu estrelado"
+    },
+    "premium": true,
+    "duration": 186,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/solo-guitar-camping-out-under-the-starry-sky-tranquil-acoustic-guitar-182391/"
+  },
+  {
+    "id": 462280,
+    "subcategory": "gitar",
+    "title": "Akustik Gitar Ninnisi",
+    "i18n": {
+      "en": "Acoustic Guitar Lullaby",
+      "de": "Akustikgitarren-Wiegenlied",
+      "fr": "Berceuse à la guitare acoustique",
+      "es": "Nana de guitarra acústica",
+      "pt": "Canção de ninar no violão"
+    },
+    "premium": true,
+    "duration": 162,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/acoustic-group-acoustic-guitar-lullaby-462280/"
+  },
+  {
+    "id": 482713,
+    "subcategory": "arp",
+    "title": "Rahatlama İçin Yumuşak Arp",
+    "i18n": {
+      "en": "Soft Harp for Relaxation",
+      "de": "Sanfte Harfe zur Entspannung",
+      "fr": "Harpe douce pour la détente",
+      "es": "Arpa suave para relajarse",
+      "pt": "Harpa suave para relaxar"
+    },
+    "premium": true,
+    "duration": 204,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/ambient-soft-harp-for-relaxation-482713/"
+  },
+  {
+    "id": 482739,
+    "subcategory": "arp",
+    "title": "Kutsal Arp",
+    "i18n": {
+      "en": "Sacred Harp",
+      "de": "Heilige Harfe",
+      "fr": "Harpe sacrée",
+      "es": "Arpa sagrada",
+      "pt": "Harpa sagrada"
+    },
+    "premium": true,
+    "duration": 202,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/ambient-sacred-harp-for-relaxation-482739/"
+  },
+  {
+    "id": 525281,
+    "subcategory": "arp",
+    "title": "Orman Arpı ve Kuşlar",
+    "i18n": {
+      "en": "Forest Harp and Birds",
+      "de": "Waldharfe und Vögel",
+      "fr": "Harpe de la forêt et oiseaux",
+      "es": "Arpa del bosque y pájaros",
+      "pt": "Harpa da floresta e pássaros"
+    },
+    "premium": true,
+    "duration": 203,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/modern-classical-forest-harp-harp-and-birds-525281/"
+  },
+  {
+    "id": 349471,
+    "subcategory": "muzik_kutusu",
+    "title": "Müzik Kutusu Uyku Ninnisi",
+    "i18n": {
+      "en": "Music Box Sleep Lullaby",
+      "de": "Spieluhr-Schlaflied",
+      "fr": "Berceuse de boîte à musique",
+      "es": "Nana de caja de música",
+      "pt": "Canção de ninar da caixa de música"
+    },
+    "premium": true,
+    "duration": 111,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/lullabies-music-box-sleep-lullaby-349471/"
+  },
+  {
+    "id": 474733,
+    "subcategory": "cello",
+    "title": "Sudaki Küller",
+    "i18n": {
+      "en": "Ashes on the Water",
+      "de": "Asche auf dem Wasser",
+      "fr": "Cendres sur l'eau",
+      "es": "Cenizas sobre el agua",
+      "pt": "Cinzas sobre a água"
+    },
+    "premium": true,
+    "duration": 516,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/ambient-ashes-on-the-water-474733/"
+  },
+  {
+    "id": 456449,
+    "subcategory": "cello",
+    "title": "Fısıldanan Anılar",
+    "i18n": {
+      "en": "Whispered Memories",
+      "de": "Geflüsterte Erinnerungen",
+      "fr": "Souvenirs chuchotés",
+      "es": "Recuerdos susurrados",
+      "pt": "Memórias sussurradas"
+    },
+    "premium": true,
+    "duration": 310,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/classical-string-quartet-whispered-memories-piano-and-cello-456449/"
+  },
+  {
+    "id": 470186,
+    "subcategory": "cello",
+    "title": "Boş Odada Yankılar",
+    "i18n": {
+      "en": "Echoes in an Empty Room",
+      "de": "Echos in einem leeren Raum",
+      "fr": "Échos dans une pièce vide",
+      "es": "Ecos en una habitación vacía",
+      "pt": "Ecos em uma sala vazia"
+    },
+    "premium": true,
+    "duration": 569,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/modern-classical-echoes-in-an-empty-room-piano-and-cello-470186/"
+  },
+  {
+    "id": 576237,
+    "subcategory": "cello",
+    "title": "Fısıldayan Çello",
+    "i18n": {
+      "en": "Whispering Cello",
+      "de": "Flüsterndes Cello",
+      "fr": "Violoncelle murmurant",
+      "es": "Violonchelo susurrante",
+      "pt": "Violoncelo sussurrante"
+    },
+    "premium": true,
+    "duration": 180,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/beautiful-plays-whispering-cello-and-keys-576237/"
+  }
+]

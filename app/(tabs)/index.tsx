@@ -23,6 +23,7 @@ import { usePlayerActions } from "../../src/hooks/usePlayerActions";
 import { useThemeColors } from "../../src/hooks/useThemeColors";
 import { usePressScale } from "../../src/hooks/usePressScale";
 import { categoryIcon } from "../../src/lib/categoryIcon";
+import { useCoverSource } from "../../src/lib/coverThumb";
 import { categoryLabel, subcategoryLabel } from "../../src/lib/catalogTaxonomy";
 import { GlowBackground } from "../../src/components/GlowBackground";
 import { centeredColumn } from "../../src/theme/layout";
@@ -118,8 +119,8 @@ function CategoryCard({
   // A failed/expired image load must fall back to the same treatment as "no
   // cover art at all" — never a half-rendered blank tile with the photo
   // chrome still on top of it.
-  const [imageFailed, setImageFailed] = useState(false);
-  const showPhoto = Boolean(coverUrl) && !imageFailed;
+  const cover = useCoverSource(coverUrl);
+  const showPhoto = Boolean(cover.uri);
   // The fallback tile doubles as the loading state: it's the base layer
   // whenever there's a cover to fetch, and the photo — once its own network
   // request resolves — crossfades in on top of it. Without this, a slow
@@ -155,13 +156,13 @@ function CategoryCard({
       {showPhoto ? (
         <Animated.View style={[StyleSheet.absoluteFill, photoStyle]}>
           <Image
-            source={{ uri: coverUrl }}
+            source={{ uri: cover.uri }}
             resizeMode="cover"
             style={StyleSheet.absoluteFill}
             onLoad={() => {
               photoOpacity.value = withTiming(1, { duration: 220, easing: EASE_OUT });
             }}
-            onError={() => setImageFailed(true)}
+            onError={cover.onError}
           />
           {/* Ember tint (DESIGN.md's One Hue Rule): every photo gets pulled
               toward the app's single accent hue instead of showing its own
@@ -227,8 +228,8 @@ const TONIGHT_ART_SIZE = 72;
 // minus the label overlay (the hero already shows the title as text).
 function TonightArt({ track }: { track: Track }) {
   const colors = useThemeColors();
-  const [imageFailed, setImageFailed] = useState(false);
-  const showPhoto = Boolean(track.coverUrl) && !imageFailed;
+  const cover = useCoverSource(track.coverUrl);
+  const showPhoto = Boolean(cover.uri);
   const photoOpacity = useSharedValue(0);
   const photoStyle = useAnimatedStyle(() => ({ opacity: photoOpacity.value }));
   const Icon = categoryIcon(track.category, track.subcategory);
@@ -246,13 +247,13 @@ function TonightArt({ track }: { track: Track }) {
       {showPhoto ? (
         <Animated.View style={[StyleSheet.absoluteFill, photoStyle]}>
           <Image
-            source={{ uri: track.coverUrl }}
+            source={{ uri: cover.uri }}
             resizeMode="cover"
             style={StyleSheet.absoluteFill}
             onLoad={() => {
               photoOpacity.value = withTiming(1, { duration: 220, easing: EASE_OUT });
             }}
-            onError={() => setImageFailed(true)}
+            onError={cover.onError}
           />
           <View style={[StyleSheet.absoluteFill, { backgroundColor: `${colors.button}30` }]} />
         </Animated.View>

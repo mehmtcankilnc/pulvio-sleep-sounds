@@ -1,0 +1,178 @@
+[
+  {
+    "id": 248823,
+    "subcategory": "tibet_kasesi",
+    "title": "Tibet Kasesi",
+    "i18n": {
+      "en": "Singing Bowl",
+      "de": "Klangschale",
+      "fr": "Bol tibétain",
+      "es": "Cuenco tibetano",
+      "pt": "Tigela tibetana"
+    },
+    "premium": false,
+    "duration": 188,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/film-special-effects-singing-bowl-248823/"
+  },
+  {
+    "id": 584737,
+    "subcategory": "vantilator",
+    "title": "Tavan Vantilatörü",
+    "i18n": {
+      "en": "Ceiling Fan",
+      "de": "Deckenventilator",
+      "fr": "Ventilateur de plafond",
+      "es": "Ventilador de techo",
+      "pt": "Ventilador de teto"
+    },
+    "premium": false,
+    "duration": 231,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/film-special-effects-ceiling-fan-ambience-584737/"
+  },
+  {
+    "id": 27155,
+    "subcategory": "vantilator",
+    "title": "Vantilatör Uğultusu",
+    "i18n": {
+      "en": "Fan Hum",
+      "de": "Ventilatorbrummen",
+      "fr": "Bourdonnement de ventilateur",
+      "es": "Zumbido de ventilador",
+      "pt": "Zumbido de ventilador"
+    },
+    "premium": true,
+    "duration": 234,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/technology-ceiling-fan-27155/"
+  },
+  {
+    "id": 421047,
+    "subcategory": "cadir_yagmuru",
+    "title": "Ormanda Çadır Yağmuru",
+    "i18n": {
+      "en": "Rain on a Tent in the Forest",
+      "de": "Regen auf dem Zelt im Wald",
+      "fr": "Pluie sur la tente en forêt",
+      "es": "Lluvia en la tienda en el bosque",
+      "pt": "Chuva na barraca na floresta"
+    },
+    "premium": true,
+    "duration": 899,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-rain-on-tent-in-forest-421047/"
+  },
+  {
+    "id": 49686,
+    "subcategory": "cadir_yagmuru",
+    "title": "Çadır Çatısında Yağmur Damlaları",
+    "i18n": {
+      "en": "Raindrops on a Tent Roof",
+      "de": "Regentropfen auf dem Zeltdach",
+      "fr": "Gouttes de pluie sur le toit de la tente",
+      "es": "Gotas de lluvia en el techo de la tienda",
+      "pt": "Gotas de chuva no teto da barraca"
+    },
+    "premium": false,
+    "duration": 187,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-raindrops-on-tent-roof-49686/"
+  },
+  {
+    "id": 54759,
+    "subcategory": "gemi_feribot",
+    "title": "Gemi Motoru",
+    "i18n": {
+      "en": "Ship Engine",
+      "de": "Schiffsmotor",
+      "fr": "Moteur de bateau",
+      "es": "Motor de barco",
+      "pt": "Motor de navio"
+    },
+    "premium": false,
+    "duration": 219,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/city-engine-ship-ambience-54759/"
+  },
+  {
+    "id": 20177,
+    "subcategory": "cangirak",
+    "title": "Rüzgâr Çanı",
+    "i18n": {
+      "en": "Wind Chimes",
+      "de": "Windspiel",
+      "fr": "Carillons éoliens",
+      "es": "Campanillas de viento",
+      "pt": "Sinos de vento"
+    },
+    "premium": false,
+    "duration": 222,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-wind-chimes-02-20177/"
+  },
+  {
+    "id": 191819,
+    "subcategory": "sayfa_cevirme",
+    "title": "Sayfa Çevirme",
+    "i18n": {
+      "en": "Page Turning",
+      "de": "Umblättern",
+      "fr": "Pages tournées",
+      "es": "Pasar páginas",
+      "pt": "Virar páginas"
+    },
+    "premium": false,
+    "duration": 302,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/film-special-effects-page-turning-asmr-sound-effect-191819/"
+  },
+  {
+    "id": 587280,
+    "subcategory": "kalimba",
+    "title": "Kalimba",
+    "i18n": {
+      "en": "Kalimba",
+      "de": "Kalimba",
+      "fr": "Kalimba",
+      "es": "Kalimba",
+      "pt": "Kalimba"
+    },
+    "premium": true,
+    "duration": 102,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/music/modern-classical-kalimba-587280/"
+  },
+  {
+    "id": 305000,
+    "subcategory": "selale",
+    "title": "Cangılda Şelale",
+    "i18n": {
+      "en": "Waterfall in the Jungle",
+      "de": "Wasserfall im Dschungel",
+      "fr": "Cascade dans la jungle",
+      "es": "Cascada en la selva",
+      "pt": "Cachoeira na selva"
+    },
+    "premium": false,
+    "duration": 900,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-waterfall-in-jungle-305000/"
+  },
+  {
+    "id": 145254,
+    "subcategory": "selale",
+    "title": "Gür Şelale",
+    "i18n": {
+      "en": "Powerful Waterfall",
+      "de": "Mächtiger Wasserfall",
+      "fr": "Cascade puissante",
+      "es": "Cascada potente",
+      "pt": "Cachoeira poderosa"
+    },
+    "premium": true,
+    "duration": 478,
+    "license": "Pixabay Content License",
+    "sourceUrl": "https://pixabay.com/sound-effects/nature-sounds-of-a-powerful-waterfall-sounds-of-nature-145254/"
+  }
+]

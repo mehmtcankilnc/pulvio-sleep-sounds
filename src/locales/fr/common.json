@@ -10,5 +10,10 @@
   "loading": "Chargement",
   "showPassword": "Afficher le mot de passe",
   "hidePassword": "Masquer le mot de passe",
-  "clear": "Effacer"
+  "clear": "Effacer",
+  "updateTitle": "Nouvelle version disponible",
+  "updateBody": "De nouveaux sons et des améliorations vous attendent. Mettez à jour pour tout écouter.",
+  "updateRequiredTitle": "Mise à jour requise",
+  "updateRequiredBody": "Mettez Pulvio à jour vers la dernière version pour continuer.",
+  "updateAction": "Mettre à jour"
 }

@@ -1,0 +1,12 @@
+[
+  {
+    "id": 9000001,
+    "subcategory": "vantilator",
+    "title": "Tavan Vantilatörü",
+    "i18n": { "en": "Ceiling Fan", "de": "Deckenventilator", "fr": "Ventilateur de plafond", "es": "Ventilador de techo", "pt": "Ventilador de teto" },
+    "premium": false,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://pulvio.mehmtcankilinc.com/generated"
+  }
+]

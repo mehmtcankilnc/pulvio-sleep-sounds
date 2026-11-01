@@ -28,20 +28,20 @@ const MAX_RESULTS = 3;
 
 // Struggle / sound answer key -> subcategory slugs it should favor.
 const SUBCATEGORY_WEIGHTS: Record<string, string[]> = {
-  racingThoughts: ["ambient", "lofi", "piyano"],
+  racingThoughts: ["ambient", "lofi", "piyano", "tibet_kasesi", "kalp_atisi", "nefes"],
   stressTension: ["piyano", "ambient", "kafe"],
-  noiseAround: ["beyaz_gurultu", "kahverengi_gurultu", "pembe_gurultu", "fon_makinesi"],
+  noiseAround: ["beyaz_gurultu", "kahverengi_gurultu", "pembe_gurultu", "fon_makinesi", "vantilator", "klima", "camasir_makinesi", "supurge"],
   irregularSchedule: ["ambient", "lofi", "beyaz_gurultu"],
   wakingAtNight: ["kahverengi_gurultu", "beyaz_gurultu", "ates"],
-  rainThunder: ["yagmur", "gok_gurultusu"],
-  oceanWaves: ["deniz", "dere"],
+  rainThunder: ["yagmur", "gok_gurultusu", "cadir_yagmuru", "sehir_yagmuru"],
+  oceanWaves: ["deniz", "dere", "gol_kiyisi", "selale"],
   whiteNoise: ["beyaz_gurultu", "kahverengi_gurultu", "pembe_gurultu"],
   // Real ASMR content is non-vocal mechanical triggers (tapping, keyboard
   // typing) — no whispered/spoken tracks exist in the catalog.
-  asmr: ["tiklama", "klavye"],
-  pianoAmbient: ["piyano", "ambient"],
-  fireplace: ["ates"],
-  vehicles: ["otobus", "arac_ici", "tren", "ucak_kabin"],
+  asmr: ["tiklama", "klavye", "sayfa_cevirme", "kalem_yazi", "firca", "kum_pirinc", "damla"],
+  pianoAmbient: ["piyano", "ambient", "gitar", "arp", "muzik_kutusu", "kalimba", "cello", "synth_pad"],
+  fireplace: ["ates", "soba_radyator"],
+  vehicles: ["otobus", "arac_ici", "tren", "ucak_kabin", "metro_tramvay", "gemi_feribot", "tir_kamyon"],
 };
 
 function scoreTrack(track: Track, wantedSubcats: string[]): number {

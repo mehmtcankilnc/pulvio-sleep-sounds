@@ -25,7 +25,8 @@ import { SelectChip } from "../src/components/ui/SelectChip";
 import { Button } from "../src/components/ui/Button";
 import { ChevronLeftIcon, LockIcon, MusicIcon, SearchIcon } from "../src/components/icons";
 import { centeredColumn } from "../src/theme/layout";
-import { CATEGORY_ORDER, categoryLabel, subcategoryLabel } from "../src/lib/catalogTaxonomy";
+import { getCategoryOrder, useCatalogTaxonomy, categoryLabel, subcategoryLabel } from "../src/lib/catalogTaxonomy";
+import { searchCatalog } from "../src/lib/catalogSearch";
 import type { Track } from "../src/types";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -145,17 +146,27 @@ export default function SoundsScreen() {
     if (match) setSelectedCategory(match.category);
   }, [allSections, selectedCategory, selectedSubcategory]);
 
+  // Subscribing re-renders once the server taxonomy arrives; the order itself
+  // is read via getCategoryOrder. Unknown categories are appended.
+  const taxonomy = useCatalogTaxonomy();
+  const categoryOrder = useMemo(() => {
+    const known = getCategoryOrder();
+    return [...known, ...new Set(allSections.map((s) => s.category).filter((c) => !known.includes(c)))];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taxonomy, allSections]);
+
   const topChips = useMemo(
     () => [
       { id: undefined as string | undefined, label: t("allSoundsRow"), premium: false },
-      // CATEGORY_ORDER is a fixed, hardcoded taxonomy (catalogTaxonomy.ts),
+      // The category order comes from the server taxonomy (catalogStore.ts, with a
+      // bundled fallback), 
       // not something the Supabase fetch discovers — gating this list on
       // `allSections` meant both category chips were simply absent for the
       // ~1s fetch and then popped in once it resolved. Filtering by
       // `!loading` only ever hides a category that turned out to have zero
       // tracks after the real fetch; the chips render immediately at the
       // shape they'll actually have.
-      ...CATEGORY_ORDER.filter((category) => loading || allSections.some((section) => section.category === category)).map((category) => {
+      ...categoryOrder.filter((category) => loading || allSections.some((section) => section.category === category)).map((category) => {
         const categorySections = allSections.filter((section) => section.category === category);
         return {
           id: category as string | undefined,
@@ -171,7 +182,7 @@ export default function SoundsScreen() {
         };
       }),
     ],
-    [allSections, loading, tCatalog, t]
+    [allSections, loading, tCatalog, t, categoryOrder]
   );
 
   const subChips = useMemo(() => {
@@ -226,18 +237,31 @@ export default function SoundsScreen() {
   // a one-tap way out rather than making the user hunt for the toggle.
   const freeFilterUnavailable = freeOnly && categoryFiltered.length > 0 && freeFiltered.length === 0;
 
-  // Matches on track title, debounced so a half-asleep user's typing never
-  // re-filters mid-keystroke. `normalize` uses the current language's own
-  // case-folding rules (matters for TR's dotted/dotless I).
+  // Akıllı arama (src/lib/catalogSearch.ts): parça başlığına ek olarak alt kategori
+  // etiketi (6 dil), sunucudaki anahtar kelimeler ("bebek" → kalp atışı, rahim
+  // sesleri…) ve kategori adı taranır; yazım hatası ve diyakritik toleranslı.
+  // Debounced, böylece yarı uykulu bir kullanıcının yazması listeyi her tuşta yeniden
+  // filtrelemez. Etiket/anahtar kelimeyle eşleşen alt kategorinin tüm parçaları,
+  // yalnız başlığı eşleşenlerde sadece o parçalar görünür; en iyi eşleşme üstte.
   const trimmedQuery = debouncedQuery.trim();
-  const normalize = (value: string) => value.toLocaleLowerCase(i18n.language);
   const sections = useMemo(() => {
     if (!trimmedQuery) return freeFiltered;
-    const needle = normalize(trimmedQuery);
+    const result = searchCatalog(trimmedQuery, i18n.language, freeFiltered, {
+      subLabel: (id) => subcategoryLabel(tCatalog, id),
+      catLabel: (id) => categoryLabel(tCatalog, id),
+    });
+    if (!result) return freeFiltered;
     return freeFiltered
-      .map((section) => ({ ...section, data: section.data.filter((track) => normalize(track.title).includes(needle)) }))
-      .filter((section) => section.data.length > 0);
-  }, [freeFiltered, trimmedQuery, i18n.language]);
+      .filter((section) => result.scores.has(section.subcategory))
+      .map((section) =>
+        result.subcategoryHits.has(section.subcategory)
+          ? section
+          : { ...section, data: section.data.filter((track) => result.trackHits.has(track.id)) },
+      )
+      .filter((section) => section.data.length > 0)
+      .sort((a, b) => (result.scores.get(b.subcategory) ?? 0) - (result.scores.get(a.subcategory) ?? 0));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [freeFiltered, trimmedQuery, i18n.language, taxonomy, tCatalog]);
   const isSearching = trimmedQuery.length > 0;
   const isFiltered = Boolean(selectedCategory || selectedSubcategory || freeOnly || isSearching);
   const resultCount = useMemo(() => sections.reduce((sum, section) => sum + section.data.length, 0), [sections]);

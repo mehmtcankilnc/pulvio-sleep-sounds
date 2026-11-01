@@ -20,6 +20,8 @@ import { hydrateOnboardingAnswers, useOnboardingAnswers } from "../src/lib/onboa
 import { saveOnboardingAnswers } from "../src/lib/onboarding/saveAnswers";
 import { PlayerEngineProvider } from "../src/lib/player/PlayerEngineProvider";
 import { initI18n } from "../src/lib/i18n";
+import { loadCatalogTaxonomy } from "../src/lib/catalogStore";
+import { UpdatePrompt } from "../src/components/UpdatePrompt";
 import { useThemeColors } from "../src/hooks/useThemeColors";
 import { colors } from "../src/theme/colors";
 
@@ -191,9 +193,19 @@ function useOnboardingHandoff() {
 // header, so every modal route here is headerShown: false.
 function AppShell() {
   useOnboardingHandoff();
+  const segments = useSegments();
+
+  // Warm the server-driven taxonomy (labels/order/icons) before the first
+  // catalog screen so tabs never flash raw slugs; useTracks awaits it too.
+  useEffect(() => {
+    void loadCatalogTaxonomy();
+  }, []);
+
   return (
     <>
       <PlayerEngineProvider />
+      {/* Only inside the main app — never over the onboarding/auth funnel. */}
+      <UpdatePrompt enabled={segments[0] === "(tabs)"} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />

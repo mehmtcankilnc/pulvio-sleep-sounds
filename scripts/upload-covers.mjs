@@ -12,36 +12,12 @@ import { readdir, readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { SUB_ORDER } from "./taxonomy.mjs";
 import { loadEnv, assertR2Env, publicUrl as r2PublicUrl, putObject } from "./r2.mjs";
 
-// Mirrors src/lib/catalogTaxonomy.ts's SUBCATEGORY_ORDER — duplicated as a
-// plain JS array because this script runs under Node directly (no TS
-// loader), same reason scripts/catalog.mjs doesn't import from src/.
-const SUBCATEGORY_ORDER = [
-  "yagmur",
-  "deniz",
-  "dere",
-  "gok_gurultusu",
-  "kus_sesi",
-  "orman",
-  "ruzgar",
-  "gece_bocekleri",
-  "ates",
-  "fon_makinesi",
-  "beyaz_gurultu",
-  "kahverengi_gurultu",
-  "pembe_gurultu",
-  "kafe",
-  "otobus",
-  "arac_ici",
-  "tren",
-  "ucak_kabin",
-  "tiklama",
-  "klavye",
-  "piyano",
-  "lofi",
-  "ambient",
-];
+// Alt kategori listesi scripts/taxonomy.mjs'ten (tek kaynak): mevcut 23 + v1.1'de eklenen alt kategoriler.
+// Eskiden elle kopyalanmış bir dizi vardı; yeni slug'lar için güncelleme unutulmasın diye kaldırıldı.
+const SUBCATEGORY_ORDER = Object.values(SUB_ORDER).flat();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const KEY_PREFIX = "covers";
@@ -52,12 +28,20 @@ loadEnv();
 const args = process.argv.slice(2);
 const SQL_ONLY = args.includes("--sql");
 const dirArg = args.find((a) => !a.startsWith("--")) || DEFAULT_DIR;
+// --only=a,b,c : --sql yalnızca bu alt kategoriler için üretilir (kapağı henüz olmayanlara dokunma).
+const onlyArg = args.find((a) => a.startsWith("--only="));
+const ONLY = onlyArg ? onlyArg.slice("--only=".length).split(",").filter(Boolean) : null;
 
 // R2 key "covers/<subcat>.png"
 const publicUrl = (subcat) => r2PublicUrl(`${KEY_PREFIX}/${subcat}.png`);
 
 if (SQL_ONLY) {
-  const rows = SUBCATEGORY_ORDER.map(
+  const unknown = (ONLY ?? []).filter((x) => !SUBCATEGORY_ORDER.includes(x));
+  if (unknown.length) {
+    console.error(`Bilinmeyen alt kategori: ${unknown.join(", ")}`);
+    process.exit(1);
+  }
+  const rows = (ONLY ?? SUBCATEGORY_ORDER).map(
     (s) => `update public.tracks set cover_url = '${publicUrl(s)}' where subcategory = '${s}';`
   );
   process.stdout.write(

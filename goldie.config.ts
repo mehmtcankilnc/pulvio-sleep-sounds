@@ -35,7 +35,7 @@ const config: GoldieConfig = {
   android: {
     // EAS `preview` APK — avoids the debug LogBox banner. Until one is built,
     // captures run against the installed dev build (LogBox-clean in practice,
-    // but not a release artifact — see docs/ARGENT_TEST_PLAN.md findings).
+    // but not a release artifact).
     appPath: "./build/pulvio-preview.apk",
     applicationId: "com.pulvio.app",
     // Dark graphite bezel instead of goldie's bundled silver Pixel skin.

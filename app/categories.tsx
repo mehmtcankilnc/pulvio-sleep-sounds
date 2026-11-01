@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import type { JSX } from "react";
 import { View, Text, ActivityIndicator, Pressable, FlatList, Image, StyleSheet } from "react-native";
 import type { ListRenderItem } from "react-native";
@@ -10,12 +10,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTracks } from "../src/hooks/useTracks";
 import { useThemeColors } from "../src/hooks/useThemeColors";
 import { usePressScale } from "../src/hooks/usePressScale";
+import { useDebouncedValue } from "../src/hooks/useDebouncedValue";
 import { GlowBackground } from "../src/components/GlowBackground";
 import { Button } from "../src/components/ui/Button";
+import { SearchField } from "../src/components/ui/SearchField";
 import { centeredColumn } from "../src/theme/layout";
 import { categoryIcon } from "../src/lib/categoryIcon";
-import { CATEGORY_ORDER, categoryLabel, subcategoryLabel } from "../src/lib/catalogTaxonomy";
-import { ChevronLeftIcon, MusicIcon } from "../src/components/icons";
+import { coverThumbUrl, useCoverSource } from "../src/lib/coverThumb";
+import { getCategoryOrder, useCatalogTaxonomy, categoryLabel, subcategoryLabel } from "../src/lib/catalogTaxonomy";
+import { searchCatalog } from "../src/lib/catalogSearch";
+import { ChevronLeftIcon, MusicIcon, SearchIcon } from "../src/components/icons";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
@@ -60,8 +64,8 @@ const GridTile = memo(function GridTile({
   const colors = useThemeColors();
   const press = usePressScale();
   const Icon = categoryIcon(category, subcategory);
-  const [imageFailed, setImageFailed] = useState(false);
-  const showPhoto = Boolean(coverUrl) && !imageFailed;
+  const cover = useCoverSource(coverUrl);
+  const showPhoto = Boolean(cover.uri);
   const photoOpacity = useSharedValue(0);
   const photoStyle = useAnimatedStyle(() => ({ opacity: photoOpacity.value }));
 
@@ -95,13 +99,13 @@ const GridTile = memo(function GridTile({
       {showPhoto ? (
         <Animated.View style={[StyleSheet.absoluteFill, photoStyle]}>
           <Image
-            source={{ uri: coverUrl }}
+            source={{ uri: cover.uri }}
             resizeMode="cover"
             style={StyleSheet.absoluteFill}
             onLoad={() => {
               photoOpacity.value = withTiming(1, { duration: 220, easing: EASE_OUT });
             }}
-            onError={() => setImageFailed(true)}
+            onError={cover.onError}
           />
           <View style={[StyleSheet.absoluteFill, { backgroundColor: `${colors.button}30` }]} />
           <LinearGradient
@@ -129,6 +133,20 @@ export default function CategoriesScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { sections, loading, error, refetch } = useTracks();
+  const taxonomy = useCatalogTaxonomy();
+  const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query, 250);
+  const trimmedQuery = debouncedQuery.trim();
+  const isSearching = trimmedQuery.length > 0;
+
+  // 61 önizleme toplam ~0,7 MB: ekran açılır açılmaz hepsi önceden indirilir,
+  // kaydırırken kutular boş kalmaz. Görünmeyenler de önbelleğe girer.
+  useEffect(() => {
+    for (const section of sections) {
+      const url = coverThumbUrl(section.data.find((track) => track.coverUrl)?.coverUrl);
+      if (url) Image.prefetch(url).catch(() => {});
+    }
+  }, [sections]);
 
   const openSubcategory = useCallback(
     (subcategory: string) => router.push({ pathname: "/sounds", params: { subcategory } }),
@@ -140,8 +158,32 @@ export default function CategoriesScreen(): JSX.Element {
   // lookups happen here, not in renderItem.
   const rows = useMemo<Row[]>(() => {
     const out: Row[] = [];
-    for (const category of CATEGORY_ORDER) {
-      const subs = sections.filter((section) => section.category === category);
+    // Akıllı arama: etiket, anahtar kelime, kategori adı ve parça başlıklarından
+    // eşleşen alt kategoriler; en iyi eşleşme kendi kategorisinde öne gelir.
+    const result = isSearching
+      ? searchCatalog(trimmedQuery, i18n.language, sections, {
+          subLabel: (id) => subcategoryLabel(tCatalog, id),
+          catLabel: (id) => categoryLabel(tCatalog, id),
+        })
+      : null;
+    // Server order first (catalogTaxonomy.ts); a category the taxonomy table
+    // doesn't know yet still shows, appended, instead of vanishing.
+    const known = getCategoryOrder();
+    let order = [...known, ...new Set(sections.map((s) => s.category).filter((c) => !known.includes(c)))];
+    if (result) {
+      // Aramada kategori de en iyi eşleşmesine göre sıralanır (örn. "bebek" → önce Beden),
+      // eşit puanda taksonomi sırası korunur.
+      const best = (category: string) =>
+        Math.max(0, ...sections.filter((s) => s.category === category).map((s) => result.scores.get(s.subcategory) ?? 0));
+      order = [...order].sort((a, b) => best(b) - best(a));
+    }
+    for (const category of order) {
+      let subs = sections.filter((section) => section.category === category);
+      if (result) {
+        subs = subs
+          .filter((section) => result.scores.has(section.subcategory))
+          .sort((a, b) => (result.scores.get(b.subcategory) ?? 0) - (result.scores.get(a.subcategory) ?? 0));
+      }
       if (subs.length === 0) continue;
       out.push({
         type: "header",
@@ -160,7 +202,8 @@ export default function CategoriesScreen(): JSX.Element {
       }
     }
     return out;
-  }, [sections, t, tCatalog, i18n.language]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sections, t, tCatalog, i18n.language, taxonomy, trimmedQuery, isSearching]);
 
   const renderItem = useCallback<ListRenderItem<Row>>(
     ({ item }) => {
@@ -234,6 +277,17 @@ export default function CategoriesScreen(): JSX.Element {
           </Text>
         </View>
 
+        {!loading && !error ? (
+          <View style={{ paddingHorizontal: 20, paddingBottom: 4 }}>
+            <SearchField
+              value={query}
+              onChangeText={setQuery}
+              placeholder={t("categoriesSearchPlaceholder")}
+              accessibilityLabel={t("categoriesSearchPlaceholder")}
+            />
+          </View>
+        ) : null}
+
         {loading ? (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }} accessible accessibilityLabel={t("common:loading")}>
             <ActivityIndicator color={colors.button} />
@@ -251,6 +305,16 @@ export default function CategoriesScreen(): JSX.Element {
               <Button label={t("common:retry")} variant="outline" onPress={refetch} />
             </View>
           </View>
+        ) : rows.length === 0 && isSearching ? (
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 12, paddingHorizontal: 40 }}>
+            <SearchIcon size={30} color={colors.faint} strokeWidth={1.5} />
+            <Text className="font-bold" style={{ fontSize: 16, color: colors.text, textAlign: "center" }}>
+              {t("searchEmptyTitle")}
+            </Text>
+            <Text numberOfLines={3} style={{ fontSize: 13, color: colors.muted, textAlign: "center", lineHeight: 19 }}>
+              {t("searchEmptyBody", { query: trimmedQuery })}
+            </Text>
+          </View>
         ) : rows.length === 0 ? (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 12, paddingHorizontal: 40 }}>
             <MusicIcon size={30} color={colors.faint} strokeWidth={1.5} />
@@ -267,6 +331,8 @@ export default function CategoriesScreen(): JSX.Element {
             renderItem={renderItem}
             keyExtractor={(row) => row.key}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 24 }}
             removeClippedSubviews
             initialNumToRender={6}

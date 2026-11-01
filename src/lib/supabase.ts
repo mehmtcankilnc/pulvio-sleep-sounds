@@ -2,6 +2,7 @@ import "react-native-url-polyfill/auto";
 import { AppState } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
+import Constants from "expo-constants";
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -13,6 +14,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  // The tracks RLS policy (0023) reads this header: rows that need a newer
+  // client (new subcategories an older build cannot label or draw) stay
+  // hidden from builds that don't send a high enough version.
+  global: { headers: { "x-app-version": Constants.expoConfig?.version ?? "0.0.0" } },
   auth: {
     storage: AsyncStorage,
     autoRefreshToken: true,

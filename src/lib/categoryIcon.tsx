@@ -1,4 +1,6 @@
 import type { JSX } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useCatalogStore } from "./catalogStore";
 import type { IconProps } from "../components/icons";
 import {
   CloudRainIcon,
@@ -65,8 +67,31 @@ const CATEGORY_FALLBACK: Array<[RegExp, (props: IconProps) => JSX.Element]> = [
   [/asmr/i, FingerTapIcon],
 ];
 
-export function categoryIcon(category: string, subcategory?: string): (props: IconProps) => JSX.Element {
+// Server-defined icons (catalog_*.icon) are Ionicons glyph names — the whole
+// glyph set already ships inside @expo/vector-icons, so a subcategory added
+// later can pick any of them without an app update. One stable component per
+// name (not a new closure per render) keeps list rows from remounting.
+type IconComponent = (props: IconProps) => JSX.Element;
+const dynamicIcons = new Map<string, IconComponent>();
+
+function ioniconByName(name: string): IconComponent {
+  let Icon = dynamicIcons.get(name);
+  if (!Icon) {
+    Icon = ({ size = 22, color = "#f2b48c" }: IconProps) => (
+      <Ionicons name={name as keyof typeof Ionicons.glyphMap} size={size} color={color} />
+    );
+    dynamicIcons.set(name, Icon);
+  }
+  return Icon;
+}
+
+export function categoryIcon(category: string, subcategory?: string): IconComponent {
+  const { subcategoryById, categoryById } = useCatalogStore.getState();
+  const serverSub = subcategory ? subcategoryById[subcategory]?.icon : undefined;
+  if (serverSub && serverSub in Ionicons.glyphMap) return ioniconByName(serverSub);
   if (subcategory && subcategory in SUBCATEGORY_ICONS) return SUBCATEGORY_ICONS[subcategory];
+  const serverCat = categoryById[category]?.icon;
+  if (serverCat && serverCat in Ionicons.glyphMap) return ioniconByName(serverCat);
   for (const [pattern, Icon] of CATEGORY_FALLBACK) {
     if (pattern.test(category)) return Icon;
   }

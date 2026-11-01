@@ -1,0 +1,274 @@
+[
+  {
+    "id": 9000001,
+    "subcategory": "beyaz_gurultu",
+    "title": "Saf Beyaz Gürültü",
+    "i18n": {
+      "en": "Pure White Noise",
+      "de": "Reines weißes Rauschen",
+      "fr": "Bruit blanc pur",
+      "es": "Ruido blanco puro",
+      "pt": "Ruído branco puro"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000002,
+    "subcategory": "beyaz_gurultu",
+    "title": "Yumuşak Beyaz Gürültü",
+    "i18n": {
+      "en": "Soft White Noise",
+      "de": "Weiches weißes Rauschen",
+      "fr": "Bruit blanc doux",
+      "es": "Ruido blanco suave",
+      "pt": "Ruído branco suave"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000003,
+    "subcategory": "beyaz_gurultu",
+    "title": "Derin Beyaz Gürültü",
+    "i18n": {
+      "en": "Deep White Noise",
+      "de": "Tiefes weißes Rauschen",
+      "fr": "Bruit blanc profond",
+      "es": "Ruido blanco profundo",
+      "pt": "Ruído branco profundo"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000004,
+    "subcategory": "pembe_gurultu",
+    "title": "Saf Pembe Gürültü",
+    "i18n": {
+      "en": "Pure Pink Noise",
+      "de": "Reines rosa Rauschen",
+      "fr": "Bruit rose pur",
+      "es": "Ruido rosa puro",
+      "pt": "Ruído rosa puro"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000005,
+    "subcategory": "pembe_gurultu",
+    "title": "Yumuşak Pembe Gürültü",
+    "i18n": {
+      "en": "Soft Pink Noise",
+      "de": "Weiches rosa Rauschen",
+      "fr": "Bruit rose doux",
+      "es": "Ruido rosa suave",
+      "pt": "Ruído rosa suave"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000006,
+    "subcategory": "pembe_gurultu",
+    "title": "Yeşil Gürültü",
+    "i18n": {
+      "en": "Green Noise",
+      "de": "Grünes Rauschen",
+      "fr": "Bruit vert",
+      "es": "Ruido verde",
+      "pt": "Ruído verde"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000007,
+    "subcategory": "kahverengi_gurultu",
+    "title": "Saf Kahverengi Gürültü",
+    "i18n": {
+      "en": "Pure Brown Noise",
+      "de": "Reines braunes Rauschen",
+      "fr": "Bruit brun pur",
+      "es": "Ruido marrón puro",
+      "pt": "Ruído marrom puro"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000008,
+    "subcategory": "kahverengi_gurultu",
+    "title": "Derin Kahverengi Gürültü",
+    "i18n": {
+      "en": "Deep Brown Noise",
+      "de": "Tiefes braunes Rauschen",
+      "fr": "Bruit brun profond",
+      "es": "Ruido marrón profundo",
+      "pt": "Ruído marrom profundo"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000009,
+    "subcategory": "kahverengi_gurultu",
+    "title": "Yumuşak Kahverengi Gürültü",
+    "i18n": {
+      "en": "Soft Brown Noise",
+      "de": "Weiches braunes Rauschen",
+      "fr": "Bruit brun doux",
+      "es": "Ruido marrón suave",
+      "pt": "Ruído marrom suave"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000010,
+    "subcategory": "binaural",
+    "title": "Delta 2 Hz (Kulaklık)",
+    "i18n": {
+      "en": "Delta 2 Hz (Headphones)",
+      "de": "Delta 2 Hz (Kopfhörer)",
+      "fr": "Delta 2 Hz (Casque)",
+      "es": "Delta 2 Hz (Auriculares)",
+      "pt": "Delta 2 Hz (Fones de ouvido)"
+    },
+    "premium": false,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000011,
+    "subcategory": "binaural",
+    "title": "Delta 3 Hz (Kulaklık)",
+    "i18n": {
+      "en": "Delta 3 Hz (Headphones)",
+      "de": "Delta 3 Hz (Kopfhörer)",
+      "fr": "Delta 3 Hz (Casque)",
+      "es": "Delta 3 Hz (Auriculares)",
+      "pt": "Delta 3 Hz (Fones de ouvido)"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000012,
+    "subcategory": "binaural",
+    "title": "Teta 5 Hz (Kulaklık)",
+    "i18n": {
+      "en": "Theta 5 Hz (Headphones)",
+      "de": "Theta 5 Hz (Kopfhörer)",
+      "fr": "Thêta 5 Hz (Casque)",
+      "es": "Theta 5 Hz (Auriculares)",
+      "pt": "Teta 5 Hz (Fones de ouvido)"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000013,
+    "subcategory": "izokronik",
+    "title": "İzokronik 2 Hz",
+    "i18n": {
+      "en": "Isochronic 2 Hz",
+      "de": "Isochron 2 Hz",
+      "fr": "Isochrone 2 Hz",
+      "es": "Isocrónico 2 Hz",
+      "pt": "Isocrônico 2 Hz"
+    },
+    "premium": false,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000014,
+    "subcategory": "izokronik",
+    "title": "İzokronik 4 Hz",
+    "i18n": {
+      "en": "Isochronic 4 Hz",
+      "de": "Isochron 4 Hz",
+      "fr": "Isochrone 4 Hz",
+      "es": "Isocrónico 4 Hz",
+      "pt": "Isocrônico 4 Hz"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000015,
+    "subcategory": "solfeggio",
+    "title": "174 Hz Ton",
+    "i18n": {
+      "en": "174 Hz Tone",
+      "de": "174-Hz-Ton",
+      "fr": "Tonalité 174 Hz",
+      "es": "Tono de 174 Hz",
+      "pt": "Tom de 174 Hz"
+    },
+    "premium": false,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000016,
+    "subcategory": "solfeggio",
+    "title": "396 Hz Ton",
+    "i18n": {
+      "en": "396 Hz Tone",
+      "de": "396-Hz-Ton",
+      "fr": "Tonalité 396 Hz",
+      "es": "Tono de 396 Hz",
+      "pt": "Tom de 396 Hz"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  },
+  {
+    "id": 9000017,
+    "subcategory": "solfeggio",
+    "title": "528 Hz Ton",
+    "i18n": {
+      "en": "528 Hz Tone",
+      "de": "528-Hz-Ton",
+      "fr": "Tonalité 528 Hz",
+      "es": "Tono de 528 Hz",
+      "pt": "Tom de 528 Hz"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "Original (generated)",
+    "sourceUrl": "https://ffmpeg.org/ffmpeg-filters.html"
+  }
+]

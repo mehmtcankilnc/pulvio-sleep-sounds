@@ -1,0 +1,114 @@
+[
+  {
+    "id": 20332821,
+    "subcategory": "kalp_atisi",
+    "title": "Kalp Atışı 60 BPM",
+    "i18n": {
+      "en": "Heartbeat 60 BPM",
+      "de": "Herzschlag 60 BPM",
+      "fr": "Battements de cœur 60 BPM",
+      "es": "Latidos 60 BPM",
+      "pt": "Batimentos cardíacos 60 BPM"
+    },
+    "premium": false,
+    "duration": 600,
+    "license": "CC0 (Freesound, loudernoises)",
+    "sourceUrl": "https://freesound.org/people/loudernoises/sounds/332821/"
+  },
+  {
+    "id": 20332820,
+    "subcategory": "kalp_atisi",
+    "title": "Kalp Atışı 80 BPM",
+    "i18n": {
+      "en": "Heartbeat 80 BPM",
+      "de": "Herzschlag 80 BPM",
+      "fr": "Battements de cœur 80 BPM",
+      "es": "Latidos 80 BPM",
+      "pt": "Batimentos cardíacos 80 BPM"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "CC0 (Freesound, loudernoises)",
+    "sourceUrl": "https://freesound.org/people/loudernoises/sounds/332820/"
+  },
+  {
+    "id": 20031785,
+    "subcategory": "kalp_atisi",
+    "title": "Bebeğin Kalp Atışı",
+    "i18n": {
+      "en": "Baby's Heartbeat",
+      "de": "Herzschlag des Babys",
+      "fr": "Cœur du bébé",
+      "es": "Latidos del bebé",
+      "pt": "Coração do bebê"
+    },
+    "premium": true,
+    "duration": 599,
+    "license": "CC0 (Freesound, n8daly)",
+    "sourceUrl": "https://freesound.org/people/n8daly/sounds/31785/"
+  },
+  {
+    "id": 9100001,
+    "subcategory": "rahim",
+    "title": "Rahim Sesi (Bebeğin Kalbi)",
+    "i18n": {
+      "en": "Womb Sound (Baby's Heart)",
+      "de": "Mutterleib-Klang (Babyherz)",
+      "fr": "Son utérin (cœur du bébé)",
+      "es": "Sonido del vientre (corazón del bebé)",
+      "pt": "Som do útero (coração do bebê)"
+    },
+    "premium": false,
+    "duration": 599,
+    "license": "CC0 derivative (Freesound n8daly 31785) + generated",
+    "sourceUrl": "https://freesound.org/people/n8daly/sounds/31785/"
+  },
+  {
+    "id": 9100002,
+    "subcategory": "rahim",
+    "title": "Rahim Sesi (Annenin Kalbi)",
+    "i18n": {
+      "en": "Womb Sound (Mother's Heart)",
+      "de": "Mutterleib-Klang (Mutterherz)",
+      "fr": "Son utérin (cœur de la mère)",
+      "es": "Sonido del vientre (corazón de la madre)",
+      "pt": "Som do útero (coração da mãe)"
+    },
+    "premium": true,
+    "duration": 600,
+    "license": "CC0 derivative (Freesound loudernoises 332821) + generated",
+    "sourceUrl": "https://freesound.org/people/loudernoises/sounds/332821/"
+  },
+  {
+    "id": 20485402,
+    "subcategory": "nefes",
+    "title": "Sakin Nefes",
+    "i18n": {
+      "en": "Calm Breathing",
+      "de": "Ruhiges Atmen",
+      "fr": "Respiration calme",
+      "es": "Respiración tranquila",
+      "pt": "Respiração calma"
+    },
+    "premium": false,
+    "duration": 330,
+    "license": "CC0 (Freesound, helenavelikaja)",
+    "sourceUrl": "https://freesound.org/people/helenavelikaja/sounds/485402/"
+  },
+  {
+    "id": 20387620,
+    "subcategory": "nefes",
+    "title": "Derin Nefes",
+    "i18n": {
+      "en": "Deep Breathing",
+      "de": "Tiefes Atmen",
+      "fr": "Respiration profonde",
+      "es": "Respiración profunda",
+      "pt": "Respiração profunda"
+    },
+    "premium": true,
+    "duration": 343,
+    "license": "CC0 (Freesound, mlitty)",
+    "sourceUrl": "https://freesound.org/people/mlitty/sounds/387620/"
+  }
+]

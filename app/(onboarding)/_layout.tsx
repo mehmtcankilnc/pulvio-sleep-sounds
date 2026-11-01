@@ -13,8 +13,7 @@ import { routeStepInfo, stepAnswered, TOTAL_STEPS } from "../../src/lib/onboardi
 // The pre-auth funnel. The chrome that used to live in every step — the peach
 // glow and the progress bar — is hoisted here so it never unmounts: the glow
 // stays fixed while the step panels slide across it, and the bar tweens its
-// fill continuously instead of a fresh copy popping in at each step. See
-// docs/DRIFT_IMPLEMENTATION_PLAN.md for how this became the real funnel.
+// fill continuously instead of a fresh copy popping in at each step.
 //
 // Motion: a single horizontal push carries step-to-step continuity. Under
 // Reduce Motion the slide collapses to a crossfade — the bar's fill still

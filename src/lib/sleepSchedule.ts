@@ -1,5 +1,7 @@
 import { supabase } from "./supabase";
 import type { Track } from "../types";
+import i18n from "./i18n";
+import { localizedTrackTitle } from "./trackTitle";
 
 export type SleepSchedule = {
   bedtimeHour: number;
@@ -41,6 +43,7 @@ type Row = {
     storage_url: string;
     cover_url: string | null;
     is_premium_only: boolean;
+    title_i18n?: Record<string, string> | null;
   } | null;
 };
 
@@ -54,7 +57,7 @@ function mapRowToSchedule(row: Row): SleepSchedule {
     playAtBedtimeTrack: row.track
       ? {
           id: row.track.id,
-          title: row.track.title,
+          title: localizedTrackTitle(row.track.title, row.track.storage_url, i18n.language, row.track.title_i18n),
           category: row.track.category,
           subcategory: row.track.subcategory,
           durationSeconds: row.track.duration,
@@ -69,7 +72,7 @@ function mapRowToSchedule(row: Row): SleepSchedule {
 }
 
 const SELECT_COLUMNS =
-  "bedtime_hour, bedtime_minute, wake_hour, wake_minute, play_at_bedtime_enabled, play_at_bedtime_track_id, fade_out_enabled, quiet_wakeup_enabled, track:tracks(id, title, category, subcategory, duration, storage_url, cover_url, is_premium_only)";
+  "bedtime_hour, bedtime_minute, wake_hour, wake_minute, play_at_bedtime_enabled, play_at_bedtime_track_id, fade_out_enabled, quiet_wakeup_enabled, track:tracks(id, title, category, subcategory, duration, storage_url, cover_url, is_premium_only, title_i18n)";
 
 // No row yet (first visit) is the common case, not an error — the caller
 // gets the same shape either way, just falling back to defaults.

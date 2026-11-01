@@ -9,7 +9,7 @@ import type { Track } from "../../types";
 // back to their answers instead of starting over. Cleared once the funnel is
 // finished (preview -> signup). The shape stays flat and serialisable so a
 // later pass can also write it to the user profile / an onboarding_answers
-// table. See docs/DRIFT_IMPLEMENTATION_PLAN.md §7-11.
+// table.
 
 export type SleepFrequency = "mostNights" | "fewNights" | "nowAndThen" | "comesAndGoes";
 

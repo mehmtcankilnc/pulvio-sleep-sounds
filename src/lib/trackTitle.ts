@@ -17,7 +17,17 @@ const TRAILING_ID_RE = /\/(\d+)\.mp3$/i;
 // silently show the English title instead of the intended Turkish
 // `defaultValue`. getResource has no such fallback, so a missing key just
 // returns undefined and we fall back to the Turkish DB title ourselves.
-export function localizedTrackTitle(dbTitle: string, storageUrl: string, language: string): string {
+export function localizedTrackTitle(
+  dbTitle: string,
+  storageUrl: string,
+  language: string,
+  titleI18n?: Record<string, string> | null,
+): string {
+  // Sunucudaki title_i18n (0023) önce gelir: güncelleme çıkmadan eklenen
+  // parçaların başlıkları 6 dilde buradan çevrilir. Paketli tracks.json,
+  // ilk sürümdeki 124 parça için yedek olarak kalır.
+  const remote = titleI18n?.[language];
+  if (typeof remote === "string" && remote.length > 0) return remote;
   const match = storageUrl.match(TRAILING_ID_RE);
   if (!match) return dbTitle;
   const translated = i18n.getResource(language, "tracks", match[1]);

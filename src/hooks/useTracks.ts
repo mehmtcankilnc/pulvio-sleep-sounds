@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import i18n from "../lib/i18n";
 import { supabase } from "../lib/supabase";
-import { compareTracks } from "../lib/catalogTaxonomy";
+import { compareTracks, isKnownSubcategory } from "../lib/catalogTaxonomy";
+import { loadCatalogTaxonomy } from "../lib/catalogStore";
 import { localizedTrackTitle } from "../lib/trackTitle";
 import type { Track } from "../types";
 
@@ -20,10 +21,11 @@ function mapRowToTrack(row: {
   storage_url: string;
   cover_url: string | null;
   is_premium_only: boolean;
+  title_i18n?: Record<string, string> | null;
 }): Track {
   return {
     id: row.id,
-    title: localizedTrackTitle(row.title, row.storage_url, i18n.language),
+    title: localizedTrackTitle(row.title, row.storage_url, i18n.language, row.title_i18n),
     category: row.category,
     subcategory: row.subcategory,
     durationSeconds: row.duration,
@@ -39,7 +41,7 @@ function mapRowToTrack(row: {
 export async function fetchTrackById(trackId: string): Promise<Track | null> {
   const { data, error } = await supabase
     .from("tracks")
-    .select("id, title, category, subcategory, duration, storage_url, cover_url, is_premium_only")
+    .select("id, title, category, subcategory, duration, storage_url, cover_url, is_premium_only, title_i18n")
     .eq("id", trackId)
     .maybeSingle();
 
@@ -60,9 +62,15 @@ export function useTracks() {
     // free-before-premium, then title) is applied client-side below via
     // compareTracks so it stays in one place shared with any other consumer,
     // instead of duplicating it as a second `.order()` chain here.
-    const { data, error: fetchError } = await supabase
-      .from("tracks")
-      .select("id, title, category, subcategory, duration, storage_url, cover_url, is_premium_only");
+    // Taxonomy (labels/order/icons) loads alongside the rows so the very first
+    // sort already uses the server order; it never rejects (falls back to the
+    // cache / bundled order).
+    const [{ data, error: fetchError }] = await Promise.all([
+      supabase
+        .from("tracks")
+        .select("id, title, category, subcategory, duration, storage_url, cover_url, is_premium_only, title_i18n"),
+      loadCatalogTaxonomy(),
+    ]);
 
     if (fetchError) {
       console.error("useTracks: failed to fetch tracks", fetchError);
@@ -72,7 +80,7 @@ export function useTracks() {
       return;
     }
 
-    const tracks = (data ?? []).map(mapRowToTrack).sort((a, b) => compareTracks(a, b, i18n.language));
+    const tracks = (data ?? []).map(mapRowToTrack).filter((track) => isKnownSubcategory(track.subcategory)).sort((a, b) => compareTracks(a, b, i18n.language));
     const grouped = new Map<string, { category: string; subcategory: string; data: Track[] }>();
     for (const track of tracks) {
       const key = `${track.category}/${track.subcategory}`;
