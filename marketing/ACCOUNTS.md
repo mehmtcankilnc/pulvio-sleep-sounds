@@ -2,7 +2,7 @@
 
 Hesapları sen açacaksın (kimlik doğrulama, e-posta/telefon onayı sende). Platformların ayarları sık değişir; aşağıdaki menü isimleri uygulamada biraz farklı görünürse mantığı takip et.
 
-**Durum:** Gmail `pulviosleep@gmail.com`, TikTok + Instagram `pulviosleep` açıldı, bio ve profil fotoğrafı tamam. Sırada: YouTube kanalı (handle `@pulviosleep`), campaign linkleri, ilk video.
+**Durum (2026-11-04):** Gmail `pulviosleep@gmail.com`, TikTok + Instagram + YouTube `pulviosleep` açık, X hesabı da açık (https://x.com/pulviosleep, 2026-11-04, campaign `x` oluşturuldu), bio, profil fotoğrafı ve campaign linkleri tamam. **TikTok slideshow (yağmur formatı) ile ilerliyor**, YouTube ve Instagram Remotion videolarıyla devam ediyor (Instagram'a arada slideshow da konuyor). Plan, caption'lar ve alt text'ler: `tracking/plan-2026-11-04.md`.
 
 ## 1. Hazırlık (10 dk)
 
@@ -17,6 +17,13 @@ Hesapları sen açacaksın (kimlik doğrulama, e-posta/telefon onayı sende). Pl
   Free on the App Store 👇
   ```
   (Google Play'den bahsetme, Android yok.)
+- **Bio (Türkçe, X hesabı):**
+  ```
+  Kendiliğinden kapanan uyku sesleri.
+  Yağmur · göl · kahverengi gürültü · daha fazlası
+  App Store'da ücretsiz başla 👇
+  ```
+  X'te Türkçe paylaşılır (tweet, alt text, slaytlar `slides-rain-tr`). Profil linki alanına `ct=x` campaign linkini koy (`tracking/links.md`).
 
 ## 2. App Store campaign linkleri (her platform ayrı)
 
@@ -36,7 +43,8 @@ Hangi platformun indirme getirdiğini görmek için:
 
 - Kayıt: e-posta/telefon. Kayıttan sonra **Settings → Account → Switch to Business Account**, kategori "Health & Wellness" veya "Apps".
 - Neden Business: bio'ya **link hemen eklenebiliyor**. Kişisel hesapta link için genelde 1.000 takipçi gerekiyor. Business hesapta trend olan ticari olmayan müziklere erişim kısıtlı, ama biz kendi sesimizi videoya gömdüğümüz için sorun olmaz. (Önceki önerimi bu yüzden değiştirdim; ekranda farklı görürsen kontrol et.)
-- Videoyu **dosya olarak** yükle (MP4). TikTok'tan indirilmiş watermark'lı kopya yükleme.
+- **Slideshow (ana format):** `out/slides/<deste>/01.png → 04.png` dosyalarını TikTok'ta **Photo Mode** ile sırayla yükle (Upload → Photos). Başlık alanına deste başlığını, açıklamaya caption'ı yaz (`tracking/plan-2026-11-04.md`). Sesi uygulamadan seç (sakin, uzun, düz yağmur/su sesi; müzik değil) ve hangisini seçtiğini `posts.csv`'ye yaz. AI etiketi seçeneği çıkarsa işaretle (kapaklar AI üretimi).
+- Videoyu (varsa) **dosya olarak** yükle (MP4). TikTok'tan indirilmiş watermark'lı kopya yükleme.
 
 ### Instagram
 - Kayıt sonrası **Settings → Account type and tools → Switch to professional account → Creator**. Insights (izlenme süresi, kaydetme, paylaşma) bunun için açılır.
@@ -55,6 +63,8 @@ Hangi platformun indirme getirdiğini görmek için:
 - **Zamanlama:** Hedef kitle İngilizce konuşan; en iyi saat yerel akşam 21:00-23:00. ABD Doğu saatinde bu, Türkiye'de sabaha karşı demek. Gece uyanmamak için her platformun kendi zamanlayıcısını kullan: TikTok web (tiktok.com/upload), Meta Business Suite (Instagram), YouTube Studio.
 - **Sabitlenmiş yorum:** Her videoda ilk yorumu sen at ve sabitle (aşağıdaki "yorum" sütunu).
 - **Hesabı ısıt:** İlk gün 1 video yükle, ilk 2-3 gün içinde de platformun ana akışında 10-15 dk gez ve hikâyeleri/videoları izle. Yeni hesaba aynı gün 7 video basma.
+
+> **Güncelleme 2026-11-04:** TikTok artık slideshow ile ilerliyor (yağmur formatı), plan ve caption'lar `tracking/plan-2026-11-04.md` içinde. Aşağıdaki video takvimi YouTube ve Instagram için geçerli.
 
 ## 5. İlk hafta planı
 
@@ -138,6 +148,23 @@ ABD'de kış saati 1 Kasım 2026'da başladı: Doğu saati (ET) = UTC-5, Pasifik
 
 Platform zamanlayıcıları cihazının saat dilimini (Türkiye) kullanır, saati TR olarak gir.
 
+### TikTok slideshow takvimi (ana slot 05:00 TR)
+
+Hesabı bir gün ısıt (uyku niş'inde gez, beğen, yorum yap), sonra her gün bir deste. 10 posttan sonra formatı değerlendir (kural: `.claude/agents/pulvio-content.md`).
+
+| Tarih (TR) | Deste | Hook |
+|---|---|---|
+| 6 Kasım 05:00 | `rain` | can't sleep? |
+| 7 Kasım 05:00 | `tent` | rain on a tent hits different |
+| 8 Kasım 05:00 | `night` | 3 AM. you needed this. |
+| 9 Kasım 05:00 | `sound` | turn your sound on for this |
+
+Önceki "3 AM group chat" destesi (`slides-3am`) **legacy**: sadece Instagram'da paylaşıldı (4 Kasım), TikTok'ta paylaşılmayacak.
+
+### YouTube / Instagram video takvimi
+
+Aşağıdaki tablo YouTube ve Instagram içindir (TikTok artık slideshow). Paylaşılanlar: `pendulum-wave` (2 Kasım, üç platform), `night-hook` (3 Kasım, YouTube + Instagram), `orbit-wave` (4 Kasım, YouTube). Gerçek paylaşım tarihleri `tracking/posts.csv` içinde.
+
 Plan: Her gün 05:00 TR (ana slot). Bir hafta sonra bir-iki videoyu 20:00 TR'de (öğle slotu) yükleyip karşılaştır, `posts.csv`'deki `notes` sütununa "slot=20:00" yaz.
 
 | Tarih (TR) | Video |
@@ -154,7 +181,7 @@ Plan: Her gün 05:00 TR (ana slot). Bir hafta sonra bir-iki videoyu 20:00 TR'de 
 
 ### `night-hook` hazır caption'lar (3 Kasım 05:00 TR)
 
-**TikTok:**
+**TikTok:** (paylaşılmadı, TikTok slideshow'a geçti; sadece referans)
 ```
 3 AM and your brain won't stop? 🌙 Racing thoughts, overthinking, can't sleep... put this on instead. Calming lake sounds to help you wind down.
 Send this to someone who's awake right now.

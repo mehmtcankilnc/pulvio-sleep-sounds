@@ -10,6 +10,7 @@
 | TikTok | profile bio | https://apps.apple.com/app/apple-store/id6813647835?pt=129476369&ct=tiktok&mt=8 |
 | Instagram | profile bio | https://apps.apple.com/app/apple-store/id6813647835?pt=129476369&ct=instagram&mt=8 |
 | YouTube | channel Links section | https://apps.apple.com/app/apple-store/id6813647835?pt=129476369&ct=youtube&mt=8 |
+| X | profile bio (x.com/pulviosleep) | https://apps.apple.com/app/apple-store/id6813647835?pt=129476369&ct=x&mt=8 |
 
 A new campaign needs no setup: change `ct=` to any name (max 40 chars) and it shows up in Analytics after the first visits, e.g. `ct=tiktok_pinned_comment` to tell bio clicks from comment-link clicks.
 

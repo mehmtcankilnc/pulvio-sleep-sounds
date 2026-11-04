@@ -1,10 +1,11 @@
 import React from "react";
-import { Composition } from "remotion";
+import { Composition, Still } from "remotion";
 import { YtBanner } from "./banner";
 import { Cover } from "./covers";
 import { PickOne, PovHook, RainLoop } from "./videos";
 import { CoverFocus, FadeOut, SoundCycle } from "./videos2";
 import { NIGHT_HOOK_FRAMES, NightHook } from "./videos3";
+import { SLIDES_3AM, SLIDES_RAIN, Slides3am, SlidesRain } from "./slides";
 import { ORBIT_FRAMES, OrbitWave } from "./videos6";
 import { PENDULUM_FRAMES, PendulumWave, STARE_FRAMES, StareChallenge } from "./videos5";
 
@@ -93,6 +94,7 @@ export const Root: React.FC = () => (
       defaultProps={{ title: "Rain on a tent", tag: "leave it on · fall asleep", cover: "cadir_yagmuru", sound: "rain.mp3", rain: true }}
     />
     <Composition id="yt-banner" component={YtBanner} durationInFrames={1} width={2560} height={1440} fps={30} />
+    <Composition id="yt-banner-tr" component={YtBanner} durationInFrames={1} width={2560} height={1440} fps={30} defaultProps={{ tagline: "Kendiliğinden kapanan uyku sesleri" }} />
     <Composition id="cover-pov-3am" component={Cover} durationInFrames={1} {...base} defaultProps={{ title: "POV: it's 3 AM and your brain won't shut up", covers: [], moon: true }} />
     <Composition id="cover-rain-loop" component={Cover} durationInFrames={1} {...base} defaultProps={{ title: "Rain on the roof", sub: "leave it on · fall asleep", covers: ["cadir_yagmuru"] }} />
     <Composition id="cover-pick-one" component={Cover} durationInFrames={1} {...base} defaultProps={{ title: "Which one are you sleeping to tonight?", covers: ["cadir_yagmuru", "gol_kiyisi", "damla"] }} />
@@ -100,5 +102,16 @@ export const Root: React.FC = () => (
     <Composition id="cover-fade-out" component={Cover} durationInFrames={1} {...base} defaultProps={{ title: "Press play.", sub: "It fades out on its own.", covers: ["cadir_yagmuru"] }} />
     <Composition id="cover-night-hook" component={Cover} durationInFrames={1} {...base} defaultProps={{ title: "Your brain at 3 AM", sub: "Try this instead.", covers: [], moon: true }} />
     <Composition id="cover-cover-focus" component={Cover} durationInFrames={1} {...base} defaultProps={{ title: "Rain on a tent", sub: "leave it on · fall asleep", covers: ["cadir_yagmuru"] }} />
+    {Array.from({ length: SLIDES_3AM }, (_, i) => (
+      <Still key={i} id={`slides-3am-${i + 1}`} component={Slides3am} {...base} defaultProps={{ n: i + 1 }} />
+    ))}
+    {Array.from({ length: SLIDES_3AM }, (_, i) => (
+      <Still key={i} id={`slides-3am-ig-${i + 1}`} component={Slides3am} width={1080} height={1350} defaultProps={{ n: i + 1, platform: "instagram" as const }} />
+    ))}
+    {(["rain", "tent", "night", "sound", "rain-tr"] as const).flatMap((deck) =>
+      Array.from({ length: SLIDES_RAIN }, (_, i) => (
+        <Still key={`${deck}-${i}`} id={`slides-${deck}-${i + 1}`} component={SlidesRain} {...base} defaultProps={{ n: i + 1, deck }} />
+      )),
+    )}
   </>
 );

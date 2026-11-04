@@ -1,6 +1,6 @@
-# Pulvio marketing videos
+# Pulvio marketing content
 
-Short-form (TikTok / Reels / Shorts) videos generated entirely from code with Remotion. 1080x1920, 30fps.
+Short-form content generated entirely from code with Remotion. **TikTok runs on photo-mode slideshows** (the "rain" format, see Slideshows below); YouTube Shorts and Instagram get videos (1080x1920, 30fps) and the occasional carousel.
 
 ```bash
 cd marketing
@@ -15,6 +15,18 @@ npx remotion render src/index.ts pov-3am out/pov-3am.mp4
 - Audio comes from the app's own CDN catalog (CC0). Download into `public/audio/` (gitignored), e.g. `https://cdn.pulvio.mehmtcankilinc.com/tracks/cadir_yagmuru/421047.mp3`.
 - Log every post in `tracking/posts.csv` (one row per post per platform) so formats and hooks can be compared.
 - Copy rules: no fabricated testimonials or health claims; the free tier limit is real, do not imply "unlimited".
+
+## Slideshows (TikTok photo mode)
+
+`src/slides.tsx` renders slideshow slides as stills (1080x1920, same Drift theme, the app's real covers from `public/covers/`). Words stay inside the centered `Safe` box (outside the top 240px and bottom 520px, 180px side margins, where TikTok puts its UI). Full-bleed backgrounds come from `public/bg/` (1080x1920 crops of the app covers). `slides-3am-1` ... `slides-3am-7` are registered in `Root.tsx`:
+
+```bash
+npx remotion still src/index.ts slides-3am-1 out/slides/3am/01.png
+```
+
+The current TikTok format is the rain format (`SlidesRain`: 4 slides a deck, TikTok-style Figtree bold text with outline from `public/fonts/`, OFL, over the app's own covers in `public/bg/`). Four decks exist, `slides-rain-<n>`, `slides-tent-<n>`, `slides-night-<n>`, `slides-sound-<n>` (n = 1-4); their text lives in `RAIN_DECKS` in `slides.tsx`, so a new deck is a new entry there plus its name in the list in `Root.tsx`. Render one with `npx remotion still src/index.ts slides-tent-1 out/slides/tent/01.png`. `slides-3am` and `slides-3am-ig-*` are **legacy** (the 3 AM group chat deck, posted on Instagram only).
+
+To add a deck, copy `Slides3am`, change the slide data, and register `<Still>`s. Plan, caption and alt text for the current deck: `tracking/plan-2026-11-04.md`. Rules for slideshows are in `.claude/agents/pulvio-content.md`.
 
 ## Fresh clone setup
 
