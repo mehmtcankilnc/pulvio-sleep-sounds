@@ -7,6 +7,7 @@ import { CoverFocus, FadeOut, SoundCycle } from "./videos2";
 import { NIGHT_HOOK_FRAMES, NightHook } from "./videos3";
 import { SLIDES_3AM, SLIDES_RAIN, Slides3am, SlidesRain } from "./slides";
 import { ORBIT_FRAMES, OrbitWave } from "./videos6";
+import { BLOOM_FRAMES, BloomWave, DominoWave, RippleWave, SpiralWave, SwingWave, WAVE_PREVIEW_FRAMES } from "./videos7";
 import { PENDULUM_FRAMES, PendulumWave, STARE_FRAMES, StareChallenge } from "./videos5";
 
 const base = { width: 1080, height: 1920, fps: 30 } as const;
@@ -79,6 +80,11 @@ export const Root: React.FC = () => (
       {...base}
       defaultProps={{ hook: "Watch them line up." }}
     />
+    <Composition id="ripple-wave" component={RippleWave} durationInFrames={WAVE_PREVIEW_FRAMES} {...base} defaultProps={{ hook: "Watch them line up." }} />
+    <Composition id="spiral-wave" component={SpiralWave} durationInFrames={WAVE_PREVIEW_FRAMES} {...base} defaultProps={{ hook: "Watch them line up." }} />
+    <Composition id="swing-wave" component={SwingWave} durationInFrames={WAVE_PREVIEW_FRAMES} {...base} defaultProps={{ hook: "Watch them line up." }} />
+    <Composition id="bloom-wave" component={BloomWave} durationInFrames={BLOOM_FRAMES} {...base} defaultProps={{ hook: "Watch it close." }} />
+    <Composition id="domino-wave" component={DominoWave} durationInFrames={WAVE_PREVIEW_FRAMES} {...base} defaultProps={{ hook: "Watch them line up." }} />
     <Composition
       id="stare-challenge"
       component={StareChallenge}
